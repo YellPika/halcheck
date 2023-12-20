@@ -1,0 +1,10 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
+
+Name: @PROJECT_NAME@
+Description: I'm sorry Dave, I can't let you do that.
+Version: @PROJECT_VERSION@
+Libs: -L${libdir} -l@PROJECT_NAME@
+Cflags: -I${includedir}

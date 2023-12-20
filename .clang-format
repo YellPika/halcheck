@@ -1,0 +1,21 @@
+Language: Cpp
+AlignAfterOpenBracket: AlwaysBreak
+AlwaysBreakTemplateDeclarations: Yes
+BasedOnStyle: LLVM
+BinPackArguments: false
+BinPackParameters: false
+CompactNamespaces: true
+ColumnLimit: 120
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: "<halcheck/"
+    Priority: 1
+  - Regex: "<doctest/"
+    Priority: 2
+  - Regex: ""
+    Priority: 3
+LambdaBodyIndentation: OuterScope
+PenaltyBreakOpenParenthesis: 50
+QualifierAlignment: Left
+ShortNamespaceLines: 0
+SpaceAfterTemplateKeyword: false
