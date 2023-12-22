@@ -4,4 +4,4 @@
 
 using namespace halcheck;
 
-static_assert(test::is_sampler<test::random>(), "IMPOSSIBLE");
+static_assert(test::is_strategy<test::random>(), "IMPOSSIBLE");

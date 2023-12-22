@@ -10,7 +10,7 @@
 
 namespace halcheck { namespace test {
 
-template<typename Strategy, HALCHECK_REQUIRE(test::is_sampler<Strategy>())>
+template<typename Strategy, HALCHECK_REQUIRE(test::is_strategy<Strategy>())>
 struct limited_t {
   template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
   void operator()(F func) const {
@@ -48,7 +48,7 @@ struct limited_t {
   std::uintmax_t discard_ratio;
 };
 
-template<typename Strategy, HALCHECK_REQUIRE(test::is_sampler<Strategy>())>
+template<typename Strategy, HALCHECK_REQUIRE(test::is_strategy<Strategy>())>
 constexpr limited_t<Strategy>
 limited(Strategy strategy, std::uintmax_t max_success = 100, std::uintmax_t discard_ratio = 10) {
   return {std::move(strategy), max_success, discard_ratio};

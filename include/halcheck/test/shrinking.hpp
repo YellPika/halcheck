@@ -19,7 +19,7 @@
 
 namespace halcheck { namespace test {
 
-template<typename Strategy, HALCHECK_REQUIRE(test::is_sampler<Strategy>())>
+template<typename Strategy, HALCHECK_REQUIRE(test::is_strategy<Strategy>())>
 class shrinking_t {
 public:
   template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
@@ -138,7 +138,7 @@ private:
   }
 };
 
-template<typename Strategy, HALCHECK_REQUIRE(test::is_sampler<Strategy>())>
+template<typename Strategy, HALCHECK_REQUIRE(test::is_strategy<Strategy>())>
 constexpr shrinking_t<Strategy> shrinking(Strategy strategy) {
   return {std::move(strategy)};
 }
