@@ -3,14 +3,14 @@
 
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/lib/functional.hpp>
-#include <halcheck/test/sampler.hpp>
+#include <halcheck/test/strategy.hpp>
 
 #include <cstddef>
 #include <exception>
 
 namespace halcheck { namespace test {
 
-template<typename Sampler, HALCHECK_REQUIRE(test::is_sampler<Sampler>())>
+template<typename Strategy, HALCHECK_REQUIRE(test::is_sampler<Strategy>())>
 struct limited_t {
   template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
   void operator()(F func) const {
@@ -23,7 +23,7 @@ struct limited_t {
     bool shrinking = false;
 
     try {
-      sampler([&] {
+      strategy([&] {
         if (successes >= max_success)
           throw finish();
 
@@ -43,15 +43,15 @@ struct limited_t {
     }
   }
 
-  Sampler sampler;
+  Strategy strategy;
   std::uintmax_t max_success;
   std::uintmax_t discard_ratio;
 };
 
-template<typename Sampler, HALCHECK_REQUIRE(test::is_sampler<Sampler>())>
-constexpr limited_t<Sampler>
-limited(Sampler sampler, std::uintmax_t max_success = 100, std::uintmax_t discard_ratio = 10) {
-  return {std::move(sampler), max_success, discard_ratio};
+template<typename Strategy, HALCHECK_REQUIRE(test::is_sampler<Strategy>())>
+constexpr limited_t<Strategy>
+limited(Strategy strategy, std::uintmax_t max_success = 100, std::uintmax_t discard_ratio = 10) {
+  return {std::move(strategy), max_success, discard_ratio};
 }
 
 }} // namespace halcheck::test

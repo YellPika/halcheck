@@ -135,7 +135,7 @@
   \halcheck{} provides combinators for specifying strategies:
 
   \begin{minted}{c++}
-    //   random(int) → sampler
+    //   random(int) → strategy
     // ▿ Executes random test cases forever or until a bug is found.
     test::random(seed)([] { run_test(); });
   \end{minted}
@@ -143,7 +143,7 @@
   \pause{}
 
   \begin{minted}{c++}
-    //   limited(sampler, int) → sampler
+    //   limited(strategy, int) → strategy
     // ▿ Executes at most 100 test cases.
     test::limited(test::random(), 100)([] { run_test(); });
   \end{minted}
@@ -151,7 +151,7 @@
   \pause{}
 
   \begin{minted}{c++}
-    //   shrinking(sampler) → sampler
+    //   shrinking(strategy) → strategy
     // ▿ Performs test-case shrinking if a bug is found.
     test::shrinking(test::random())([] { run_test(); });
   \end{minted}

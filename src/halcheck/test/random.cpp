@@ -1,6 +1,6 @@
 #include "halcheck/test/random.hpp"
 
-#include <halcheck/test/sampler.hpp>
+#include <halcheck/test/strategy.hpp>
 
 using namespace halcheck;
 

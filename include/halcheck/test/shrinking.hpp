@@ -8,7 +8,7 @@
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/type_traits.hpp>
-#include <halcheck/test/sampler.hpp>
+#include <halcheck/test/strategy.hpp>
 
 #include <algorithm>
 #include <climits>
@@ -19,7 +19,7 @@
 
 namespace halcheck { namespace test {
 
-template<typename Sampler, HALCHECK_REQUIRE(test::is_sampler<Sampler>())>
+template<typename Strategy, HALCHECK_REQUIRE(test::is_sampler<Strategy>())>
 class shrinking_t {
 public:
   template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
@@ -27,7 +27,7 @@ public:
     std::vector<sample> samples;
     std::vector<shrink> shrinks;
     try {
-      lib::invoke(sampler, [&] {
+      lib::invoke(strategy, [&] {
         samples.clear();
         shrinks.clear();
         exec(func, samples, shrinks);
@@ -64,7 +64,7 @@ public:
     }
   }
 
-  Sampler sampler;
+  Strategy strategy;
 
 private:
   struct sample {
@@ -138,9 +138,9 @@ private:
   }
 };
 
-template<typename Sampler, HALCHECK_REQUIRE(test::is_sampler<Sampler>())>
-constexpr shrinking_t<Sampler> shrinking(Sampler sampler) {
-  return {std::move(sampler)};
+template<typename Strategy, HALCHECK_REQUIRE(test::is_sampler<Strategy>())>
+constexpr shrinking_t<Strategy> shrinking(Strategy strategy) {
+  return {std::move(strategy)};
 }
 
 }} // namespace halcheck::test
