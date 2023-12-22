@@ -96,7 +96,7 @@ extern const struct shrink_t : lib::effect<lib::optional<std::uintmax_t>, std::u
 
 /// @brief Disables shrinking until the return value is destroyed.
 /// @return A value that re-enables shrinking upon destruction.
-shrink_t::handler prune() {
+inline shrink_t::handler prune() {
   return gen::shrink.handle([](std::uintmax_t) { return lib::nullopt; });
 }
 
