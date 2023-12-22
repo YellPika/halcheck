@@ -1,0 +1,30 @@
+\documentclass[aspectratio=169]{beamer}
+
+\usepackage{fontspec}
+\setmonofont{DejaVu Sans Mono}
+
+\usepackage{minted}
+\setminted{autogobble,escapeinside=||,fontsize=\footnotesize}
+
+\usepackage{wasysym}
+
+\title{\halcheck}
+\author{Anthony Vandikas}
+\date{December 22, 2023}
+\usetheme{Metropolis}
+
+\newcommand{\halcheck}{\texttt{halcheck}}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}{\halcheck{} \textemdash{} Overview}
+  \tableofcontents
+\end{frame}
+
+\include{intro/0-motivation}
+\include{intro/1-design}
+\include{intro/2-summary}
+
+\end{document}

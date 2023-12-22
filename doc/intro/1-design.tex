@@ -1,0 +1,399 @@
+\section{Design}
+
+\begin{frame}[t]{\halcheck{} \textemdash{} Design}
+  Goals:
+  \begin{itemize}
+    \item Support user-defined generation strategies
+    \item First-order API (as much as possible)
+  \end{itemize}
+
+  \begin{onlyenv}<2>
+    \begin{itemize}
+      \item C++ 11 support
+      \item Thread safety
+    \end{itemize}
+  \end{onlyenv}
+
+  \begin{onlyenv}<3->
+    To support these goals, every generator needs to be built from a set of \textbf{overridable core functions}:
+
+    \begin{itemize}
+      \item<4-> \mintinline{c++}{gen::next}
+      \item<4-> \mintinline{c++}{gen::discard}
+      \item<4-> \mintinline{c++}{gen::shrink}
+      \item<4-> \mintinline{c++}{gen::group}
+    \end{itemize}
+  \end{onlyenv}
+\end{frame}
+
+\begin{frame}[fragile,t]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::next}}
+  \begin{center}
+    \mintinline{c++}{gen::next(int x = 1, int y = 1) |→| bool}
+  \end{center}
+
+  \begin{onlyenv}<+>
+    \textbf{Intuition:} \mintinline{c++}{gen::next(x, y)} performs a biased coin flip with \( p = \frac{y}{x + y} \).
+
+    \begin{itemize}
+      \item This is our \emph{only} source of randomness.
+      \item Is this enough to define all generators?
+    \end{itemize}
+  \end{onlyenv}
+
+  \begin{onlyenv}<+-+(1)>
+    \begin{columns}[T]
+      \column{0.6\textwidth}
+      \textbf{Example 1:} \emph{generate a number in the range $[a, b)$}.
+
+      \begin{itemize}
+        \item<.(1)-> Solution: use binary search, replace comparison with biased coin flip.
+      \end{itemize}
+
+      \column{0.4\textwidth}
+      \begin{onlyenv}<+>
+        \begin{minted}{c++}
+          int range(int a, int b) {
+            if (a + 1 >= b)
+              return a;
+
+            int c = std::midpoint(a, b);
+            if (gen::next(c - a, b - c))
+              return range(mid, b);
+            else
+              return range(a, mid);
+          }
+        \end{minted}
+      \end{onlyenv}
+    \end{columns}
+  \end{onlyenv}
+
+  \begin{onlyenv}<+-+(2)>
+    \begin{columns}[T]
+      \column{0.55\textwidth}
+      \textbf{Example 2:} \emph{generate a \mintinline{c++}{enum dim}}.
+
+      \begin{itemize}
+        \item<.(1)-> Solution 1: consult \mintinline{c++}{gen::range} to determine which value to return.
+        \item<.(2)-> Solution 2: define \mintinline{c++}{gen::element} (implemented via \mintinline{c++}{gen::range}).
+      \end{itemize}
+
+      \column{0.45\textwidth}
+      \begin{minted}{c++}
+        enum class dim {
+          x = 0,
+          y = 3,
+          z = 8
+        };
+      \end{minted}
+
+      \begin{onlyenv}<+>
+        \begin{minted}{c++}
+          dim arbitrary(gen::tag<dim>) {
+            switch (gen::range(0, 3)) {
+            case 0: return dim::x;
+            case 1: return dim::y;
+            case 2: return dim::z;
+            } }
+        \end{minted}
+      \end{onlyenv}
+
+      \begin{onlyenv}<+>
+        \begin{minted}{c++}
+          dim arbitrary(gen::tag<dim>) {
+            return gen::element({x, y, z});
+          }
+        \end{minted}
+      \end{onlyenv}
+    \end{columns}
+  \end{onlyenv}
+
+  \begin{onlyenv}<+-+(1)>
+    \begin{columns}[T]
+      \column{0.5\textwidth}
+      \textbf{Example 3:} \emph{generate a \mintinline{c++}{struct vec}}.
+
+      \begin{itemize}
+        \item<.(1)-> Trivial.
+      \end{itemize}
+
+      \column{0.45\textwidth}
+      \begin{minted}{c++}
+        struct vec {
+          int x;
+          int y;
+        };
+      \end{minted}
+
+      \begin{onlyenv}<+>
+        \begin{minted}{c++}
+          vec arbitrary(gen::tag<vec>) {
+            vec output;
+            output.x = gen::arbitrary<int>();
+            output.y = gen::arbitrary<int>();
+            return output;
+          }
+        \end{minted}
+      \end{onlyenv}
+    \end{columns}
+  \end{onlyenv}
+
+  \begin{onlyenv}<+-+(4)>
+    \begin{columns}[T]
+      \column{0.45\textwidth}
+      \textbf{Example 4:} \emph{generate a \mintinline{c++}{std::string}}.
+
+      \begin{onlyenv}<.(1)-.(2)>
+        \begin{itemize}
+          \item<.(1)-> Attempt: generate random size $n$, then generate $n$ elements.
+          \item<.(2)-> Problem: \mintinline{c++}{gen::arbitrary<size_t>} is uniformly distributed \textemdash{} high chance of generating \emph{billions of GBs}.
+        \end{itemize}
+      \end{onlyenv}
+
+      \begin{onlyenv}<.(3)-.(4)>
+        \begin{itemize}
+          \item<.(3)-> Attempt: add elements as long as \mintinline{c++}{gen::next} returns \mintinline{c++}{true}.
+          \item<.(4)-> Problem: distribution biased towards shorter lists.
+        \end{itemize}
+      \end{onlyenv}
+
+      \column{0.55\textwidth}
+      \begin{onlyenv}<+-+(1)>
+        \begin{minted}{c++}
+          std::string gen_string() {
+            std::string xs;
+            auto size = gen::arbitrary<size_t>();
+            while (size-- > 0)
+              xs.push_back(gen::arbitrary<char>());
+            return xs;
+          }
+        \end{minted}
+        \only<+>{}
+      \end{onlyenv}
+
+      \begin{onlyenv}<+-+(1)>
+        \begin{minted}{c++}
+          std::string gen_string() {
+            std::string xs;
+            while (gen::next())
+              xs.push_back(gen::arbitrary<char>());
+            return xs;
+          }
+        \end{minted}
+        \only<+>{}
+      \end{onlyenv}
+
+    \end{columns}
+  \end{onlyenv}
+\end{frame}
+
+\begin{frame}[fragile,t]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::next}}
+  \textbf{Problem:} how do we define \mintinline{c++}{gen_string} with a sensible distribution?
+
+  \pause{}
+
+  \textbf{Standard Solution:} define a incrementally increasing size parameter and choose lengths uniformly up to the current size.
+
+  \begin{minted}{c++}
+    std::string gen_string() {
+      std::string xs;
+      auto size = gen::range(0, gen::size());
+      while (size-- > 0)
+        xs.push_back(gen::arbitrary<char>());
+      return xs;
+    }
+  \end{minted}
+
+  \pause{}
+
+  \begin{itemize}
+    \item \mintinline{c++}{gen::size} cannot be defined in terms of \mintinline{c++}{gen::next}.
+    \item Do we really need an extra combinator? \pause\textbf{NO!}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,t]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::next}}
+  \begin{center}
+    \mintinline{c++}{gen::next(gen::weight x = 1, gen::weight y = 1) |→| bool}
+  \end{center}
+
+  \begin{itemize}
+    \item Actual definition of \mintinline{c++}{gen::next} takes \mintinline{c++}{gen::weight} parameters.
+    \item A \mintinline{c++}{gen::weight} is a symbolic value parameterized by an unknown size.
+    \item A \mintinline{c++}{gen::weight} is semantically a function in $\mathbb{N} \to \mathbb{N}$.
+    \item \textbf{Bonus:} generators automatically behave uniformly with respect to size!
+  \end{itemize}
+
+  \begin{minted}{c++}
+    std::string gen_string() {
+      std::string xs;
+      auto size = gen::weight::current; // current is the symbolic variable
+      while (gen::next(1, size--))
+        xs.push_back(gen::arbitrary<char>());
+      return xs;
+    }
+  \end{minted}
+
+  \begin{itemize}
+    \item Proof of correctness left as an exercise to the reader \smiley{}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::next}}
+  \textbf{Summary:} \mintinline{c++}{gen::next} alone allows us to write generators for
+  \begin{itemize}
+    \item weighted distributions,
+    \item \mintinline{c++}{enum}s and \mintinline{c++}{union}s (i.e., sum types),
+    \item \mintinline{c++}{struct}s (i.e., product types), and
+    \item recursive data structures via sized generation.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::discard}}
+  \begin{center}
+    \mintinline{c++}{gen::discard()}
+  \end{center}
+
+  \textbf{Intuition:} \mintinline{c++}{gen::discard()} terminates the current test case (no failure).
+
+  \begin{itemize}
+    \item Used to implement precondition checking (\mintinline{c++}{RC_PRE}).
+    \item Also useful for implementing rejection sampling (\mintinline{c++}{gen::suchThat}).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::shrink}}
+  \begin{center}
+    \mintinline{c++}{gen::shrink(int size = 1) |→| std::optional<int>}
+  \end{center}
+
+  \only<+>{\textbf{Intuition:} \mintinline{c++}{gen::shrink(n)} returns an integer if shrinking should occur at the call site, or \mintinline{c++}{std::nullopt} otherwise.}
+
+  \begin{columns}<+->[t]
+    \column{0.5\textwidth}
+    \textbf{Example:}
+
+    \begin{minted}{c++}
+      std::string gen_string_shrink() {
+        auto xs = gen_string();
+        for (size_t i = 0; i < xs.size();) {
+          if (auto c = gen::shrink(2))
+            if (*c == 0) xs.erase(i);
+            else         xs[i] = '\0';
+          else
+            i++;
+        }
+        return xs;
+      }
+    \end{minted}
+
+    \column{0.4\textwidth}
+    \textbf{Behaviour:}
+    \begin{enumerate}
+      \item<+-> \mintinline{c++}{gen::shrink(n)} returns \mintinline{c++}{std::nullopt} until a test case failure occurs.
+      \item<+> On subsequent test cases, \mintinline{c++}{gen::shrink(n)} returns an integer $< n$ indicating which value to shrink to.
+    \end{enumerate}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,t]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::group}}
+  \begin{center}
+    \mintinline{c++}{gen::group()}
+  \end{center}
+
+  \begin{columns}[T]
+    \column{0.45\textwidth}
+    \textbf{Example:}
+
+    \begin{onlyenv}<.(1)-.(2)>
+      \begin{minted}{c++}
+        int x = 0;
+        if (gen::next() && // a
+            !gen::shrink())
+          x += gen::next() ? 1 : 0; // b
+        x += gen::next() ? 1 : 0; // c
+      \end{minted}
+    \end{onlyenv}
+
+    \begin{onlyenv}<.(3)>
+      \begin{minted}{c++}
+        int x = 0;
+        {
+          auto _ = gen::group();
+          if (gen::next() && // a
+              !gen::shrink())
+            x += gen::next() ? 1 : 0; // b
+        }
+        x += gen::next() ? 1 : 0; // c
+      \end{minted}
+    \end{onlyenv}
+
+    \column{0.55\textwidth}
+    \begin{onlyenv}<+>
+      \begin{itemize}
+        \item Suppose a test case failure occurs with \mintinline{c++}{a == b == true} and  \mintinline{c++}{c == false}.
+        \item Then \mintinline{c++}{!gen::shrink()} subsequently evaluates to \mintinline{c++}{false} and \mintinline{c++}{b} is not evaluated.
+        \item We expect that \mintinline{c++}{c} should still evaluate to \mintinline{c++}{false}.
+      \end{itemize}
+    \end{onlyenv}
+
+    \begin{onlyenv}<+>
+      \begin{itemize}
+        \item \textbf{Problem:} \halcheck{} is just a library. It cannot inspect the internal structure of a program!
+        \item Internally, \halcheck{} only saves and replays the results of \mintinline{c++}{gen::next}.
+        \item Sequence 1: \mintinline{c++}{{a: true, b: true, c: false}}
+        \item Sequence 2: \mintinline{c++}{{a: true, c: true, [unused]: false}}
+      \end{itemize}
+    \end{onlyenv}
+
+    \begin{onlyenv}<+>
+      \textbf{Intuition:} \mintinline{c++}{gen::group} informs \halcheck{} that all subsequent calls to \mintinline{c++}{gen::next} (and \mintinline{c++}{gen::shrink}) should be treated as a single "step".
+
+      \begin{itemize}
+        \item Sequence 1: \mintinline{c++}{{{a: true, b: true}, c: false}}
+        \item Sequence 2: \mintinline{c++}{{{a: true, [unused]: true}, c: false}}
+      \end{itemize}
+    \end{onlyenv}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{\halcheck{} \textemdash{} Design \textemdash{} Core}
+  \begin{itemize}
+    \item All generators are implemented using the core functions.
+          \pause{}
+    \item How are the core functions themselves implemented?
+          \pause\textbf{It depends!}
+    \item Core functions can be \textbf{overriden}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\halcheck{} \textemdash{} Design \textemdash{} Core}
+  \textbf{Example:} Overriding \mintinline{c++}{gen::next}
+  \begin{minted}{c++}
+    CHECK_THROWS(gen::next()); // Throws by default
+    {
+      //   ▿ gen::next calls the lambda as long as this is in scope
+      auto _ = gen::next.handle([](int x, int y) {
+        CHECK_THROWS(gen::next()); // Calling gen::next within the handler
+                                   // invokes the previous behaviour.
+        return x == 0 && y > 0;
+      });
+      CHECK_EQ(gen::next(0, 1), true);
+    }
+    CHECK_THROWS(gen::next()); // Original behaviour restored
+  \end{minted}
+\end{frame}
+
+\begin{frame}{\halcheck{} \textemdash{} Design \textemdash{} Core}
+  \halcheck{}'s core functions are implemented using a primitive system of \textbf{effect handlers}.
+
+  \begin{itemize}
+    \item<+-> \mintinline{c++}{gen::next}, \mintinline{c++}{gen::discard}, etc. are \emph{effects}.
+    \item<+-> Effects are \emph{invoked} via the call operator (\mintinline{c++}{effect()}).
+    \item<+-> A \emph{handler} can be \emph{installed} using \mintinline{c++}{auto _ = effect.handle(my_handler)} is \emph{uninstalled} when the return value (\mintinline{c++}{_}) goes out of scope.
+    \item<+-> Effects are \textbf{lexically scoped}: any effects invoked within an effect handler behave as if they were invoked \emph{just before the effect handler was installed}.
+    \begin{itemize}
+      \item This property is what makes strategies composable.
+    \end{itemize}
+    \item<+-> Effects are \textbf{thread local}.
+  \end{itemize}
+\end{frame}
