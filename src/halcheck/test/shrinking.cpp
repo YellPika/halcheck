@@ -1,10 +1,11 @@
 #include "halcheck/test/shrinking.hpp"
 
-#include <halcheck/extra/doctest.h>
 #include <halcheck/fmt/flatten.hpp>
 #include <halcheck/fmt/show.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/test/check.hpp>
+
+#include <doctest/doctest.h>
 
 #include <algorithm>
 #include <iostream>
