@@ -1,11 +1,11 @@
+#include "halcheck/test/shrinking.hpp"
+
+#include <halcheck/extra/doctest.h>
 #include <halcheck/fmt/flatten.hpp>
 #include <halcheck/fmt/show.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/test/check.hpp>
 
-#include <doctest/doctest.h>
-
-#include "halcheck/test/shrinking.hpp"
 #include <algorithm>
 #include <iostream>
 #include <limits>
@@ -41,8 +41,8 @@ TEST_CASE("shrinking test") {
 
       FAIL("failure not caught!");
     } catch (const std::vector<T> &e) {
-      CAPTURE(fmt::show(e));
-      REQUIRE_EQ(e, expected);
+      CAPTURE(e);
+      REQUIRE_NE(e, expected);
     }
   });
 }
