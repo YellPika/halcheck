@@ -35,7 +35,7 @@ T range(T min, T max) {
       max = mid;
   }
 
-  return gen::shrink(out, min);
+  return gen::shrink.to(min, out);
 }
 
 /// @brief Generates a random floating-point value in a range.
@@ -57,7 +57,7 @@ T range(T min, T max) {
       max = lib::midpoint(out, max);
   }
 
-  return gen::shrink(out, min);
+  return gen::shrink.to(min, out);
 }
 
 /// @brief Generates a value in a range.

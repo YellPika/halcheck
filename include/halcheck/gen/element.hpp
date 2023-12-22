@@ -58,7 +58,7 @@ auto weighted(T &&container) -> decltype(std::get<1>(*lib::begin(container))) {
       max = mid;
   }
 
-  return std::get<1>(*std::next(lib::begin(container), min));
+  return std::get<1>(*std::next(lib::begin(container), gen::shrink.to(0U, min)));
 }
 
 template<typename T>

@@ -55,7 +55,7 @@ T arbitrary(gen::tag<T>) {
     data[i] = ch;
   }
 
-  return gen::shrink(lib::bit_cast<T>(data), T(0));
+  return gen::shrink.to(T(0), lib::bit_cast<T>(data));
 }
 
 template<typename T, HALCHECK_REQUIRE(std::is_floating_point<T>())>
