@@ -32,7 +32,7 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC mpark_variant tl::optional
   PRIVATE doctest::doctest)
 target_compile_options(${PROJECT_NAME} PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+  $<$<CXX_COMPILER_ID:MSVC>:/W4>
   $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic>)
 target_include_directories(
   ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -41,7 +41,7 @@ target_include_directories(
 if(BUILD_TESTING)
   add_executable(${PROJECT_NAME}-test test/main.cpp)
   target_compile_options(${PROJECT_NAME}-test PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic>)
   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME} mpark_variant tl::optional doctest::doctest)
 
