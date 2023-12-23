@@ -1,9 +1,8 @@
 #include "halcheck/gen/next.hpp"
 
+#include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/weight.hpp>
 #include <halcheck/lib/effect.hpp>
-
-#include <doctest/doctest.h>
 
 #include <climits>
 #include <stdexcept>

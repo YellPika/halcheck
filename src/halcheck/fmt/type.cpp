@@ -1,11 +1,10 @@
 #include "halcheck/fmt/type.hpp"
 
+#include <halcheck/ext/doctest.hpp>
 #include <halcheck/fmt/flatten.hpp>
 #include <halcheck/fmt/indent.hpp>
 #include <halcheck/fmt/infer.hpp>
 #include <halcheck/fmt/show.hpp>
-
-#include <doctest/doctest.h>
 
 #include <iostream>
 

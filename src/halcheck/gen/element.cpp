@@ -1,13 +1,12 @@
 #include "halcheck/gen/element.hpp"
 
+#include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/gen/next.hpp>
 #include <halcheck/gen/weight.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/check.hpp>
 #include <halcheck/test/shrinking.hpp>
-
-#include <doctest/doctest.h>
 
 #include <algorithm>
 #include <vector>

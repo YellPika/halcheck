@@ -1,5 +1,6 @@
 #include "halcheck/fmt/flatten.hpp"
 
+#include <halcheck/ext/doctest.hpp>
 #include <halcheck/fmt/indent.hpp>
 #include <halcheck/fmt/show.hpp>
 #include <halcheck/gen/container.hpp>
@@ -8,8 +9,6 @@
 #include <halcheck/gen/weight.hpp>
 #include <halcheck/test/check.hpp>
 #include <halcheck/test/shrinking.hpp>
-
-#include <doctest/doctest.h>
 
 #include <algorithm>
 #include <iostream>

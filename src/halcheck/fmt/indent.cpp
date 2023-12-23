@@ -1,7 +1,5 @@
 #include "halcheck/fmt/indent.hpp"
 
-#include <doctest/doctest.h>
-
 #include <memory>
 #include <string>
 

@@ -1,11 +1,10 @@
 #include "halcheck/test/shrinking.hpp"
 
+#include <halcheck/ext/doctest.hpp>
 #include <halcheck/fmt/flatten.hpp>
 #include <halcheck/fmt/show.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/test/check.hpp>
-
-#include <doctest/doctest.h>
 
 #include <algorithm>
 #include <iostream>
@@ -19,7 +18,7 @@ TEST_CASE("shrinking test") {
     using T = uint8_t;
 
     auto threshold = gen::range<T>(0, std::numeric_limits<T>::max());
-    CAPTURE(fmt::show(threshold));
+    CAPTURE(threshold);
 
     auto size = gen::range<std::size_t>(1, 10);
     CAPTURE(size);
@@ -29,7 +28,7 @@ TEST_CASE("shrinking test") {
 
     std::vector<T> expected(size, T(0));
     expected[index] = threshold;
-    CAPTURE(fmt::show(expected));
+    CAPTURE(expected);
 
     try {
       test::shrinking(test::random())([&] {
@@ -43,7 +42,7 @@ TEST_CASE("shrinking test") {
       FAIL("failure not caught!");
     } catch (const std::vector<T> &e) {
       CAPTURE(e);
-      REQUIRE_NE(e, expected);
+      REQUIRE_EQ(e, expected);
     }
   });
 }

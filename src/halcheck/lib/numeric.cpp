@@ -1,9 +1,8 @@
 #include "halcheck/lib/numeric.hpp"
 
+#include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/test/check.hpp>
-
-#include <doctest/doctest.h>
 
 using namespace halcheck;
 

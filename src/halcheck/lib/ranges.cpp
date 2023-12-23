@@ -1,11 +1,10 @@
 #include "halcheck/lib/ranges.hpp"
 
+#include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/gen/range.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/check.hpp>
-
-#include <doctest/doctest.h>
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wunneeded-internal-declaration"

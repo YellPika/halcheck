@@ -12,6 +12,7 @@
 #include <halcheck/lib/utility.hpp>
 #include <halcheck/lib/variant.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <sstream>
 #include <type_traits>
@@ -53,9 +54,13 @@ std::ostream &operator<<(std::ostream &os, tag<T> value);
 /// @return A std::string containing the string representation of value.
 template<typename T>
 std::string to_string(const T &value) {
-  std::ostringstream os;
-  os << fmt::show<T>(value);
-  return os.str();
+  auto output = [&] {
+    std::ostringstream os;
+    os << fmt::show<T>(value);
+    return os.str();
+  }();
+  output.erase(std::remove(output.begin(), output.end(), '\n'), output.end());
+  return output;
 }
 
 namespace detail {

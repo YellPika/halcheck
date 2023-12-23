@@ -1,12 +1,11 @@
 #include "halcheck/fmt/show.hpp"
 
+#include <halcheck/ext/doctest.hpp>
 #include <halcheck/fmt/indent.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/test/check.hpp>
 #include <halcheck/test/shrinking.hpp>
-
-#include <doctest/doctest.h>
 
 #include <iomanip>
 #include <locale>

@@ -1,6 +1,6 @@
 #include "halcheck/gen/range.hpp"
 
-#include <halcheck/fmt/show.hpp>
+#include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/gen/next.hpp>
@@ -8,10 +8,8 @@
 #include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/limited.hpp>
-#include <halcheck/test/shrinking.hpp>
 #include <halcheck/test/random.hpp>
-
-#include <doctest/doctest.h>
+#include <halcheck/test/shrinking.hpp>
 
 #include <algorithm>
 #include <climits>

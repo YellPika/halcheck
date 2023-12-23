@@ -1,12 +1,11 @@
 #include "halcheck/lib/effect.hpp"
 
+#include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/gen/element.hpp>
 #include <halcheck/gen/weight.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/check.hpp>
-
-#include <doctest/doctest.h>
 
 #include <cstdint>
 #include <functional>

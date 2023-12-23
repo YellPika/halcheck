@@ -1,15 +1,14 @@
 #include "halcheck/test/check.hpp"
 
+#include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/gen/next.hpp>
 #include <halcheck/gen/range.hpp>
 #include <halcheck/gen/weight.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/limited.hpp>
-#include <halcheck/test/shrinking.hpp>
 #include <halcheck/test/random.hpp>
-
-#include <doctest/doctest.h>
+#include <halcheck/test/shrinking.hpp>
 
 #include <algorithm>
 #include <cstddef>
