@@ -6,7 +6,6 @@
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/test/check.hpp>
 
-#include <algorithm>
 #include <iostream>
 #include <limits>
 

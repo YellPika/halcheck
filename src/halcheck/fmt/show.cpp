@@ -9,7 +9,6 @@
 
 #include <iomanip>
 #include <locale>
-#include <ostream>
 
 using namespace halcheck;
 

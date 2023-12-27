@@ -1,6 +1,5 @@
 #include "halcheck/fmt/indent.hpp"
 
-#include <memory>
 #include <string>
 
 using namespace halcheck;

@@ -2,10 +2,8 @@
 #define HALCHECK_TEST_LIMITED_HPP
 
 #include <halcheck/gen/discard.hpp>
-#include <halcheck/lib/functional.hpp>
 #include <halcheck/test/strategy.hpp>
 
-#include <cstddef>
 #include <exception>
 
 namespace halcheck { namespace test {

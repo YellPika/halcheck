@@ -7,10 +7,8 @@
 #include <halcheck/gen/weight.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/limited.hpp>
-#include <halcheck/test/random.hpp>
 #include <halcheck/test/shrinking.hpp>
 
-#include <algorithm>
 #include <cstddef>
 #include <iostream>
 #include <map>

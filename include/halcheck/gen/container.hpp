@@ -5,16 +5,13 @@
 #include <halcheck/gen/next.hpp>
 #include <halcheck/gen/shrink.hpp>
 #include <halcheck/gen/weight.hpp>
-#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/ranges.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
-#include <array>
 #include <cstddef>
 #include <iterator>
 #include <type_traits>
-#include <vector>
 
 namespace halcheck { namespace gen {
 

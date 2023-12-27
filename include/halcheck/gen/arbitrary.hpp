@@ -7,8 +7,6 @@
 #include <halcheck/gen/optional.hpp>
 #include <halcheck/gen/variant.hpp>
 #include <halcheck/lib/bit.hpp>
-#include <halcheck/lib/effect.hpp>
-#include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/variant.hpp>
 

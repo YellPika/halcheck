@@ -2,8 +2,6 @@
 
 #include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/arbitrary.hpp>
-#include <halcheck/gen/range.hpp>
-#include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/check.hpp>
 
 #ifdef __clang__

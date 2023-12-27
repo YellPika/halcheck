@@ -2,8 +2,8 @@
 #define HALCHECK_TEST_CHECK_HPP
 
 #include <halcheck/test/limited.hpp>
-#include <halcheck/test/shrinking.hpp>
 #include <halcheck/test/random.hpp>
+#include <halcheck/test/shrinking.hpp>
 
 namespace halcheck { namespace test {
 

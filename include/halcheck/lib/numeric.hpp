@@ -5,7 +5,6 @@
 
 #include <cmath>
 #include <limits>
-#include <numeric>
 
 namespace halcheck { namespace lib {
 

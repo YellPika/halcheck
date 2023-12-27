@@ -1,8 +1,6 @@
 #ifndef HALCHECK_LIB_VARIANT_HPP
 #define HALCHECK_LIB_VARIANT_HPP
 
-#include <halcheck/lib/type_traits.hpp>
-
 #if __cplusplus >= 201606L
 #include <variant>
 #define HALCHECK_VARIANT_NS ::std

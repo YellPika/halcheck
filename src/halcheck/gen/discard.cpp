@@ -4,8 +4,6 @@
 #include <halcheck/lib/raise.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
-#include <stdexcept>
-
 using namespace halcheck;
 
 lib::effect<lib::raise> gen::discard([] {

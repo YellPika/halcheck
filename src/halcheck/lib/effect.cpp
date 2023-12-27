@@ -7,9 +7,7 @@
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/check.hpp>
 
-#include <cstdint>
 #include <functional>
-#include <iostream>
 #include <vector>
 
 using namespace halcheck;

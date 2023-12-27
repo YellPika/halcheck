@@ -4,12 +4,9 @@
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/gen/next.hpp>
 #include <halcheck/gen/weight.hpp>
-#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
-#include <cstddef>
 #include <cstdint>
-#include <limits>
 #include <random>
 
 namespace halcheck { namespace test {

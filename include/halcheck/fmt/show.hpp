@@ -10,9 +10,7 @@
 #include <halcheck/lib/tuple.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
-#include <halcheck/lib/variant.hpp>
 
-#include <algorithm>
 #include <cstddef>
 #include <sstream>
 #include <type_traits>

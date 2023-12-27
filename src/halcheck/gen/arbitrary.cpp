@@ -1,9 +1,7 @@
 #include "halcheck/gen/arbitrary.hpp"
 
 #include <halcheck/ext/doctest.hpp>
-#include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>
-#include <halcheck/lib/variant.hpp>
 #include <halcheck/test/check.hpp>
 
 #include <algorithm>

@@ -5,16 +5,12 @@
 #include <halcheck/gen/group.hpp>
 #include <halcheck/gen/next.hpp>
 #include <halcheck/gen/shrink.hpp>
-#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/strategy.hpp>
 
-#include <algorithm>
-#include <climits>
 #include <cstddef>
 #include <exception>
-#include <limits>
 #include <vector>
 
 namespace halcheck { namespace test {

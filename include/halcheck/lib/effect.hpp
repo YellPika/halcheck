@@ -1,14 +1,13 @@
 #ifndef HALCHECK_LIB_EFFECT_HPP
 #define HALCHECK_LIB_EFFECT_HPP
 
-#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/scope.hpp>
 
 #include <array>
 #include <atomic>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
-#include <vector>
 
 namespace halcheck { namespace lib {
 

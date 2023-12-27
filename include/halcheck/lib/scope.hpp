@@ -4,7 +4,6 @@
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
-#include <cstdint>
 #include <functional>
 
 namespace halcheck { namespace lib {

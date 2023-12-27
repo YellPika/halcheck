@@ -3,7 +3,6 @@
 
 #include <halcheck/gen/element.hpp>
 #include <halcheck/gen/group.hpp>
-#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
 #include <halcheck/lib/variant.hpp>

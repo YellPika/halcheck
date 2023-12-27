@@ -6,7 +6,6 @@
 #include <halcheck/gen/next.hpp>
 #include <halcheck/gen/shrink.hpp>
 #include <halcheck/lib/numeric.hpp>
-#include <halcheck/lib/ranges.hpp>
 
 #include <climits>
 #include <cstddef>

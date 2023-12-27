@@ -2,9 +2,7 @@
 
 #include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/weight.hpp>
-#include <halcheck/lib/effect.hpp>
 
-#include <climits>
 #include <stdexcept>
 #include <utility>
 

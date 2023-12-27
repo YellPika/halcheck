@@ -2,17 +2,10 @@
 
 #include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/arbitrary.hpp>
-#include <halcheck/gen/discard.hpp>
-#include <halcheck/gen/next.hpp>
-#include <halcheck/gen/weight.hpp>
-#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/limited.hpp>
 #include <halcheck/test/random.hpp>
-#include <halcheck/test/shrinking.hpp>
 
-#include <algorithm>
-#include <climits>
 #include <iostream>
 #include <vector>
 

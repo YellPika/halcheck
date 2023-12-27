@@ -1,13 +1,10 @@
 #ifndef HALCHECK_LIB_RANGES_HPP
 #define HALCHECK_LIB_RANGES_HPP
 
-#include <halcheck/lib/optional.hpp>
-#include <halcheck/lib/utility.hpp>
+#include <halcheck/lib/type_traits.hpp>
 
 #include <iterator>
-#include <memory>
 #include <type_traits>
-#include <vector>
 
 #if __cplusplus >= 202002L
 #include <ranges>
@@ -70,7 +67,7 @@ using is_insertable_helper =
 /// @brief Tests if a range can be inserted into.
 /// @tparam T The type to perform the test on.
 template<typename T>
-struct is_insertable : is_detected<detail::is_insertable_helper, T> {};
+struct is_insertable : lib::is_detected<detail::is_insertable_helper, T> {};
 
 namespace detail {
 template<typename T>
@@ -80,7 +77,7 @@ using is_iterator_helper = typename std::iterator_traits<T>::iterator_category;
 /// @brief Tests if a type is an iterator type.
 /// @tparam T The type to perform the test on.
 template<typename T>
-struct is_iterator : is_detected<detail::is_iterator_helper, T> {};
+struct is_iterator : lib::is_detected<detail::is_iterator_helper, T> {};
 
 template<typename T>
 class auto_insert_iterator {

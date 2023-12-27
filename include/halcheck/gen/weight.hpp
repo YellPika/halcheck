@@ -1,7 +1,6 @@
 #ifndef HALCHECK_GEN_WEIGHT_HPP
 #define HALCHECK_GEN_WEIGHT_HPP
 
-#include <cstddef>
 #include <cstdint>
 #include <memory>
 

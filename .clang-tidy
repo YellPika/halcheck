@@ -3,8 +3,7 @@ Checks: "clang-diagnostic-*,clang-analyzer-*,performance-*,portability-*,moderni
 WarningsAsErrors: ""
 HeaderFilterRegex: ".*halcheck.*"
 AnalyzeTemporaryDtors: false
-FormatStyle: none
-User: vandikas
+FormatStyle: file
 CheckOptions:
   llvm-else-after-return.WarnOnConditionVariables: "false"
   modernize-loop-convert.MinConfidence: reasonable

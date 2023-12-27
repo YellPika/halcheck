@@ -2,7 +2,6 @@
 #define HALCHECK_TEST_STRATEGY_HPP
 
 #include <halcheck/lib/functional.hpp>
-#include <halcheck/lib/type_traits.hpp>
 
 #include <functional>
 #include <type_traits>

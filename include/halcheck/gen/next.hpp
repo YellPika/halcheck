@@ -1,16 +1,8 @@
 #ifndef HALCHECK_GEN_NEXT_HPP
 #define HALCHECK_GEN_NEXT_HPP
 
-#include <halcheck/gen/group.hpp>
 #include <halcheck/gen/weight.hpp>
 #include <halcheck/lib/effect.hpp>
-#include <halcheck/lib/functional.hpp>
-#include <halcheck/lib/numeric.hpp>
-#include <halcheck/lib/ranges.hpp>
-
-#include <climits>
-#include <type_traits>
-#include <utility>
 
 namespace halcheck { namespace gen {
 

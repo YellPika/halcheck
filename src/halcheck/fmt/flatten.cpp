@@ -2,7 +2,6 @@
 
 #include <halcheck/ext/doctest.hpp>
 #include <halcheck/fmt/indent.hpp>
-#include <halcheck/fmt/show.hpp>
 #include <halcheck/gen/container.hpp>
 #include <halcheck/gen/next.hpp>
 #include <halcheck/gen/range.hpp>
@@ -10,7 +9,6 @@
 #include <halcheck/test/check.hpp>
 #include <halcheck/test/shrinking.hpp>
 
-#include <algorithm>
 #include <iostream>
 #include <string>
 #include <utility>
