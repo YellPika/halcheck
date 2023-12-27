@@ -9,6 +9,7 @@
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/strategy.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <exception>
 #include <vector>
