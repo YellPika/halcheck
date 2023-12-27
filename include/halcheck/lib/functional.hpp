@@ -1,6 +1,8 @@
 #ifndef HALCHECK_LIB_FUNCTIONAL_HPP
 #define HALCHECK_LIB_FUNCTIONAL_HPP
 
+#include <halcheck/lib/type_traits.hpp>
+
 #include <functional>
 #include <type_traits>
 

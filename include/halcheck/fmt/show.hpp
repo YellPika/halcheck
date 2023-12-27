@@ -11,6 +11,7 @@
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <sstream>
 #include <type_traits>

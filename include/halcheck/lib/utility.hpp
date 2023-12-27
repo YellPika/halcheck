@@ -1,6 +1,8 @@
 #ifndef HALCHECK_LIB_UTILITY_HPP
 #define HALCHECK_LIB_UTILITY_HPP
 
+#include <halcheck/lib/type_traits.hpp>
+
 #include <utility>
 
 namespace halcheck { namespace lib {
