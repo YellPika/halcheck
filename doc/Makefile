@@ -7,7 +7,7 @@ bin/%.pdf: %.tex force
 	(cd $(@D) && yes x | \
 		TEXINPUTS=$(dir $(abspath $<)): \
 		BIBINPUTS=$(dir $(abspath $<)): \
-		latexmk -xelatex -shell-escape -interaction=errorstopmode $(abspath $<))
+		latexmk -lualatex -shell-escape -interaction=errorstopmode $(abspath $<))
 
 format:
 	latexindent $(shell find . -name '*.tex') -l -wd -s -c /tmp

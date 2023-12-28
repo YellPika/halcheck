@@ -1,6 +1,6 @@
 \section{Design}
 
-\begin{frame}[t]{\halcheck{} \textemdash{} Design}
+\begin{frame}[t]{\halcheck{} --- Design}
   Goals:
   \begin{itemize}
     \item Support user-defined generation strategies
@@ -26,7 +26,7 @@
   \end{onlyenv}
 \end{frame}
 
-\begin{frame}[fragile,t]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::next}}
+\begin{frame}[fragile,t]{\halcheck{} --- Design --- \mintinline{c++}{gen::next}}
   \begin{center}
     \mintinline{c++}{gen::next(int x = 1, int y = 1) |→| bool}
   \end{center}
@@ -145,7 +145,7 @@
       \begin{onlyenv}<.(1)-.(2)>
         \begin{itemize}
           \item<.(1)-> Attempt: generate random size $n$, then generate $n$ elements.
-          \item<.(2)-> Problem: \mintinline{c++}{gen::arbitrary<size_t>} is uniformly distributed \textemdash{} high chance of generating \emph{billions of GBs}.
+          \item<.(2)-> Problem: \mintinline{c++}{gen::arbitrary<size_t>} is uniformly distributed --- high chance of generating \emph{billions of GBs}.
         \end{itemize}
       \end{onlyenv}
 
@@ -186,7 +186,7 @@
   \end{onlyenv}
 \end{frame}
 
-\begin{frame}[fragile,t]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::next}}
+\begin{frame}[fragile,t]{\halcheck{} --- Design --- \mintinline{c++}{gen::next}}
   \textbf{Problem:} how do we define \mintinline{c++}{gen_string} with a sensible distribution?
 
   \pause{}
@@ -211,7 +211,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile,t]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::next}}
+\begin{frame}[fragile,t]{\halcheck{} --- Design --- \mintinline{c++}{gen::next}}
   \begin{center}
     \mintinline{c++}{gen::next(gen::weight x = 1, gen::weight y = 1) |→| bool}
   \end{center}
@@ -238,7 +238,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::next}}
+\begin{frame}[fragile]{\halcheck{} --- Design --- \mintinline{c++}{gen::next}}
   \textbf{Summary:} \mintinline{c++}{gen::next} alone allows us to write generators for
   \begin{itemize}
     \item weighted distributions,
@@ -248,7 +248,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::discard}}
+\begin{frame}[fragile]{\halcheck{} --- Design --- \mintinline{c++}{gen::discard}}
   \begin{center}
     \mintinline{c++}{gen::discard()}
   \end{center}
@@ -261,7 +261,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::shrink}}
+\begin{frame}[fragile]{\halcheck{} --- Design --- \mintinline{c++}{gen::shrink}}
   \begin{center}
     \mintinline{c++}{gen::shrink(int size = 1) |→| std::optional<int>}
   \end{center}
@@ -295,7 +295,7 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}[fragile,t]{\halcheck{} \textemdash{} Design \textemdash{} \mintinline{c++}{gen::group}}
+\begin{frame}[fragile,t]{\halcheck{} --- Design --- \mintinline{c++}{gen::group}}
   \begin{center}
     \mintinline{c++}{gen::group()}
   \end{center}
@@ -356,7 +356,7 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} \textemdash{} Design \textemdash{} Core}
+\begin{frame}[fragile]{\halcheck{} --- Design --- Core}
   \begin{itemize}
     \item All generators are implemented using the core functions.
           \pause{}
@@ -366,7 +366,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} \textemdash{} Design \textemdash{} Core}
+\begin{frame}[fragile]{\halcheck{} --- Design --- Core}
   \textbf{Example:} Overriding \mintinline{c++}{gen::next}
   \begin{minted}{c++}
     CHECK_THROWS(gen::next()); // Throws by default
@@ -383,7 +383,7 @@
   \end{minted}
 \end{frame}
 
-\begin{frame}{\halcheck{} \textemdash{} Design \textemdash{} Core}
+\begin{frame}{\halcheck{} --- Design --- Core}
   \halcheck{}'s core functions are implemented using a primitive system of \textbf{effect handlers}.
 
   \begin{itemize}

@@ -1,7 +1,7 @@
 \section{Motivation}
 
-\begin{frame}{\halcheck{} \textemdash{} Motivation}
-  \textbf{Why} \halcheck{}? (and why not RapidCheck)?
+\begin{frame}{\halcheck{} --- Motivation}
+  \textbf{Why} \halcheck{}?
 
   \begin{enumerate}
     \item \textbf{Simpler API}
@@ -10,35 +10,33 @@
   \end{enumerate}
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} \textemdash{} Motivation \textemdash{} API}
-  Most PBT frameworks are direct ports of \texttt{QuickCheck} or \texttt{Hedgehog}.
+\begin{frame}[fragile]{\halcheck{} --- Motivation --- API}
+  All PBT frameworks are direct ports or descendants of QuickCheck.
 
   These frameworks all consist of:
-
-  \pause{}
 
   \bigskip{}
 
   \begin{columns}
-    \column{0.5\textwidth}
-    \textbf{A central generator data type:}
-    \begin{minted}{haskell}
+    \begin{column}<+(1)->{0.5\textwidth}
+      \textbf{A central generator data type:}
+      \begin{minted}{haskell}
       --                  Source of
       --                ▿ randomness
       data Gen a = Gen (Random |→| Tree a)
       --   Tree of shrunk values ▵
-    \end{minted}
+      \end{minted}
+    \end{column}
 
-    \pause{}
-
-    \column{0.5\textwidth}
-    \textbf{A set of basic combinators:}
-    \begin{minted}{haskell}
+    \begin{column}<+(1)->{0.5\textwidth}
+      \textbf{A set of basic combinators:}
+      \begin{minted}{haskell}
       choose    |∷| (Int, Int) |→| Gen Int
       suchThat  |∷| (a |→| Bool) |→| Gen a |→| Gen a
       frequency |∷| [(Int, Gen a)] |→| Gen a
       |\ldots|
-    \end{minted}
+      \end{minted}
+    \end{column}
   \end{columns}
 
   \pause{}
@@ -51,11 +49,12 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile,t]{\halcheck{} \textemdash{} Motivation \textemdash{} API}
+\begin{frame}[fragile,t]{\halcheck{} --- Motivation --- API}
   \textbf{Example:} \emph{Write a generator combinator that produces \mintinline{c++}{std::vector}s up to (but not including) a given length.}
 
   \begin{onlyenv}<+>
     \begin{minted}{c++}
+      // RapidCheck
       Gen<std::vector<int>> example(int N) {
         return gen::container<std::vector<int>>(
           *gen::inRange(0, N),
@@ -66,6 +65,7 @@
 
   \begin{onlyenv}<+>
     \begin{minted}{c++}
+      // RapidCheck
       Gen<std::vector<int>> example(int N) {
         return gen::container<std::vector<int>>(
           *gen::inRange(0, N), // WRONG
@@ -78,6 +78,7 @@
 
   \begin{onlyenv}<+>
     \begin{minted}{c++}
+      // RapidCheck
       Gen<std::vector<int>> example(int N) {
         return gen::exec([=] {
           return gen::container<std::vector<int>>(
@@ -91,7 +92,7 @@
   \end{onlyenv}
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} \textemdash{} Motivation \textemdash{} API}
+\begin{frame}[fragile]{\halcheck{} --- Motivation --- API}
   \begin{itemize}
     \item Generators should only be invoked (\mintinline{c++}{operator *}) in the correct context.
     \item Haskell's type system completely rules out this kind of error.
@@ -100,6 +101,7 @@
   \end{itemize}
 
   \begin{minted}{c++}
+    // halcheck
     std::vector<int> example(int N) {
       // container(int, () → int) → std::vector<int>
       return gen::container<std::vector<int>>(
@@ -109,8 +111,8 @@
   \end{minted}
 \end{frame}
 
-\begin{frame}{\halcheck{} \textemdash{} Motivation}
-  \textbf{Why} \halcheck{}? (and why not RapidCheck)?
+\begin{frame}{\halcheck{} --- Motivation}
+  \textbf{Why} \halcheck{}?
 
   \begin{enumerate}
     \item Simpler API
@@ -119,19 +121,19 @@
   \end{enumerate}
 \end{frame}
 
-\begin{frame}{\halcheck{} \textemdash{} Motivation \textemdash{} Strategies}
+\begin{frame}{\halcheck{} --- Motivation --- Strategies}
   There are various desirable strategies for generating data:
   \begin{itemize}
-    \item Exhaustive (SmallCheck/LeanCheck)
-    \item Learning-based (RLCheck)
-    \item Coverage-guided (FuzzTest)
-    \item Random (almost everything)
+    \item<+-> Random (almost everything)
+    \item<.-> Enumerative (SmallCheck/LeanCheck)
+    \item<+-> Learning-based (RLCheck)
+    \item<.-> Coverage-guided (FuzzTest)
   \end{itemize}
 
-  Most PBT frameworks (including RapidCheck) use a \textbf{fixed strategy}.
+  Most PBT frameworks (and all C++ PBT frameworks) use a \textbf{fixed strategy}.
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} \textemdash{} Motivation \textemdash{} Strategies}
+\begin{frame}[fragile]{\halcheck{} --- Motivation --- Strategies}
   \halcheck{} provides combinators for specifying strategies:
 
   \begin{minted}{c++}
@@ -155,10 +157,14 @@
     // ▿ Performs test-case shrinking if a bug is found.
     test::shrinking(test::random())([] { run_test(); });
   \end{minted}
+
+  \pause{}
+
+  (Intended for advanced users.)
 \end{frame}
 
-\begin{frame}{\halcheck{} \textemdash{} Motivation}
-  \textbf{Why} \halcheck{}? (and why not RapidCheck)?
+\begin{frame}{\halcheck{} --- Motivation}
+  \textbf{Why} \halcheck{}?
 
   \begin{enumerate}
     \item Simpler API
@@ -167,7 +173,7 @@
   \end{enumerate}
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} \textemdash{} Motivation \textemdash{} Space Complexity}
+\begin{frame}[fragile]{\halcheck{} --- Motivation --- Space Complexity}
   \begin{columns}[t]
     \column{0.5\textwidth}
     \textbf{How does shrinking work?}
@@ -180,7 +186,7 @@
 
     \bigskip
 
-    Internally, every generator returns a "shrink tree" of values.
+    Internally, every generator returns a ``shrink tree'' of values.
 
     \bigskip
 
@@ -208,7 +214,7 @@
   \textbf{This implementation strategy does not work for C++!}
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} \textemdash{} Motivation \textemdash{} Space Complexity}
+\begin{frame}[fragile]{\halcheck{} --- Motivation --- Space Complexity}
   \textbf{Example:}
   \begin{minted}{c++}
     auto xs = *gen::arbitrary<std::vector<int>>();
@@ -218,7 +224,7 @@
   \pause{}
 
   \begin{itemize}
-    \item Shrinking \mintinline{c++}{x} requires picking a different element of \mintinline{c++}{xs}.
+    \item To shrink \mintinline{c++}{x}, RapidCheck must pick a different element of \mintinline{c++}{xs}.
           \pause{}
 
     \item Shrinking is performed \emph{after} the test case has finished (\mintinline{c++}{xs} no longer exists)!
@@ -231,12 +237,12 @@
           \pause{}
   \end{itemize}
 
-  \textbf{Conclusion:} \textit{all combinators must make copies of their arguments!}
+  \textbf{Conclusion:} \textit{all combinators (with shrinking behaviour) must make copies of their arguments!}
 
   \textbf{Problem:} by default, copies in C++ are deep ($\mathcal{O}(n)$ instead of $\mathcal{O}(1)$).
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} \textemdash{} Motivation \textemdash{} Space Complexity}
+\begin{frame}[fragile]{\halcheck{} --- Motivation --- Space Complexity}
   \begin{columns}[t]
     \column{0.47\textwidth}
     \textbf{Generators cannot return references:}
@@ -271,7 +277,7 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{\halcheck{} \textemdash{} Motivation \textemdash{} Space Complexity}
+\begin{frame}{\halcheck{} --- Motivation --- Space Complexity}
   \begin{itemize}
     \item \mintinline{c++}{halcheck} \textbf{never} makes copies of generated data.
     \item \mintinline{c++}{halcheck} \textbf{only} records decision made during the generation process.
@@ -279,13 +285,12 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{\halcheck{} \textemdash{} Motivation}
-  \textbf{Why} \halcheck{}? (and why not RapidCheck)?
+\begin{frame}{\halcheck{} --- Motivation}
+  \textbf{Why} \halcheck{}?
 
   \begin{enumerate}
     \item Simpler API
     \item Support for test-case generation strategies
     \item Better space complexity
-          \pause{}
   \end{enumerate}
 \end{frame}
