@@ -1,41 +1,41 @@
 \section{Motivation}
 
-\begin{frame}{\halcheck{} --- Motivation}
-  \textbf{Why} \halcheck{}?
-
-  \begin{enumerate}
-    \item \textbf{Simpler API}
-    \item
-    \item
-  \end{enumerate}
+\begin{frame}<1>[label=motivation]{\halcheck{} --- Motivation}
+  \begin{block}{Why \halcheck?}
+    \begin{enumerate}
+      \item<alert@1> Simpler API
+      \item<alert@2> Support for test-case generation strategies
+      \item<alert@3> Better space complexity
+    \end{enumerate}
+  \end{block}
 \end{frame}
 
 \begin{frame}[fragile]{\halcheck{} --- Motivation --- API}
-  All PBT frameworks are direct ports or descendants of QuickCheck.
-
-  These frameworks all consist of:
+  All PBT frameworks are direct ports or descendants of QuickCheck. These frameworks all consist of:
 
   \bigskip{}
 
   \begin{columns}
     \begin{column}<+(1)->{0.5\textwidth}
-      \textbf{A central generator data type:}
-      \begin{minted}{haskell}
-      --                  Source of
-      --                ▿ randomness
-      data Gen a = Gen (Random |→| Tree a)
-      --   Tree of shrunk values ▵
-      \end{minted}
+      \begin{block}{A central generator data type:}
+        \begin{minted}{haskell}
+          --                  Source of
+          --                ▿ randomness
+          data Gen a = Gen (Random |→| Tree a)
+          --   Tree of shrunk values ▵
+        \end{minted}
+      \end{block}
     \end{column}
 
     \begin{column}<+(1)->{0.5\textwidth}
-      \textbf{A set of basic combinators:}
-      \begin{minted}{haskell}
-      choose    |∷| (Int, Int) |→| Gen Int
-      suchThat  |∷| (a |→| Bool) |→| Gen a |→| Gen a
-      frequency |∷| [(Int, Gen a)] |→| Gen a
-      |\ldots|
-      \end{minted}
+      \begin{block}{A set of basic combinators:}
+        \begin{minted}{haskell}
+          choose    |∷| (Int, Int) |→| Gen Int
+          suchThat  |∷| (a |→| Bool) |→| Gen a |→| Gen a
+          frequency |∷| [(Int, Gen a)] |→| Gen a
+          |\ldots|
+        \end{minted}
+      \end{block}
     \end{column}
   \end{columns}
 
@@ -45,7 +45,7 @@
 
   \begin{itemize}
     \item Users must be comfortable reasoning about higher-order functions.
-    \item Users must know the distinction between \emph{generator code} and \emph{non-generator code}.
+    \item Users must know the distinction between \alert{generator code} and \alert{non-generator code}.
   \end{itemize}
 \end{frame}
 
@@ -73,7 +73,7 @@
       }
     \end{minted}
 
-    \textbf{Problem:} \mintinline{c++}{*gen::inRange(0, N)} is evaluated \emph{before} \mintinline{c++}{example} returns, resulting in a generator that always produces \mintinline{c++}{std::vector}s of the same length.
+    \textbf{Problem:} \mintinline{c++}{*gen::inRange(0, N)} is evaluated \alert{before} \mintinline{c++}{example} returns, resulting in a generator that always produces \mintinline{c++}{std::vector}s of the same length.
   \end{onlyenv}
 
   \begin{onlyenv}<+>
@@ -94,10 +94,17 @@
 
 \begin{frame}[fragile]{\halcheck{} --- Motivation --- API}
   \begin{itemize}
-    \item Generators should only be invoked (\mintinline{c++}{operator *}) in the correct context.
-    \item Haskell's type system completely rules out this kind of error.
-    \item C++'s type system is not powerful enough!
-    \item Problem goes away if we simply \emph{get rid of the generator type} and \emph{just write first-order functions}!
+    \item \textbf{Problem:} Generators should only be invoked in the correct context.
+          \begin{itemize}
+            \item Haskell's type system ensures this always happens.
+            \item C++'s type system can provide no such guarantee!
+          \end{itemize}
+          \pause{}
+    \item \textbf{Solution:} Get rid of the generator type!
+          \begin{itemize}
+            \item All code is written in the generator context.
+            \item Bonus: fewer higher-order functions.
+          \end{itemize}
   \end{itemize}
 
   \begin{minted}{c++}
@@ -111,23 +118,15 @@
   \end{minted}
 \end{frame}
 
-\begin{frame}{\halcheck{} --- Motivation}
-  \textbf{Why} \halcheck{}?
-
-  \begin{enumerate}
-    \item Simpler API
-    \item \textbf{Support for test-case generation strategies}
-    \item
-  \end{enumerate}
-\end{frame}
+\againframe<2>{motivation}
 
 \begin{frame}{\halcheck{} --- Motivation --- Strategies}
   There are various desirable strategies for generating data:
   \begin{itemize}
-    \item<+-> Random (almost everything)
-    \item<.-> Enumerative (SmallCheck/LeanCheck)
-    \item<+-> Learning-based (RLCheck)
-    \item<.-> Coverage-guided (FuzzTest)
+    \item Random (almost everything)
+    \item Enumerative (SmallCheck/LeanCheck) \pause{}
+    \item Learning-based (RLCheck)
+    \item Coverage-guided (FuzzTest) \pause{}
   \end{itemize}
 
   Most PBT frameworks (and all C++ PBT frameworks) use a \textbf{fixed strategy}.
@@ -139,7 +138,7 @@
   \begin{minted}{c++}
     //   random(int) → strategy
     // ▿ Executes random test cases forever or until a bug is found.
-    test::random(seed)([] { run_test(); });
+    test::random(seed)([] { /* test code */ });
   \end{minted}
 
   \pause{}
@@ -147,7 +146,7 @@
   \begin{minted}{c++}
     //   limited(strategy, int) → strategy
     // ▿ Executes at most 100 test cases.
-    test::limited(test::random(), 100)([] { run_test(); });
+    test::limited(test::random(), 100)([] { /* test code */ });
   \end{minted}
 
   \pause{}
@@ -155,7 +154,7 @@
   \begin{minted}{c++}
     //   shrinking(strategy) → strategy
     // ▿ Performs test-case shrinking if a bug is found.
-    test::shrinking(test::random())([] { run_test(); });
+    test::shrinking(test::random())([] { /* test code */ });
   \end{minted}
 
   \pause{}
@@ -163,63 +162,57 @@
   (Intended for advanced users.)
 \end{frame}
 
-\begin{frame}{\halcheck{} --- Motivation}
-  \textbf{Why} \halcheck{}?
-
-  \begin{enumerate}
-    \item Simpler API
-    \item Support for test-case generation strategies
-    \item \textbf{Better space complexity}
-  \end{enumerate}
-\end{frame}
+\againframe<3>{motivation}
 
 \begin{frame}[fragile]{\halcheck{} --- Motivation --- Space Complexity}
   \begin{columns}[t]
     \column{0.5\textwidth}
-    \textbf{How does shrinking work?}
+    \begin{block}{How does shrinking work?}
+      \bigskip
 
-    \bigskip
+      Internally, every generator is a function returning a ``shrink tree'' of values.
 
-    \begin{minted}{haskell}
-    data Gen a = Gen (Random |→| Tree a)
-    \end{minted}
+      \bigskip
 
-    \bigskip
+      \begin{minted}{haskell}
+      data Gen a = Gen (Random |→| Tree a)
+      \end{minted}
 
-    Internally, every generator returns a ``shrink tree'' of values.
+      \bigskip
 
-    \bigskip
-
-    Shrink trees can be \textbf{very large} so they must be computed lazily.
+      Shrink trees can be \textbf{very large} so they must be computed lazily.
+    \end{block}
 
     \column{0.5\textwidth}
-    \textbf{Shrink tree for a list:}
-    \begin{tikzpicture}
-      \node{[1, 0, 1]}
-      child {node {[0, 1]}}
-      child {node {[1, 1]}}
-      child {node {[1, 0]}
-          child {node {[0]}
-              child {node {[]}}}
-          child {node {[1]}}
-          child {node {[0, 0]}}}
-      child {node {[0, 0, 1]}}
-      child {node {[1, 0, 0]}}
-      ;
-    \end{tikzpicture}
+    \begin{block}{Shrink tree for a list:}
+      \begin{tikzpicture}
+        \node{[1, 0, 1]}
+        child {node {[0, 1]}}
+        child {node {[1, 1]}}
+        child {node {[1, 0]}
+            child {node {[0]}
+                child {node {[]}}}
+            child {node {[1]}}
+            child {node {[0, 0]}}}
+        child {node {[0, 0, 1]}}
+        child {node {[1, 0, 0]}}
+        ;
+      \end{tikzpicture}
+    \end{block}
   \end{columns}
 
   \pause{}
 
-  \textbf{This implementation strategy does not work for C++!}
+  This implementation strategy \alert{does not work for C++!}
 \end{frame}
 
 \begin{frame}[fragile]{\halcheck{} --- Motivation --- Space Complexity}
-  \textbf{Example:}
-  \begin{minted}{c++}
-    auto xs = *gen::arbitrary<std::vector<int>>();
-    auto x  = *gen::elementOf(xs);
-  \end{minted}
+  \begin{block}{Example:}
+    \begin{minted}{c++}
+      auto xs = *gen::arbitrary<std::vector<int>>();
+      auto x  = *gen::elementOf(xs);
+    \end{minted}
+  \end{block}
 
   \pause{}
 
@@ -227,17 +220,17 @@
     \item To shrink \mintinline{c++}{x}, RapidCheck must pick a different element of \mintinline{c++}{xs}.
           \pause{}
 
-    \item Shrinking is performed \emph{after} the test case has finished (\mintinline{c++}{xs} no longer exists)!
+    \item Shrinking is performed \emph{after} the test case has finished (\alert{\mintinline{c++}{xs} no longer exists})!
           \begin{itemize}
             \item Not a problem in languages with automatic memory management.
           \end{itemize}
           \pause{}
 
-    \item \textbf{\mintinline{c++}{gen::elementOf} must store a copy of \mintinline{c++}{xs}} in order to avoid creating a dangling reference.
+    \item \mintinline{c++}{gen::elementOf} must store a copy of \mintinline{c++}{xs} in order to avoid creating a dangling reference.
           \pause{}
   \end{itemize}
 
-  \textbf{Conclusion:} \textit{all combinators (with shrinking behaviour) must make copies of their arguments!}
+  \textbf{Conclusion:} all combinators (with shrinking behaviour) must make copies of their arguments!
 
   \textbf{Problem:} by default, copies in C++ are deep ($\mathcal{O}(n)$ instead of $\mathcal{O}(1)$).
 \end{frame}
@@ -245,35 +238,36 @@
 \begin{frame}[fragile]{\halcheck{} --- Motivation --- Space Complexity}
   \begin{columns}[t]
     \column{0.47\textwidth}
-    \textbf{Generators cannot return references:}
+    \begin{block}{Generators cannot return references:}
+      \begin{minted}{c++}
+        // Generates a random reference
+        // to an element of xs.
+        rc::Gen<int &> referenceOf(??? xs);
 
-    \begin{minted}{c++}
-      // Generates a random reference
-      // to an element of xs.
-      rc::Gen<int &> referenceOf(??? xs);
+        // Example: assign a
+        // random element to 0.
+        *referenceOf(xs) = 0;
+      \end{minted}
 
-      // Example: assign a
-      // random element to 0.
-      *referenceOf(xs) = 0;
-    \end{minted}
-
-    What type should \mintinline{c++}{referenceOf} have?
+      What type should \mintinline{c++}{referenceOf} have?
+    \end{block}
 
     \pause{}
 
     \column{0.53\textwidth}
-    \textbf{\mintinline{c++}{exec} arguments must capture by value:}
-    \begin{minted}{c++}
-      auto bound  = *gen::arbitrary<int>();
-      auto ranges = *gen::container<...>(
-        gen::exec([&] {
-          // bound does not exist
-          // during shrinking!
-          auto min = *gen::inRange(0, bound);
-          auto max = *gen::inRange(min, bound);
-          return std::make_pair(min, max);
-        }));
-    \end{minted}
+    \begin{block}{\mintinline{c++}{exec} arguments must capture by value:}
+      \begin{minted}{c++}
+        auto bound  = *gen::arbitrary<int>();
+        auto ranges = *gen::container<...>(
+          gen::exec([&] {
+            // bound does not exist
+            // during shrinking!
+            auto min = *gen::inRange(0, bound);
+            auto max = *gen::inRange(min, bound);
+            return std::make_pair(min, max);
+          }));
+      \end{minted}
+    \end{block}
   \end{columns}
 \end{frame}
 
@@ -285,12 +279,4 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{\halcheck{} --- Motivation}
-  \textbf{Why} \halcheck{}?
-
-  \begin{enumerate}
-    \item Simpler API
-    \item Support for test-case generation strategies
-    \item Better space complexity
-  \end{enumerate}
-\end{frame}
+\againframe<4>{motivation}
