@@ -2,7 +2,6 @@
 #define HALCHECK_LIB_SCOPE_HPP
 
 #include <halcheck/lib/functional.hpp>
-#include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <functional>
@@ -13,7 +12,7 @@ template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
 class finally_t {
 public:
   explicit finally_t(F func) noexcept : _func(std::move(func)) {}
-  finally_t(finally_t &&other) noexcept { _func.swap(other._func); }
+  finally_t(finally_t &&other) noexcept : _func(std::move(other._func)) { other._invoke = false; }
   finally_t(const finally_t &) = delete;
   finally_t &operator=(const finally_t &) = delete;
   finally_t &operator=(finally_t &&) = delete;
@@ -21,12 +20,13 @@ public:
   void *operator new[](std::size_t) = delete;
 
   ~finally_t() noexcept {
-    if (_func)
-      lib::invoke(std::move(*_func));
+    if (_invoke)
+      lib::invoke(std::move(_func));
   }
 
 private:
-  lib::optional<F> _func;
+  F _func;
+  bool _invoke = true;
 };
 
 /// @brief Executes a function on scope exit.
