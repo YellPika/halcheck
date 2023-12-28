@@ -1,10 +1,14 @@
 #ifndef HALCHECK_LIB_NUMERIC_HPP
 #define HALCHECK_LIB_NUMERIC_HPP
 
+#if __cplusplus >= 201902L
+#include <numeric>
+#else
 #include <halcheck/lib/type_traits.hpp>
 
 #include <cmath>
 #include <limits>
+#endif
 
 namespace halcheck { namespace lib {
 

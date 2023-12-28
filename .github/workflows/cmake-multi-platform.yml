@@ -25,20 +25,20 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
-        compiler: [gcc, clang, cl]
+        compiler: [g++, clang++, cl]
         standard: [11,14,17,20]
         include:
           - os: windows-latest
             compiler: cl
           - os: ubuntu-latest
-            compiler: gcc
+            compiler: g++
           - os: ubuntu-latest
-            compiler: clang
+            compiler: clang++
         exclude:
           - os: windows-latest
-            compiler: gcc
+            compiler: g++
           - os: windows-latest
-            compiler: clang
+            compiler: clang++
           - os: ubuntu-latest
             compiler: cl
 
