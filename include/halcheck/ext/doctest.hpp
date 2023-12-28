@@ -34,15 +34,17 @@ void check(void (*func)(), const char *, Sampler sampler = test::check) {
 }
 }}} // namespace halcheck::ext::doctest
 
-#define HALCHECK_1ST_HELPER(x, ...) x
-#define HALCHECK_1ST(...) HALCHECK_1ST_HELPER(__VA_ARGS__, DOCTEST_EMPTY)
+#define HALCHECK_EXPAND(x) x
 
-#define HALCHECK_2ND_HELPER(x, ...) HALCHECK_1ST(__VA_ARGS__)
-#define HALCHECK_2ND(...) HALCHECK_2ND_HELPER(__VA_ARGS__, DOCTEST_EMPTY)
+#define HALCHECK_1ST_HELPER(x, ...) x
+#define HALCHECK_1ST(...) HALCHECK_EXPAND(HALCHECK_1ST_HELPER(__VA_ARGS__, DOCTEST_EMPTY))
+
+#define HALCHECK_2ND_HELPER(x, ...) HALCHECK_EXPAND(HALCHECK_1ST(__VA_ARGS__))
+#define HALCHECK_2ND(...) HALCHECK_EXPAND(HALCHECK_2ND_HELPER(__VA_ARGS__, DOCTEST_EMPTY))
 
 #define HALCHECK_TEST_CASE_HELPER(anon, ...)                                                                           \
   static void anon();                                                                                                  \
-  TEST_CASE(HALCHECK_1ST(__VA_ARGS__)) { HALCHECK_2ND(__VA_ARGS__, ::halcheck::test::check)(anon); }                   \
+  TEST_CASE(HALCHECK_1ST(__VA_ARGS__)) { HALCHECK_EXPAND(HALCHECK_2ND(__VA_ARGS__, ::halcheck::test::check))(anon); }  \
   static void anon()
 
 #define HALCHECK_TEST_CASE(...) HALCHECK_TEST_CASE_HELPER(DOCTEST_ANONYMOUS(HALCHECK_ANON_FUNC_), __VA_ARGS__)
@@ -51,7 +53,7 @@ void check(void (*func)(), const char *, Sampler sampler = test::check) {
   template<typename T>                                                                                                 \
   static void anon();                                                                                                  \
   TEST_CASE_TEMPLATE_DEFINE(dec, T, HALCHECK_1ST(__VA_ARGS__)) {                                                       \
-    HALCHECK_2ND(__VA_ARGS__, ::halcheck::test::check)(anon<T>);                                                       \
+    HALCHECK_EXPAND(HALCHECK_2ND(__VA_ARGS__, ::halcheck::test::check))(anon<T>);                                      \
   }                                                                                                                    \
   template<typename T>                                                                                                 \
   static void anon()
