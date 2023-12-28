@@ -8,6 +8,7 @@
 #include <halcheck/lib/ranges.hpp>
 
 #include <climits>
+#include <cmath>
 #include <vector>
 
 namespace halcheck { namespace gen {
