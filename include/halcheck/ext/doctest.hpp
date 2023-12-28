@@ -35,10 +35,10 @@ void check(void (*func)(), const char *, Sampler sampler = test::check) {
 }}} // namespace halcheck::ext::doctest
 
 #define HALCHECK_1ST_HELPER(x, ...) x
-#define HALCHECK_1ST(...) HALCHECK_1ST_HELPER(__VA_ARGS__, HALCHECK_DUMMY)
+#define HALCHECK_1ST(...) HALCHECK_1ST_HELPER(__VA_ARGS__, DOCTEST_EMPTY)
 
 #define HALCHECK_2ND_HELPER(x, ...) HALCHECK_1ST(__VA_ARGS__)
-#define HALCHECK_2ND(...) HALCHECK_2ND_HELPER(__VA_ARGS__, HALCHECK_DUMMY)
+#define HALCHECK_2ND(...) HALCHECK_2ND_HELPER(__VA_ARGS__, DOCTEST_EMPTY)
 
 #define HALCHECK_TEST_CASE_HELPER(anon, ...)                                                                           \
   static void anon();                                                                                                  \
