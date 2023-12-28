@@ -7,8 +7,8 @@
 namespace halcheck { namespace gen {
 
 /// @brief Calls gen::discard if the condition is false.
-/// @param The condition to check.
-void guard(bool);
+/// @param cond The condition to check.
+void guard(bool cond);
 
 /// @brief Exits a property without indicating failure.
 extern lib::effect<lib::raise> discard;

@@ -29,7 +29,7 @@ class context {
 
 /// @brief A poor-man's implementation of effects.
 /// @tparam R The return type of the function.
-/// @tparam ...Args The list of argument types for the function.
+/// @tparam Args The list of argument types for the function.
 template<typename R, typename... Args>
 class effect {
 private:
@@ -81,7 +81,7 @@ public:
   }
 
   /// @brief Invokes the last active handler.
-  /// @param ...args The list of arguments to pass to the handler.
+  /// @param args The list of arguments to pass to the handler.
   /// @return The result of calling the handler.
   R operator()(Args... args) const {
     auto old = context::top;

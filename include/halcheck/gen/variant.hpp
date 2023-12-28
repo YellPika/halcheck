@@ -28,8 +28,7 @@ struct variant_visitor {
 
 /// @brief Generates a random std::integral_constant from the given set of
 /// indices.
-/// @tparam ...Ints The set of indices to pick from.
-/// @param  Used for type deduction.
+/// @tparam Ints The set of indices to pick from.
 /// @return A random std::integral_constant.
 template<std::size_t... Ints>
 lib::variant<std::integral_constant<std::size_t, Ints>...> index(lib::index_sequence<Ints...> = {}) {
@@ -38,8 +37,8 @@ lib::variant<std::integral_constant<std::size_t, Ints>...> index(lib::index_sequ
 }
 
 /// @brief Constructs a random variant.
-/// @tparam ...Fs The generator function types for each variant element type.
-/// @param ...gens The generators for each variant element type.
+/// @tparam Fs The generator function types for each variant element type.
+/// @param gens The generators for each variant element type.
 /// @return A variant whose value is drawn from a randomly selected element of
 /// gens.
 template<typename... Fs, HALCHECK_REQUIRE(lib::conjunction<lib::is_invocable<Fs>...>())>

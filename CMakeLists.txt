@@ -38,7 +38,8 @@ target_link_libraries(${PROJECT_NAME}
   PRIVATE doctest::doctest)
 target_compile_options(${PROJECT_NAME} PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W4>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic>)
+  $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic -Wdocumentation>
+  $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>)
 target_include_directories(
   ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
                          $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>)
@@ -66,7 +67,8 @@ file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tes
 add_executable(${PROJECT_NAME}-test ${TEST_SOURCES})
 target_compile_options(${PROJECT_NAME}-test PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W4>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic>)
+  $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic -Wdocumentation>
+  $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>)
 target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME} mpark_variant tl::optional doctest::doctest)
 
 include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
