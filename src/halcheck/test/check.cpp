@@ -34,27 +34,25 @@ TEST_CASE("check experiment 0") {
     std::cout << pair.first << ": " << pair.second << " (" << pair.second * 100.0 / total << "%)\n";
 }
 
-TEST_CASE("check experiment 1") {
-  test::check([&] {
-    std::size_t size = 0;
-    std::vector<int> vector;
+HALCHECK_TEST_CASE("check experiment 1") {
+  std::size_t size = 0;
+  std::vector<int> vector;
 
-    auto commands = gen::weight::current;
-    while (gen::next(1, commands--)) {
-      switch (gen::range(0, 2)) {
-      case 0: {
-        vector.push_back(gen::arbitrary<int>());
-        ++size;
+  auto commands = gen::weight::current;
+  while (gen::next(1, commands--)) {
+    switch (gen::range(0, 2)) {
+    case 0: {
+      vector.push_back(gen::arbitrary<int>());
+      ++size;
+      REQUIRE_EQ(vector.size(), size);
+    } break;
+    case 1: {
+      if (size > 0) {
+        vector.pop_back();
+        --size;
         REQUIRE_EQ(vector.size(), size);
-      } break;
-      case 1: {
-        if (size > 0) {
-          vector.pop_back();
-          --size;
-          REQUIRE_EQ(vector.size(), size);
-        }
-      } break;
       }
+    } break;
     }
-  });
+  }
 }

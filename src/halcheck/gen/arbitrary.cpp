@@ -23,9 +23,7 @@ type arbitrary(gen::tag<type>) { return type{true}; }
 
 example::type arbitrary(gen::tag<example::type>) { return example::type{false}; }
 
-TEST_CASE_TEMPLATE_DEFINE("gen::arbitrary", T, gen_arbitrary) {
-  test::check([] { gen::guard(gen::arbitrary<T>() != T()); });
-}
+HALCHECK_TEST_CASE_TEMPLATE_DEFINE("gen::arbitrary", T, gen_arbitrary) { gen::guard(gen::arbitrary<T>() != T()); }
 
 TEST_SUITE("gen::arbitrary") {
   TEST_CASE("gen::arbitrary calls arbitrary(tag<T>)") { REQUIRE(std::get<0>(gen::arbitrary<example::type>())); }

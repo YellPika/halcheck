@@ -15,22 +15,20 @@
 
 using namespace halcheck;
 
-TEST_CASE_TEMPLATE_DEFINE("gen::range", T, gen_range) {
-  test::limited(test::random(), 1 << 16)([] {
-    auto min = gen::arbitrary<T>();
-    CAPTURE(min);
+HALCHECK_TEST_CASE_TEMPLATE_DEFINE("gen::range", T, gen_range, test::limited(test::random(), 1 << 16)) {
+  auto min = gen::arbitrary<T>();
+  CAPTURE(min);
 
-    auto max = gen::arbitrary<T>();
-    CAPTURE(max);
+  auto max = gen::arbitrary<T>();
+  CAPTURE(max);
 
-    auto value = gen::range(min, max);
-    CAPTURE(value);
+  auto value = gen::range(min, max);
+  CAPTURE(value);
 
-    REQUIRE_LE(min, value);
-    REQUIRE_LT(value, max);
+  REQUIRE_LE(min, value);
+  REQUIRE_LT(value, max);
 
-    std::clog << min << " ≤ " << value << " < " << max << "\n";
-  });
+  std::clog << min << " ≤ " << value << " < " << max << "\n";
 }
 
 TEST_SUITE("gen::range") {

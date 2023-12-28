@@ -57,9 +57,7 @@ static void effect_test(
   }
 }
 
-TEST_CASE("lib::effect") {
-  test::check([] { effect_test(); });
-}
+HALCHECK_TEST_CASE("lib::effect") { effect_test(); }
 
 TEST_CASE("effect example") {
   lib::effect<bool> example0([] { return (throw 0, true); });

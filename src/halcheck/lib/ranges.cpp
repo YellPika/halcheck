@@ -38,19 +38,17 @@ static_assert(!is_range<int>(), "");
 static_assert(is_insertable<std::vector<int>>(), "");
 static_assert(!is_insertable<int>(), "");
 
-TEST_CASE("auto_insert_iterator") {
-  test::check([] {
-    auto actual = gen::arbitrary<std::vector<int>>();
-    auto expected = actual;
+HALCHECK_TEST_CASE("auto_insert_iterator") {
+  auto actual = gen::arbitrary<std::vector<int>>();
+  auto expected = actual;
 
-    auto size = gen::weight::current;
-    while (gen::next(1, size))
-      expected.push_back(gen::arbitrary<int>());
+  auto size = gen::weight::current;
+  while (gen::next(1, size))
+    expected.push_back(gen::arbitrary<int>());
 
-    auto it1 = expected.begin();
-    auto it2 = lib::auto_insert(actual);
-    for (; it1 != expected.end(); ++it1, ++it2)
-      *it2 = *it1;
-    REQUIRE_EQ(actual, expected);
-  });
+  auto it1 = expected.begin();
+  auto it2 = lib::auto_insert(actual);
+  for (; it1 != expected.end(); ++it1, ++it2)
+    *it2 = *it1;
+  REQUIRE_EQ(actual, expected);
 }
