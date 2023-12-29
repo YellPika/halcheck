@@ -14,9 +14,10 @@
   All PBT frameworks are direct ports or descendants of QuickCheck. These frameworks all consist of:
 
   \bigskip{}
+  \pause{}
 
   \begin{columns}
-    \begin{column}<+(1)->{0.5\textwidth}
+    \begin{column}{0.4\textwidth}
       \begin{block}{A central generator data type:}
         \begin{minted}{haskell}
           --                  Source of
@@ -27,7 +28,9 @@
       \end{block}
     \end{column}
 
-    \begin{column}<+(1)->{0.5\textwidth}
+    \pause{}
+
+    \begin{column}{0.5\textwidth}
       \begin{block}{A set of basic combinators:}
         \begin{minted}{haskell}
           choose    |∷| (Int, Int) |→| Gen Int
@@ -45,7 +48,7 @@
 
   \begin{itemize}
     \item Users must be comfortable reasoning about higher-order functions.
-    \item Users must know the distinction between \alert{generator code} and \alert{non-generator code}.
+    \item Users must ensure generators are only invoked in the \alert{correct context}.
   \end{itemize}
 \end{frame}
 
@@ -61,6 +64,11 @@
           gen::arbitrary<int>);
       }
     \end{minted}
+
+    \begin{minted}{haskell}
+      -- QuickCheck
+      example n = vectorOf (choose (0, n - 1)) arbitrary
+    \end{minted}
   \end{onlyenv}
 
   \begin{onlyenv}<+>
@@ -68,33 +76,49 @@
       // RapidCheck
       Gen<std::vector<int>> example(int N) {
         return gen::container<std::vector<int>>(
-          *gen::inRange(0, N), // WRONG
+          *gen::inRange(0, N), // WRONG (no compiler error)
           gen::arbitrary<int>);
       }
     \end{minted}
 
-    \textbf{Problem:} \mintinline{c++}{*gen::inRange(0, N)} is evaluated \alert{before} \mintinline{c++}{example} returns, resulting in a generator that always produces \mintinline{c++}{std::vector}s of the same length.
+    \begin{minted}{haskell}
+      -- QuickCheck         ▿ WRONG (compiler error)
+      example n = vectorOf (choose (0, n - 1)) arbitrary
+    \end{minted}
+
+    \textbf{Problem:} \mintinline{c++}{example(N)} always produces \mintinline{c++}{std::vector}s of the same length.
   \end{onlyenv}
 
   \begin{onlyenv}<+>
-    \begin{minted}{c++}
-      // RapidCheck
-      Gen<std::vector<int>> example(int N) {
-        return gen::exec([=] {
-          return gen::container<std::vector<int>>(
-            *gen::inRange(0, N),
-            gen::arbitrary<int>);
-        });
-      }
-    \end{minted}
+    \begin{columns}[T]
+      \column{0.55\textwidth}
+      \begin{minted}{c++}
+        // RapidCheck
+        Gen<std::vector<int>> example(int N) {
+          return gen::exec([=] {
+            return gen::container<std::vector<int>>(
+              *gen::inRange(0, N),
+              gen::arbitrary<int>);
+          });
+        }
+      \end{minted}
 
-    \textbf{Solution:} Need to delay computation of \mintinline{c++}{*gen::inRange(0, N)} using \mintinline{c++}{gen::exec}.
+      \column{0.35\textwidth}
+      \begin{minted}{haskell}
+        -- QuickCheck
+        example n = do
+          i |←| choose (0, n - 1)
+          vectorOf i arbitrary
+      \end{minted}
+    \end{columns}
+
+    \textbf{Solution:} Delay computation of \mintinline{c++}{*gen::inRange(0, N)} using \mintinline{c++}{gen::exec}.
   \end{onlyenv}
 \end{frame}
 
 \begin{frame}[fragile]{\halcheck{} --- Motivation --- API}
   \begin{itemize}
-    \item \textbf{Problem:} Generators should only be invoked in the correct context.
+    \item \textbf{Problem:} Need to ensure generators are only invoked in the correct context.
           \begin{itemize}
             \item Haskell's type system ensures this always happens.
             \item C++'s type system can provide no such guarantee!
@@ -129,7 +153,7 @@
     \item Coverage-guided (FuzzTest) \pause{}
   \end{itemize}
 
-  Most PBT frameworks (and all C++ PBT frameworks) use a \textbf{fixed strategy}.
+  Most PBT frameworks (and all C++ PBT frameworks) use a \alert{fixed strategy}.
 \end{frame}
 
 \begin{frame}[fragile]{\halcheck{} --- Motivation --- Strategies}
@@ -180,7 +204,7 @@
 
       \bigskip
 
-      Shrink trees can be \textbf{very large} so they must be computed lazily.
+      Shrink trees can be \alert{very large} so they must be computed lazily.
     \end{block}
 
     \column{0.5\textwidth}
@@ -232,6 +256,8 @@
 
   \textbf{Conclusion:} all combinators (with shrinking behaviour) must make copies of their arguments!
 
+  \pause{}
+
   \textbf{Problem:} by default, copies in C++ are deep ($\mathcal{O}(n)$ instead of $\mathcal{O}(1)$).
 \end{frame}
 
@@ -272,10 +298,15 @@
 \end{frame}
 
 \begin{frame}{\halcheck{} --- Motivation --- Space Complexity}
+  \mintinline{c++}{halcheck} is inspired by work on \alert{internal shrinking}.
   \begin{itemize}
-    \item \mintinline{c++}{halcheck} \textbf{never} makes copies of generated data.
-    \item \mintinline{c++}{halcheck} \textbf{only} records decision made during the generation process.
-    \item All the previous examples work in \mintinline{c++}{halcheck} without any unnecessary copying!
+    \item Motto: shrink inputs, not outputs!
+    \item Generated data is never copied.
+  \end{itemize}
+
+  \textbf{Note:} \mintinline{c++}{halcheck} does \alert{not} use internal shrinking.
+  \begin{itemize}
+    \item Users have full control over shrinking.
   \end{itemize}
 \end{frame}
 
