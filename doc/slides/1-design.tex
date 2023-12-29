@@ -4,7 +4,7 @@
   Goals:
   \begin{itemize}
     \item Support user-defined generation strategies
-    \item First-order API (as much as possible)
+    \item First-order functions (as much as possible)
   \end{itemize}
 
   \begin{onlyenv}<2>
@@ -15,7 +15,7 @@
   \end{onlyenv}
 
   \begin{onlyenv}<3->
-    To support these goals, every generator needs to be built from a set of \textbf{overridable core functions}:
+    To support these goals, every generator needs to be built from a set of \alert{overridable core functions}:
 
     \begin{itemize}
       \item<4-> \mintinline{c++}{gen::next}
@@ -35,7 +35,7 @@
     \textbf{Intuition:} \mintinline{c++}{gen::next(x, y)} performs a biased coin flip with \( p = \frac{y}{x + y} \).
 
     \begin{itemize}
-      \item This is our \emph{only} source of randomness.
+      \item This is our \alert{only} source of randomness.
       \item Is this enough to define all generators?
     \end{itemize}
   \end{onlyenv}
@@ -46,7 +46,7 @@
       \textbf{Example 1:} \emph{generate a number in the range $[a, b)$}.
 
       \begin{itemize}
-        \item<.(1)-> Solution: use binary search, replace comparison with biased coin flip.
+        \item<.(1)-> Use binary search, replace comparison with biased coin flip.
       \end{itemize}
 
       \column{0.4\textwidth}
@@ -73,16 +73,19 @@
       \textbf{Example 2:} \emph{generate a \mintinline{c++}{enum dim}}.
 
       \begin{itemize}
-        \item<.(1)-> Solution 1: consult \mintinline{c++}{gen::range} to determine which value to return.
-        \item<.(2)-> Solution 2: define \mintinline{c++}{gen::element} (implemented via \mintinline{c++}{gen::range}).
+        \item<.(1)-> Consult \mintinline{c++}{gen::range} to determine which value to return.
+          \begin{onlyenv}<.(2)->
+            \begin{center}
+              --- OR ---
+            \end{center}
+          \end{onlyenv}
+        \item<.(2)-> Define \mintinline{c++}{gen::element} (implemented via \mintinline{c++}{gen::range}).
       \end{itemize}
 
       \column{0.45\textwidth}
       \begin{minted}{c++}
         enum class dim {
-          x = 0,
-          y = 3,
-          z = 8
+          x = 0, y = 3, z = 8
         };
       \end{minted}
 
@@ -93,7 +96,7 @@
             case 0: return dim::x;
             case 1: return dim::y;
             case 2: return dim::z;
-            } }
+          } }
         \end{minted}
       \end{onlyenv}
 
@@ -116,7 +119,7 @@
         \item<.(1)-> Trivial.
       \end{itemize}
 
-      \column{0.45\textwidth}
+      \column{0.5\textwidth}
       \begin{minted}{c++}
         struct vec {
           int x;
@@ -144,15 +147,15 @@
 
       \begin{onlyenv}<.(1)-.(2)>
         \begin{itemize}
-          \item<.(1)-> Attempt: generate random size $n$, then generate $n$ elements.
-          \item<.(2)-> Problem: \mintinline{c++}{gen::arbitrary<size_t>} is uniformly distributed --- high chance of generating \emph{billions of GBs}.
+          \item<.(1)-> Generate random size $n$, then generate $n$ elements.
+          \item<.(2)-> \mintinline{c++}{gen::arbitrary<size_t>} is uniformly distributed --- high chance of generating \alert{billions of GBs}.
         \end{itemize}
       \end{onlyenv}
 
       \begin{onlyenv}<.(3)-.(4)>
         \begin{itemize}
-          \item<.(3)-> Attempt: add elements as long as \mintinline{c++}{gen::next} returns \mintinline{c++}{true}.
-          \item<.(4)-> Problem: distribution biased towards shorter lists.
+          \item<.(3)-> Add elements as long as \mintinline{c++}{gen::next} returns \mintinline{c++}{true}.
+          \item<.(4)-> Distribution \alert{biased towards shorter lists}.
         \end{itemize}
       \end{onlyenv}
 
@@ -207,7 +210,7 @@
 
   \begin{itemize}
     \item \mintinline{c++}{gen::size} cannot be defined in terms of \mintinline{c++}{gen::next}.
-    \item Do we really need an extra combinator? \pause\textbf{NO!}
+    \item Do we really need an extra combinator?
   \end{itemize}
 \end{frame}
 
@@ -216,17 +219,19 @@
     \mintinline{c++}{gen::next(gen::weight x = 1, gen::weight y = 1) |→| bool}
   \end{center}
 
+  I lied! \pause{}
   \begin{itemize}
     \item Actual definition of \mintinline{c++}{gen::next} takes \mintinline{c++}{gen::weight} parameters.
-    \item A \mintinline{c++}{gen::weight} is a symbolic value parameterized by an unknown size.
-    \item A \mintinline{c++}{gen::weight} is semantically a function in $\mathbb{N} \to \mathbb{N}$.
-    \item \textbf{Bonus:} generators automatically behave uniformly with respect to size!
+    \item A \mintinline{c++}{gen::weight} is an \alert{expression} over an unknown size $s$.
+          \begin{itemize}
+            \item $s - 5$, $2s$, etc.
+          \end{itemize}
   \end{itemize}
 
   \begin{minted}{c++}
     std::string gen_string() {
       std::string xs;
-      auto size = gen::weight::current; // current is the symbolic variable
+      auto size = gen::weight::current; // current is s
       while (gen::next(1, size--))
         xs.push_back(gen::arbitrary<char>());
       return xs;
@@ -256,19 +261,19 @@
   \textbf{Intuition:} \mintinline{c++}{gen::discard()} terminates the current test case (no failure).
 
   \begin{itemize}
-    \item Used to implement precondition checking (\mintinline{c++}{RC_PRE}).
+    \item Used to implement precondition checking (\mintinline{haskell}{==>}, \mintinline{c++}{RC_PRE}).
     \item Also useful for implementing rejection sampling (\mintinline{c++}{gen::suchThat}).
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} --- Design --- \mintinline{c++}{gen::shrink}}
+\begin{frame}[fragile,t]{\halcheck{} --- Design --- \mintinline{c++}{gen::shrink}}
   \begin{center}
     \mintinline{c++}{gen::shrink(int size = 1) |→| std::optional<int>}
   \end{center}
 
   \only<+>{\textbf{Intuition:} \mintinline{c++}{gen::shrink(n)} returns an integer if shrinking should occur at the call site, or \mintinline{c++}{std::nullopt} otherwise.}
 
-  \begin{columns}<+->[t]
+  \begin{columns}<+->[T]
     \column{0.5\textwidth}
     \textbf{Example:}
 
@@ -337,8 +342,8 @@
     \end{onlyenv}
 
     \begin{onlyenv}<+>
+      \textbf{Problem:} \halcheck{} is just a library. It cannot inspect the internal structure of a program!
       \begin{itemize}
-        \item \textbf{Problem:} \halcheck{} is just a library. It cannot inspect the internal structure of a program!
         \item Internally, \halcheck{} only saves and replays the results of \mintinline{c++}{gen::next}.
         \item Sequence 1: \mintinline{c++}{{a: true, b: true, c: false}}
         \item Sequence 2: \mintinline{c++}{{a: true, c: true, [unused]: false}}
@@ -361,8 +366,8 @@
     \item All generators are implemented using the core functions.
           \pause{}
     \item How are the core functions themselves implemented?
-          \pause\textbf{It depends!}
-    \item Core functions can be \textbf{overriden}.
+          \pause\alert{It depends!}
+    \item Core functions can be \alert{overridden}.
   \end{itemize}
 \end{frame}
 
@@ -384,16 +389,15 @@
 \end{frame}
 
 \begin{frame}{\halcheck{} --- Design --- Core}
-  \halcheck{}'s core functions are implemented using a primitive system of \textbf{effect handlers}.
+  \halcheck{}'s core functions are implemented using a primitive system of \alert{effect handlers}.
 
   \begin{itemize}
     \item<+-> \mintinline{c++}{gen::next}, \mintinline{c++}{gen::discard}, etc. are \emph{effects}.
-    \item<+-> Effects are \emph{invoked} via the call operator (\mintinline{c++}{effect()}).
-    \item<+-> A \emph{handler} can be \emph{installed} using \mintinline{c++}{auto _ = effect.handle(my_handler)} is \emph{uninstalled} when the return value (\mintinline{c++}{_}) goes out of scope.
-    \item<+-> Effects are \textbf{lexically scoped}: any effects invoked within an effect handler behave as if they were invoked \emph{just before the effect handler was installed}.
-    \begin{itemize}
-      \item This property is what makes strategies composable.
-    \end{itemize}
-    \item<+-> Effects are \textbf{thread local}.
+    \item<+-> Effects are \emph{invoked} via the call operator (\mintinline{c++}{eff()}).
+    \item<+-> A \emph{handler} can be \emph{installed} using \mintinline{c++}{auto _ = eff.handle(my_handler)} is \emph{uninstalled} when the return value (\mintinline{c++}{_}) goes out of scope.
+    \item<+-> Effects are \alert{lexically scoped}: any effects invoked within an effect handler behave as if they were invoked \emph{just before the effect handler was installed}.
+      \begin{itemize}
+        \item This property is what makes strategies composable.
+      \end{itemize}
   \end{itemize}
 \end{frame}
