@@ -4,10 +4,7 @@ all: bin/slides.pdf
 
 bin/%.pdf: %.tex force
 	@mkdir -p $(@D)
-	(cd build/$(*D) && yes x | \
-		TEXINPUTS=$(dir $(abspath $<)): \
-		BIBINPUTS=$(dir $(abspath $<)): \
-		latexmk -lualatex -shell-escape -interaction=errorstopmode $(abspath $<))
+	latexmk -pdf -shell-escape -interaction=nonstopmode -output-directory=build/$(*D) $<
 	cp build/$*.pdf $@
 
 format:

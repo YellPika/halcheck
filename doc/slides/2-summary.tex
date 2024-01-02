@@ -1,9 +1,35 @@
 \section{Summary}
 
-\begin{frame}{\halcheck{} --- Design --- Summary}
-  \begin{itemize}
-    \item Every generator in \halcheck{} is built from four first-order core functions, enabling a "direct-style" API.
-    \item User-defined generation strategies are supported: every core function can be overriden.
-    \item Shrinking is performed by changing generator inputs (\mintinline{c++}{gen::shrink}) instead of generator outputs, resulting in less memory usage.
-  \end{itemize}
+\begin{frame}{\halcheck{} --- In Progress}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.5\textwidth}
+    \begin{block}{New strategies:}
+      \begin{itemize}
+        \item \cppinline{ordered} (SmallCheck/LeanCheck)
+        \item Coverage-guided (fuzztest)
+        \begin{itemize}
+          \item Requires support for \alert{mutations}.
+        \end{itemize}
+        \item Learning-based (RLCheck)
+        \item Reproducing test-cases
+      \end{itemize}
+    \end{block}
+
+    \column{0.5\textwidth}
+    \begin{block}{Test framework integration:}
+      \begin{itemize}
+        \item Google Test
+        \item CUnit
+        \item doctest (partially done)
+      \end{itemize}
+    \end{block}
+  \end{columns}
 \end{frame}
+
+% \begin{frame}{\halcheck{} --- Summary}
+%   \begin{itemize}
+%     \item Every generator in \halcheck{} is built from four first-order core functions, enabling a ``direct-style'' API.
+%     \item User-defined generation strategies are supported: every core function can be overriden.
+%     \item Shrinking is performed by changing generator inputs (\mintinline{c++}{gen::shrink}) instead of generator outputs, resulting in less memory usage.
+%   \end{itemize}
+% \end{frame}

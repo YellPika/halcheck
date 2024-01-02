@@ -1,11 +1,49 @@
 \documentclass[aspectratio=169]{beamer}
 
-\usepackage{minted}
-\setminted{autogobble,escapeinside=||,fontsize=\footnotesize}
+\usepackage{DejaVuSansMono}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 
 \usepackage{amsmath}
-\usepackage{fontspec}
 \usepackage{wasysym}
+
+\usepackage{listings}
+\usepackage{lstautogobble}
+\lstdefinestyle{cpp}{
+  autogobble,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  language=c++,
+  mathescape,
+  literate={∷}{{:\!\!:}}1
+           {←}{{\csname u8:\detokenize{←}\endcsname}}1
+           {→}{{\csname u8:\detokenize{→}\endcsname}}1
+           {↓}{{\csname u8:\detokenize{↓}\endcsname}}1
+           {↑}{{\csname u8:\detokenize{↑}\endcsname}}1,
+  columns=fullflexible,
+  keepspaces
+}
+\lstdefinestyle{haskell}{
+  autogobble,
+  basicstyle=\ttfamily\footnotesize,
+  morecomment=[l]{--},
+  morekeywords={data},
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  mathescape,
+  literate={∷}{{:\!\!:}}1
+           {←}{{\csname u8:\detokenize{←}\endcsname}}1
+           {→}{{\csname u8:\detokenize{→}\endcsname}}1
+           {↓}{{\csname u8:\detokenize{↓}\endcsname}}1
+           {↑}{{\csname u8:\detokenize{↑}\endcsname}}1,
+  columns=fixed,
+  keepspaces
+}
+\lstnewenvironment{cppcode}{\lstset{style=cpp}}{}
+\lstnewenvironment{haskellcode}{\lstset{style=haskell}}{}
+\newcommand{\cppinline}[1]{\lstinline[style=cpp]!#1!}
+\newcommand{\haskellinline}[1]{\lstinline[style=haskell]!#1!}
 
 \newcommand{\halcheck}{\texttt{halcheck}}
 
@@ -13,7 +51,6 @@
 \author{Anthony Vandikas}
 \date{December 22, 2023}
 \usetheme{metropolis}
-\setmonofont{DejaVu Sans Mono}
 
 \begin{document}
 
@@ -23,8 +60,7 @@
   \tableofcontents
 \end{frame}
 
-\include{slides/0-motivation}
-\include{slides/1-design}
+\include{slides/0-overview}
 \include{slides/2-summary}
 
 \end{document}
