@@ -84,18 +84,34 @@
       -- QuickCheck         ↓ WRONG (compiler error)
       example n = vectorOf (choose (0, n - 1)) arbitrary
     \end{haskellcode}
-
-    \textbf{Problem:} \cppinline{example(N)} always produces \cppinline{std::vector}s of the same length.
   \end{onlyenv}
 
   \begin{onlyenv}<+>
+    \begin{cppcode}
+      // RapidCheck
+      Gen<std::vector<int>> example(int N) {
+        // WRONG: n is computed $\mathbf{once}$, $\mathit{before}$ calling container
+        auto n = *gen::inRange(0, N);
+        return gen::container<std::vector<int>>(n, gen::arbitrary<int>());
+      }
+    \end{cppcode}
+    \begin{haskellcode}
+      -- QuickCheck         ↓ WRONG: choose ∷ (Int, Int) → $\color{red}{\mathtt{Gen\ Int}}$
+      example n = vectorOf (choose (0, n - 1)) arbitrary
+      --          ↑ WRONG: vectorOf ∷ $\color{red}{\mathtt{Int}}$ → Gen Int → Gen [Int]
+    \end{haskellcode}
+  \end{onlyenv}
+
+  \begin{onlyenv}<+>
+    \textbf{Solution:} Delay computation of \cppinline{*gen::inRange(0, N)} using \cppinline{gen::exec}.
+
     \begin{columns}[T,onlytextwidth]
       \column{0.53\textwidth}
       \begin{cppcode}
         // RapidCheck
         Gen<std::vector<int>> example(int N) {
           return gen::exec([=] {
-            return gen::container<std::vector<int>>(
+            return *gen::container<std::vector<int>>(
               *gen::inRange(0, N),
               gen::arbitrary<int>);
           });
@@ -110,8 +126,6 @@
           vectorOf i arbitrary
       \end{haskellcode}
     \end{columns}
-
-    \textbf{Solution:} Delay computation of \cppinline{*gen::inRange(0, N)} using \cppinline{gen::exec}.
   \end{onlyenv}
 \end{frame}
 
@@ -207,17 +221,17 @@
 
     \column{0.5\textwidth}
     \begin{block}{Shrink tree for a list:}
-      \begin{tikzpicture}
+      \begin{tikzpicture}[align=center,anchor=north,level distance=1.2cm]
         \node{[1, 0, 1]}
-        child {node {[0, 1]}}
-        child {node {[1, 1]}}
+        child {node {[0, 1]\\\vdots}}
+        child {node {[1, 1]\\\vdots}}
         child {node {[1, 0]}
             child {node {[0]}
                 child {node {[]}}}
-            child {node {[1]}}
-            child {node {[0, 0]}}}
-        child {node {[0, 0, 1]}}
-        child {node {[1, 0, 0]}}
+            child {node {[1]\\\vdots}}
+            child {node {[0, 0]\\\vdots}}}
+        child {node {[0, 0, 1]\\\vdots}}
+        child {node {[1, 0, 0]\\\vdots}}
         ;
       \end{tikzpicture}
     \end{block}
