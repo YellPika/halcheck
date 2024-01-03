@@ -1,0 +1,4 @@
+defaultIndent: "  "
+verbatimEnvironments:
+  cppcode: 1
+  haskellcode: 1

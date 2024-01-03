@@ -3,7 +3,7 @@
 \begin{frame}<1>[label=overview]{\halcheck{} --- Overview \only<4>{--- Summary}}
   \begin{block}{Why \halcheck?}
     \begin{enumerate}
-      \item<alert@1> First-order(ish) API
+      \item<alert@1> Clearer API
       \item<alert@2> Support for custom test-case generation strategies
       \item<alert@3> Better space complexity
     \end{enumerate}
@@ -52,7 +52,7 @@
 \end{frame}
 
 \begin{frame}[fragile,t]{\halcheck{} --- Overview --- API}
-  \textbf{Example:} \emph{Write a generator combinator that produces \cppinline{std::vector}s up to (but not including) a given length.}
+  \textbf{Example:} \emph{Write a generator combinator that produces \cppinline{std::vector}s shorter than a given length.}
 
   \begin{onlyenv}<+>
     \begin{cppcode}
@@ -90,15 +90,15 @@
     \begin{cppcode}
       // RapidCheck
       Gen<std::vector<int>> example(int N) {
-        // WRONG: n is computed $\mathbf{once}$, $\mathit{before}$ calling container
+        // WRONG: n is computed |\textbf{once}|, all generated values have the same size!
         auto n = *gen::inRange(0, N);
         return gen::container<std::vector<int>>(n, gen::arbitrary<int>());
       }
     \end{cppcode}
     \begin{haskellcode}
-      -- QuickCheck         ↓ WRONG: choose ∷ (Int, Int) → $\color{red}{\mathtt{Gen\ Int}}$
+      -- QuickCheck         ↓ WRONG: choose ∷ (Int, Int) → |\color{red}{Gen Int}|
       example n = vectorOf (choose (0, n - 1)) arbitrary
-      --          ↑ WRONG: vectorOf ∷ $\color{red}{\mathtt{Int}}$ → Gen Int → Gen [Int]
+      --          ↑ WRONG: vectorOf ∷ |\color{red}{Int}| → Gen Int → Gen [Int]
     \end{haskellcode}
   \end{onlyenv}
 
@@ -122,7 +122,7 @@
       \begin{haskellcode}
         -- QuickCheck
         example n = do
-          i <- choose (0, n - 1)
+          i ← choose (0, n - 1)
           vectorOf i arbitrary
       \end{haskellcode}
     \end{columns}
@@ -142,16 +142,15 @@
             \item All code is written in the generator context.
             \item Bonus: fewer higher-order functions.
           \end{itemize}
+          \begin{cppcode}
+            // halcheck
+            std::vector<int> example(int N) {
+              return gen::container<std::vector<int>>(
+                gen::range(0, N),
+                gen::arbitrary<int>);
+            }
+          \end{cppcode}
   \end{itemize}
-
-  \begin{cppcode}
-    // halcheck
-    std::vector<int> example(int N) {
-      return gen::container<std::vector<int>>(
-        gen::range(0, N),
-        gen::arbitrary<int>);
-    }
-  \end{cppcode}
 \end{frame}
 
 \againframe<2>{overview}
@@ -180,7 +179,7 @@
   \pause{}
 
   \begin{cppcode}
-    //   ordered(strategy) → strategy
+    //   ordered() → strategy
     // ↓ Executes all test cases in order, from smallest to largest.
     test::ordered()([] { /* test code */ });
   \end{cppcode}
@@ -189,10 +188,8 @@
 
   \begin{cppcode}
     //   limit(strategy, int) → strategy
-    //   shrink(strategy) → strategy
-    //   Executes at most 100 random test cases.
-    // ↓ Performs shrinking if an exception is thrown.
-    test::shrink(test::limit(test::random(), 100))([] { /* test code */ });
+    // ↓ Executes at most 100 random test cases.
+    test::limit(test::random(), 100)([] { /* test code */ });
   \end{cppcode}
 
   \pause{}
@@ -221,17 +218,16 @@
 
     \column{0.5\textwidth}
     \begin{block}{Shrink tree for a list:}
-      \begin{tikzpicture}[align=center,anchor=north,level distance=1.2cm]
-        \node{[1, 0, 1]}
-        child {node {[0, 1]\\\vdots}}
-        child {node {[1, 1]\\\vdots}}
-        child {node {[1, 0]}
-            child {node {[0]}
-                child {node {[]}}}
-            child {node {[1]\\\vdots}}
-            child {node {[0, 0]\\\vdots}}}
-        child {node {[0, 0, 1]\\\vdots}}
-        child {node {[1, 0, 0]\\\vdots}}
+      \begin{tikzpicture}[align=center,anchor=north,level distance=1.05cm]
+        \node{"100"}
+        child {node {"00"\\\vdots}}
+        child {node {"10"\\\vdots}}
+        child {node {"10"}
+            child {node {"0"}
+                child {node {""}}}
+            child {node {"1"\\\vdots}}
+            child {node {"00"\\\vdots}}}
+        child {node {"000""\\\vdots}}
         ;
       \end{tikzpicture}
     \end{block}
@@ -252,6 +248,7 @@
 
   \pause{}
 
+  \vspace{-0.3cm}
   \begin{itemize}
     \item To shrink \cppinline{x}, RapidCheck must pick a different element of \cppinline{xs}.
           \pause{}
