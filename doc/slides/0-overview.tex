@@ -14,31 +14,25 @@
   All PBT frameworks are direct ports or descendants of QuickCheck. These frameworks all consist of:
 
   \bigskip{}
-  \pause{}
-
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.47\textwidth}
-      \begin{block}{A central generator data type:}
-        \begin{haskellcode}
-          --     Source of
-          --     randomness ↓
-          data Gen a = Gen (Random → a)
-        \end{haskellcode}
-      \end{block}
-    \end{column}
+    \column<+->{0.47\textwidth}
+    \begin{block}{A central generator data type:}
+      \begin{haskellcode}
+        --     Source of
+        --     randomness ↓
+        data Gen a = Gen (Random → a)
+      \end{haskellcode}
+    \end{block}
 
-    \pause{}
-
-    \begin{column}{0.53\textwidth}
-      \begin{block}{A set of basic combinators:}
-        \begin{haskellcode}
-          choose    ∷ (Int, Int) → Gen Int
-          suchThat  ∷ (a → Bool) → Gen a → Gen a
-          frequency ∷ [(Int, Gen a)] → Gen a
-          ...
-        \end{haskellcode}
-      \end{block}
-    \end{column}
+    \column<+->{0.53\textwidth}
+    \begin{block}{A set of basic combinators:}
+      \begin{haskellcode}
+        choose    ∷ (Int, Int) → Gen Int
+        suchThat  ∷ (a → Bool) → Gen a → Gen a
+        frequency ∷ [(Int, Gen a)] → Gen a
+        ...
+      \end{haskellcode}
+    \end{block}
   \end{columns}
 
   \pause{}
@@ -106,7 +100,7 @@
     \textbf{Solution:} Delay computation of \cppinline{*gen::inRange(0, N)} using \cppinline{gen::exec}.
 
     \begin{columns}[T,onlytextwidth]
-      \column{0.53\textwidth}
+      \column{0.65\textwidth}
       \begin{cppcode}
         // RapidCheck
         Gen<std::vector<int>> example(int N) {
