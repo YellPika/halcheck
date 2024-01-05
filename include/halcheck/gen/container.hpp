@@ -30,7 +30,7 @@ T unfold(F gen) {
 
   T output;
   auto it = lib::end(output);
-  while (auto x = lib::invoke(gen))
+  while (auto x = gen::group(gen))
     it = std::next(output.insert(it, std::move(*x)));
   return output;
 }
@@ -54,10 +54,8 @@ T container(F gen) {
 
       --size;
 
-      if (!gen::shrink()) {
-        auto _ = gen::group();
-        return lib::invoke(gen);
-      }
+      if (!gen::shrink())
+        return gen::group(gen);
     }
   });
 }

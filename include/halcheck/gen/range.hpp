@@ -26,13 +26,15 @@ T range(T min, T max) {
 
   auto out = min;
 
-  while (out + 1 < max) {
-    auto mid = lib::midpoint(out, max);
-    if (gen::next(mid - out, max - mid))
-      out = mid;
-    else
-      max = mid;
-  }
+  gen::group([&] {
+    while (out + 1 < max) {
+      auto mid = lib::midpoint(out, max);
+      if (gen::next(mid - out, max - mid))
+        out = mid;
+      else
+        max = mid;
+    }
+  });
 
   return gen::shrink.to(min, out);
 }
@@ -45,16 +47,17 @@ T range(T min, T max) {
 template<typename T, HALCHECK_REQUIRE(std::is_floating_point<T>())>
 T range(T min, T max) {
   gen::guard(min < max);
-  auto _ = gen::group();
 
   auto out = min;
 
-  for (std::size_t i = 0; i < sizeof(T) * CHAR_BIT; i++) {
-    if (gen::next())
-      out = lib::midpoint(out, max);
-    else
-      max = lib::midpoint(out, max);
-  }
+  gen::group([&] {
+    for (std::size_t i = 0; i < sizeof(T) * CHAR_BIT; i++) {
+      if (gen::next())
+        out = lib::midpoint(out, max);
+      else
+        max = lib::midpoint(out, max);
+    }
+  });
 
   return gen::shrink.to(min, out);
 }

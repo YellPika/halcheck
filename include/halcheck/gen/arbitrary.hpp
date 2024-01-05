@@ -43,8 +43,6 @@ inline bool arbitrary(gen::tag<bool>) { return gen::next(); }
 
 template<typename T, HALCHECK_REQUIRE(std::is_integral<T>())>
 T arbitrary(gen::tag<T>) {
-  auto _ = gen::group();
-
   alignas(T) char data[sizeof(T)];
   for (std::size_t i = 0; i < sizeof(T); i++) {
     auto ch = '\0';

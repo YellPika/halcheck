@@ -2,6 +2,7 @@
 #define HALCHECK_GEN_GROUP_HPP
 
 #include <halcheck/lib/effect.hpp>
+#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/scope.hpp>
 
 namespace halcheck { namespace gen {
@@ -21,6 +22,12 @@ public:
   scope operator()() const {
     effect::operator()(true);
     return lib::finally(ungroup{this});
+  }
+
+  template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
+  lib::invoke_result_t<F> operator()(F func) const {
+    auto _ = (*this)();
+    return lib::invoke(func);
   }
 
   template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F, bool>())>
