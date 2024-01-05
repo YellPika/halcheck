@@ -32,6 +32,8 @@ template<typename Sampler = decltype(test::check)>
 void check(void (*func)(), const char *, Sampler sampler = test::check) {
   lib::invoke(sampler, func);
 }
+
+int &failures();
 }}} // namespace halcheck::ext::doctest
 
 #define HALCHECK_EXPAND(x) x
@@ -44,7 +46,14 @@ void check(void (*func)(), const char *, Sampler sampler = test::check) {
 
 #define HALCHECK_TEST_CASE_HELPER(anon, ...)                                                                           \
   static void anon();                                                                                                  \
-  TEST_CASE(HALCHECK_1ST(__VA_ARGS__)) { HALCHECK_EXPAND(HALCHECK_2ND(__VA_ARGS__, ::halcheck::test::check))(anon); }  \
+  TEST_CASE(HALCHECK_1ST(__VA_ARGS__)) {                                                                               \
+    HALCHECK_EXPAND(HALCHECK_2ND(__VA_ARGS__, ::halcheck::test::check))                                                \
+    ([] {                                                                                                              \
+      ::halcheck::ext::doctest::failures() = 0;                                                                        \
+      anon();                                                                                                          \
+      REQUIRE_EQ(::halcheck::ext::doctest::failures(), 0);                                                             \
+    });                                                                                                                \
+  }                                                                                                                    \
   static void anon()
 
 #define HALCHECK_TEST_CASE(...) HALCHECK_TEST_CASE_HELPER(DOCTEST_ANONYMOUS(HALCHECK_ANON_FUNC_), __VA_ARGS__)
@@ -53,7 +62,12 @@ void check(void (*func)(), const char *, Sampler sampler = test::check) {
   template<typename T>                                                                                                 \
   static void anon();                                                                                                  \
   TEST_CASE_TEMPLATE_DEFINE(dec, T, HALCHECK_1ST(__VA_ARGS__)) {                                                       \
-    HALCHECK_EXPAND(HALCHECK_2ND(__VA_ARGS__, ::halcheck::test::check))(anon<T>);                                      \
+    HALCHECK_EXPAND(HALCHECK_2ND(__VA_ARGS__, ::halcheck::test::check))                                                \
+    ([] {                                                                                                              \
+      ::halcheck::ext::doctest::failures() = 0;                                                                        \
+      anon<T>();                                                                                                       \
+      REQUIRE_EQ(::halcheck::ext::doctest::failures(), 0);                                                             \
+    });                                                                                                                \
   }                                                                                                                    \
   template<typename T>                                                                                                 \
   static void anon()
