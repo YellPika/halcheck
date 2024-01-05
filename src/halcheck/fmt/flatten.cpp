@@ -133,20 +133,18 @@ fmt::flatten::~flatten() {
   delete buf;
 }
 
-TEST_CASE("flatten check") {
-  test::check([] {
-    auto width = gen::range(0, 20);
-    std::ostringstream os;
-    fmt::flatten flatten(os, width);
+HALCHECK_TEST_CASE("flatten check") {
+  auto width = gen::range(0, 20);
+  std::ostringstream os;
+  fmt::flatten flatten(os, width);
 
-    auto size = gen::size();
-    while (gen::next(1, size--)) {
-      auto indent = std::string(gen::range(0, width * 2), ' ');
-      auto contents =
-          gen::container<std::string>(gen::range(0, width * 2), [] { return gen::range('a', char('z' + 1)); });
-      os << indent << contents << '\n';
-    }
-  });
+  auto size = gen::size();
+  while (gen::next(1, size--)) {
+    auto indent = std::string(gen::range(0, width * 2), ' ');
+    auto contents =
+        gen::container<std::string>(gen::range(0, width * 2), [] { return gen::range('a', char('z' + 1)); });
+    os << indent << contents << '\n';
+  }
 }
 
 TEST_CASE("flatten example") {

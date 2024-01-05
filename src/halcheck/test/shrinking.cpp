@@ -40,7 +40,7 @@ HALCHECK_TEST_CASE("shrinking test") {
     FAIL("failure not caught!");
   } catch (const std::vector<T> &e) {
     CAPTURE(e);
-    REQUIRE_EQ(e, expected);
+    CHECK_EQ(e, expected);
   }
 }
 
@@ -62,6 +62,6 @@ HALCHECK_TEST_CASE("binary_search test", test::limited(test::random(), 1024)) {
     });
   } catch (const decltype(err) &e) {
     std::clog << "DONE\n";
-    REQUIRE_EQ(e, err);
+    CHECK_EQ(e, err);
   }
 }

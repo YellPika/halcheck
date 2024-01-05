@@ -25,8 +25,8 @@ HALCHECK_TEST_CASE_TEMPLATE_DEFINE("gen::range", T, gen_range, test::limited(tes
   auto value = gen::range(min, max);
   CAPTURE(value);
 
-  REQUIRE_LE(min, value);
-  REQUIRE_LT(value, max);
+  CHECK_LE(min, value);
+  CHECK_LT(value, max);
 
   std::clog << min << " ≤ " << value << " < " << max << "\n";
 }

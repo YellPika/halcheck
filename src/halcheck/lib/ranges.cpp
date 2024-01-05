@@ -49,5 +49,5 @@ HALCHECK_TEST_CASE("auto_insert_iterator") {
   auto it2 = lib::auto_insert(actual);
   for (; it1 != expected.end(); ++it1, ++it2)
     *it2 = *it1;
-  REQUIRE_EQ(actual, expected);
+  CHECK_EQ(actual, expected);
 }

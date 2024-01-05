@@ -17,6 +17,6 @@ HALCHECK_TEST_CASE("lib::midpoint") {
   auto d1 = std::abs(mid - min);
   auto d2 = std::abs(max - mid);
   auto d3 = std::abs(max - min);
-  REQUIRE_EQ(d1 + d2, d3);
-  REQUIRE_GE(d2, d1);
+  CHECK_EQ(d1 + d2, d3);
+  CHECK_GE(d2, d1);
 }

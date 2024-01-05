@@ -23,7 +23,7 @@ static void effect_test(std::vector<std::pair<std::reference_wrapper<lib::effect
 
     case CALL: {
       auto &&pair = gen::element(state);
-      REQUIRE_EQ(pair.first.get()(), pair.second);
+      CHECK_EQ(pair.first.get()(), pair.second);
     } break;
 
     case HANDLE: {
@@ -64,25 +64,25 @@ TEST_CASE("effect example") {
   lib::effect<bool> example0([] { return (throw 0, true); });
   lib::effect<bool> example1([] { return true; });
 
-  REQUIRE_THROWS_AS(example0(), int);
-  REQUIRE(example1());
+  CHECK_THROWS_AS(example0(), int);
+  CHECK(example1());
 
   {
     auto _0 = example0.handle([&] {
-      REQUIRE_THROWS_AS(example0(), int);
+      CHECK_THROWS_AS(example0(), int);
       return true;
     });
 
     auto _1 = example1.handle([&] {
-      REQUIRE(example1());
-      REQUIRE(example0());
+      CHECK(example1());
+      CHECK(example0());
       return false;
     });
 
-    REQUIRE(example0());
-    REQUIRE_FALSE(example1());
+    CHECK(example0());
+    CHECK_FALSE(example1());
   }
 
-  REQUIRE_THROWS_AS(example0(), int);
-  REQUIRE(example1());
+  CHECK_THROWS_AS(example0(), int);
+  CHECK(example1());
 }

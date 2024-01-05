@@ -43,13 +43,13 @@ HALCHECK_TEST_CASE("check experiment 1") {
     case 0: {
       vector.push_back(gen::arbitrary<int>());
       ++size;
-      REQUIRE_EQ(vector.size(), size);
+      CHECK_EQ(vector.size(), size);
     } break;
     case 1: {
       if (size > 0) {
         vector.pop_back();
         --size;
-        REQUIRE_EQ(vector.size(), size);
+        CHECK_EQ(vector.size(), size);
       }
     } break;
     }

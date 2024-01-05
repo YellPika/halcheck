@@ -20,12 +20,12 @@ TEST_SUITE("gen::element") {
 
     auto &x = gen::element(xs);
     auto i = std::find(xs.begin(), xs.end(), x);
-    REQUIRE_EQ(&x, &*i);
+    CHECK_EQ(&x, &*i);
   }
 
   HALCHECK_TEST_CASE("gen::element works with std::initializer_list") {
     auto x = gen::element({1, 2, 3, 4, 5});
-    REQUIRE_LE(1, x);
-    REQUIRE_LE(x, 5);
+    CHECK_LE(1, x);
+    CHECK_LE(x, 5);
   }
 }
