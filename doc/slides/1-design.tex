@@ -1,382 +1,289 @@
+% In this section I will go over the design of halcheck. I will
+% 1. go through each design goal,
+% 2. explain the motivation behind each goal (if I haven't already), and
+% 3. explain how halcheck fulfils that goal, with examples.
 \section{Design}
 
-\begin{frame}[t]{\halcheck{} --- Design}
-  Goals:
-  \begin{itemize}
-    \item Support user-defined generation strategies
-    \item First-order functions (as much as possible)
-  \end{itemize}
+\begin{frame}[t,fragile]{\halcheck{} --- Design}
+  % Goal: we want a simple API with few higher-order functions and no generator type.
+  % This is a central design choice for the library.
+  % I've already explained why we want this in the previous part.
+  \textbf{Goal:} Simple API with few higher-order functions and no generator type.\\
 
-  \begin{onlyenv}<2>
-    \begin{itemize}
-      \item C++ 11 support
-      \item Thread safety
-    \end{itemize}
-  \end{onlyenv}
+  \begin{columns}[onlytextwidth]
+    \column{0.65\textwidth}
+    \begin{cppcode}
+      template<typename T>
+      T gen::arbitrary();
 
-  \begin{onlyenv}<3->
-    To support these goals, every generator needs to be built from a set of \alert{overridable core functions}:
+      template<typename T>
+      T gen::range(T min, T max);
 
-    \begin{itemize}
-      \item<4-> \mintinline{c++}{gen::next}
-      \item<4-> \mintinline{c++}{gen::discard}
-      \item<4-> \mintinline{c++}{gen::shrink}
-      \item<4-> \mintinline{c++}{gen::group}
-    \end{itemize}
-  \end{onlyenv}
-\end{frame}
+      template<typename T>
+      T &gen::element(std::vector<T> &container);
 
-\begin{frame}[fragile,t]{\halcheck{} --- Design --- \mintinline{c++}{gen::next}}
-  \begin{center}
-    \mintinline{c++}{gen::next(int x = 1, int y = 1) |→| bool}
-  \end{center}
+      template<typename T, typename F>
+      T gen::container<T>(size_t size, F gen);
+    \end{cppcode}
 
-  \begin{onlyenv}<+>
-    \textbf{Intuition:} \mintinline{c++}{gen::next(x, y)} performs a biased coin flip with \( p = \frac{y}{x + y} \).
-
-    \begin{itemize}
-      \item This is our \alert{only} source of randomness.
-      \item Is this enough to define all generators?
-    \end{itemize}
-  \end{onlyenv}
-
-  \begin{onlyenv}<+-+(1)>
-    \begin{columns}[T]
-      \column{0.6\textwidth}
-      \textbf{Example 1:} \emph{generate a number in the range $[a, b)$}.
-
-      \begin{itemize}
-        \item<.(1)-> Use binary search, replace comparison with biased coin flip.
-      \end{itemize}
-
-      \column{0.4\textwidth}
-      \begin{onlyenv}<+>
-        \begin{minted}{c++}
-          int range(int a, int b) {
-            if (a + 1 >= b)
-              return a;
-
-            int c = std::midpoint(a, b);
-            if (gen::next(c - a, b - c))
-              return range(mid, b);
-            else
-              return range(a, mid);
-          }
-        \end{minted}
-      \end{onlyenv}
-    \end{columns}
-  \end{onlyenv}
-
-  \begin{onlyenv}<+-+(2)>
-    \begin{columns}[T]
-      \column{0.55\textwidth}
-      \textbf{Example 2:} \emph{generate a \mintinline{c++}{enum dim}}.
-
-      \begin{itemize}
-        \item<.(1)-> Consult \mintinline{c++}{gen::range} to determine which value to return.
-          \begin{onlyenv}<.(2)->
-            \begin{center}
-              --- OR ---
-            \end{center}
-          \end{onlyenv}
-        \item<.(2)-> Define \mintinline{c++}{gen::element} (implemented via \mintinline{c++}{gen::range}).
-      \end{itemize}
-
-      \column{0.45\textwidth}
-      \begin{minted}{c++}
-        enum class dim {
-          x = 0, y = 3, z = 8
-        };
-      \end{minted}
-
-      \begin{onlyenv}<+>
-        \begin{minted}{c++}
-          dim arbitrary(gen::tag<dim>) {
-            switch (gen::range(0, 3)) {
-            case 0: return dim::x;
-            case 1: return dim::y;
-            case 2: return dim::z;
-          } }
-        \end{minted}
-      \end{onlyenv}
-
-      \begin{onlyenv}<+>
-        \begin{minted}{c++}
-          dim arbitrary(gen::tag<dim>) {
-            return gen::element({x, y, z});
-          }
-        \end{minted}
-      \end{onlyenv}
-    \end{columns}
-  \end{onlyenv}
-
-  \begin{onlyenv}<+-+(1)>
-    \begin{columns}[T]
-      \column{0.5\textwidth}
-      \textbf{Example 3:} \emph{generate a \mintinline{c++}{struct vec}}.
-
-      \begin{itemize}
-        \item<.(1)-> Trivial.
-      \end{itemize}
-
-      \column{0.5\textwidth}
-      \begin{minted}{c++}
-        struct vec {
-          int x;
-          int y;
-        };
-      \end{minted}
-
-      \begin{onlyenv}<+>
-        \begin{minted}{c++}
-          vec arbitrary(gen::tag<vec>) {
-            vec output;
-            output.x = gen::arbitrary<int>();
-            output.y = gen::arbitrary<int>();
-            return output;
-          }
-        \end{minted}
-      \end{onlyenv}
-    \end{columns}
-  \end{onlyenv}
-
-  \begin{onlyenv}<+-+(4)>
-    \begin{columns}[T]
-      \column{0.45\textwidth}
-      \textbf{Example 4:} \emph{generate a \mintinline{c++}{std::string}}.
-
-      \begin{onlyenv}<.(1)-.(2)>
-        \begin{itemize}
-          \item<.(1)-> Generate random size $n$, then generate $n$ elements.
-          \item<.(2)-> \mintinline{c++}{gen::arbitrary<size_t>} is uniformly distributed --- high chance of generating \alert{billions of GBs}.
-        \end{itemize}
-      \end{onlyenv}
-
-      \begin{onlyenv}<.(3)-.(4)>
-        \begin{itemize}
-          \item<.(3)-> Add elements as long as \mintinline{c++}{gen::next} returns \mintinline{c++}{true}.
-          \item<.(4)-> Distribution \alert{biased towards shorter lists}.
-        \end{itemize}
-      \end{onlyenv}
-
-      \column{0.55\textwidth}
-      \begin{onlyenv}<+-+(1)>
-        \begin{minted}{c++}
-          std::string gen_string() {
-            std::string xs;
-            auto size = gen::arbitrary<size_t>();
-            while (size-- > 0)
-              xs.push_back(gen::arbitrary<char>());
-            return xs;
-          }
-        \end{minted}
-        \only<+>{}
-      \end{onlyenv}
-
-      \begin{onlyenv}<+-+(1)>
-        \begin{minted}{c++}
-          std::string gen_string() {
-            std::string xs;
-            while (gen::next())
-              xs.push_back(gen::arbitrary<char>());
-            return xs;
-          }
-        \end{minted}
-        \only<+>{}
-      \end{onlyenv}
-
-    \end{columns}
-  \end{onlyenv}
-\end{frame}
-
-\begin{frame}[fragile,t]{\halcheck{} --- Design --- \mintinline{c++}{gen::next}}
-  \textbf{Problem:} how do we define \mintinline{c++}{gen_string} with a sensible distribution?
-
-  \pause{}
-
-  \textbf{Standard Solution:} define a incrementally increasing size parameter and choose lengths uniformly up to the current size.
-
-  \begin{minted}{c++}
-    std::string gen_string() {
-      std::string xs;
-      auto size = gen::range(0, gen::size());
-      while (size-- > 0)
-        xs.push_back(gen::arbitrary<char>());
-      return xs;
-    }
-  \end{minted}
-
-  \pause{}
-
-  \begin{itemize}
-    \item \mintinline{c++}{gen::size} cannot be defined in terms of \mintinline{c++}{gen::next}.
-    \item Do we really need an extra combinator?
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile,t]{\halcheck{} --- Design --- \mintinline{c++}{gen::next}}
-  \begin{center}
-    \mintinline{c++}{gen::next(gen::weight x = 1, gen::weight y = 1) |→| bool}
-  \end{center}
-
-  I lied! \pause{}
-  \begin{itemize}
-    \item Actual definition of \mintinline{c++}{gen::next} takes \mintinline{c++}{gen::weight} parameters.
-    \item A \mintinline{c++}{gen::weight} is an \alert{expression} over an unknown size $s$.
-          \begin{itemize}
-            \item $s - 5$, $2s$, etc.
-          \end{itemize}
-  \end{itemize}
-
-  \begin{minted}{c++}
-    std::string gen_string() {
-      std::string xs;
-      auto size = gen::weight::current; // current is s
-      while (gen::next(1, size--))
-        xs.push_back(gen::arbitrary<char>());
-      return xs;
-    }
-  \end{minted}
-
-  \begin{itemize}
-    \item Proof of correctness left as an exercise to the reader \smiley{}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]{\halcheck{} --- Design --- \mintinline{c++}{gen::next}}
-  \textbf{Summary:} \mintinline{c++}{gen::next} alone allows us to write generators for
-  \begin{itemize}
-    \item weighted distributions,
-    \item \mintinline{c++}{enum}s and \mintinline{c++}{union}s (i.e., sum types),
-    \item \mintinline{c++}{struct}s (i.e., product types), and
-    \item recursive data structures via sized generation.
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]{\halcheck{} --- Design --- \mintinline{c++}{gen::discard}}
-  \begin{center}
-    \mintinline{c++}{gen::discard()}
-  \end{center}
-
-  \textbf{Intuition:} \mintinline{c++}{gen::discard()} terminates the current test case (no failure).
-
-  \begin{itemize}
-    \item Used to implement precondition checking (\mintinline{haskell}{==>}, \mintinline{c++}{RC_PRE}).
-    \item Also useful for implementing rejection sampling (\mintinline{c++}{gen::suchThat}).
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile,t]{\halcheck{} --- Design --- \mintinline{c++}{gen::shrink}}
-  \begin{center}
-    \mintinline{c++}{gen::shrink(int size = 1) |→| std::optional<int>}
-  \end{center}
-
-  \only<+>{\textbf{Intuition:} \mintinline{c++}{gen::shrink(n)} returns an integer if shrinking should occur at the call site, or \mintinline{c++}{std::nullopt} otherwise.}
-
-  \begin{columns}<+->[T]
-    \column{0.5\textwidth}
-    \textbf{Example:}
-
-    \begin{minted}{c++}
-      std::string gen_string_shrink() {
-        auto xs = gen_string();
-        for (size_t i = 0; i < xs.size();) {
-          if (auto c = gen::shrink(2))
-            if (*c == 0) xs.erase(i);
-            else         xs[i] = '\0';
-          else
-            i++;
-        }
-        return xs;
-      }
-    \end{minted}
-
-    \column{0.4\textwidth}
-    \textbf{Behaviour:}
-    \begin{enumerate}
-      \item<+-> \mintinline{c++}{gen::shrink(n)} returns \mintinline{c++}{std::nullopt} until a test case failure occurs.
-      \item<+> On subsequent test cases, \mintinline{c++}{gen::shrink(n)} returns an integer $< n$ indicating which value to shrink to.
-    \end{enumerate}
+    % We want users to define generators by "just" writing normal functions.
+    \column<2>{0.35\textwidth}
+    \centering\Large Motto:\\\alert{Just write functions!}
   \end{columns}
 \end{frame}
 
-\begin{frame}[fragile,t]{\halcheck{} --- Design --- \mintinline{c++}{gen::group}}
+\begin{frame}[t,fragile]{\halcheck{} --- Design --- Core}
+  % To achieve our goal of a simple first-order, generator-less API,
+  % halcheck provides a function, gen::next.
+  \textbf{Goal:} Simple API with few higher-order functions and no generator type.
   \begin{center}
-    \mintinline{c++}{gen::group()}
+    \cppinline{bool gen::next(int w₀, int w₁);}
   \end{center}
 
-  \begin{columns}[T]
+  \begin{overprint}
+    % This is halcheck's *only* source of randomness.
+    % All generators are built from this function.
+    % All it does is perform a weighted coin flip.
+    \onslide<2,3>
+    \begin{itemize}
+      \item Returns \cppinline{true} with probability $\frac{w_1}{w_0 + w_1}$ ($w_0$ and $w_1$ are relative weights).
+      \item<3> This is the \alert{only} source of randomness --- all generators are built from this function!
+    \end{itemize}
+
+    % Here's an example of how we can use this function to define a generator for a range.
+    % This is basically a binary search, except we perform a coin flip instead of a comparison.
+    % The size of the range can be odd, we need to use a weighted coin flip to ensure uniformity.
+    % Notice the TODO in the case min >= max -- I'll get to this in a moment.
+    \onslide<4>
+    \vspace{-1em}
+    \begin{block}{Example:}
+      \begin{cppcode}
+      int gen::range(int min, int max) {
+        while (min + 1 < max) {
+          auto mid = std::midpoint(min, max);
+          if (|\alert{gen::next}|(mid - min, max - mid))
+            max = mid;
+          else
+            min = mid; }
+        return min; }
+    \end{cppcode}
+    \end{block}
+  \end{overprint}
+\end{frame}
+
+\begin{frame}[t,fragile]{\halcheck{} --- Design --- Core}
+  % A weighted coin toss is all we need to compute random data.
+  % But users expect a lot more from a property-based testing library.
+  % If we had a central generator type, we could support them all just by extending this type.
+  % * For sized generation, just add an extra parameter
+  % * For shrinking, change the output to a shrink tree
+  % * For reporting distributions, add a list of labels to the output
+  % * If we want the ability to discard test-cases, just make the output optional.
+  \begin{columns}[onlytextwidth]
+    \column{0.5\textwidth}
+    \begin{block}{Users expect more!}
+      \begin{itemize}
+        \item<2-|alert@2,7> Discards
+        \item<3-|alert@3,8> Sized generation
+        \item<4-|alert@4,9> Distribution logging
+        \item<5-|alert@5,10> Shrinking
+      \end{itemize}
+    \end{block}
+
+    \column{0.5\textwidth}
+    \begin{haskellcode}
+      data Gen a = Gen
+        ( Random|\only<3->{\\\ \ → \alert<3>{Size}}|
+        → |\only<2->{\alert<2>{Maybe} }||\only<4->{(}||\only<5->{\alert<5>{Tree} }|a|\only<4->{, \alert<4>{[Label]})}|
+        )
+    \end{haskellcode}
+  \end{columns}
+
+  % In halcheck we've committed to a "generator-less" interface.
+  % There is no generator type to extend!
+  % How can we support all these features by only providing functions?
+  \onslide<6->
+  What \alert{functions} do we need to provide to support these features?
+
+  \begin{columns}[onlytextwidth]
     \column{0.45\textwidth}
-    \textbf{Example:}
+    \begin{itemize}
+      \item<7->[\alert<7>{\textbullet}] \cppinline{void gen::discard()} \only<7>{\\(throws exception)}
+      \item<9->[\alert<9>{\textbullet}] \cppinline{void gen::label(std::string)}
+    \end{itemize}
+    \column{0.55\textwidth}
+    \begin{itemize}
+      \item<8->[\alert<8>{\textbullet}] \cppinline{int gen::size()}
+      \item<10->[\alert<10>{\textbullet}] \cppinline{std::optional<int> gen::shrink(int)}
+    \end{itemize}
+  \end{columns}
+\end{frame}
 
-    \begin{onlyenv}<.(1)-.(2)>
-      \begin{minted}{c++}
+\begin{frame}[fragile,t]{\halcheck{} --- Design --- Core --- \cppinline{gen::shrink}}
+  \begin{center}
+    \cppinline{std::optional<int> gen::shrink(int size = 1)}
+  \end{center}
+
+  \begin{overprint}
+    \onslide<+>
+    \begin{itemize}
+      \item \cppinline{gen::shrink(n)} returns an \cppinline{int i} if shrinking should occur at the call site, and \cppinline{std::nullopt} otherwise.
+      \item Intuitively, \cppinline{i} is the \emph{index} of the child element to shrink to.
+    \end{itemize}
+
+    \onslide<+->
+    \begin{columns}[T]
+      \column{0.48\textwidth}
+      \begin{block}{Example:}
+        \begin{cppcode}
+          std::string gen_string() {
+            auto xs = /* random string */;
+            for (size_t i = 0; i < xs.size();)
+              if (auto c = |\alert{gen::shrink}(2)|) $\only<.(2)>{\alert{\Longleftarrow}}$
+                if (*c == 0) xs.erase(i); $\only<.(3)>{\alert{\Longleftarrow}}$
+                else         xs[i] = '\0'; $\only<.(4)>{\alert{\Longleftarrow}}$
+              else $\only<.(1)>{\alert{\Longleftarrow}}$
+                i++;
+            return xs; }
+        \end{cppcode}
+      \end{block}
+
+      \column{0.52\textwidth}
+      \begin{block}{Explanation:}
+        \begin{enumerate}
+          \item<+-|alert@+> Normally, \cppinline{gen::shrink(n)} always returns \cppinline{nullopt}, so \cppinline{xs} is unmodified.
+          \item<+-|alert@+> When shrinking, \cppinline{gen::shrink(n)} returns an integer $c < n$.
+            \begin{enumerate}
+              \item<+-|alert@+> If $c = 0$: remove current element.
+              \item<+-|alert@+> If $c = 1$: shrink current element to 0.
+            \end{enumerate}
+        \end{enumerate}
+      \end{block}
+    \end{columns}
+  \end{overprint}
+\end{frame}
+
+\begin{frame}[fragile,t]{\halcheck{} --- Design --- Core --- \cppinline{gen::shrink}}
+  \begin{itemize}
+    \item \cppinline{gen::shrink} provides a minimal interface for defining shrinking behaviour.
+    \item Not meant to be used directly!
+    \item Other combinators (e.g., Hedgehog's \haskellinline{shrink}) can be built using \cppinline{gen::shrink}.
+  \end{itemize}
+
+  \begin{center}
+    But \cppinline{gen::shrink} has a problem!
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile,t]{\halcheck{} --- Design --- Core --- \cppinline{gen::shrink}}
+  \begin{columns}[T]
+    \column{0.4\textwidth}
+    \begin{overprint}
+      \textbf{Example:}
+
+      \onslide<1-7>
+      \begin{cppcode}
+        gen::next → |\color{violet}{true}|, |\color{red}{false}|, |\color{orange}{true}|
+
         int x = 0;
-        if (gen::next() && // a
-            !gen::shrink())
-          x += gen::next() ? 1 : 0; // b
-        x += gen::next() ? 1 : 0; // c
-      \end{minted}
-    \end{onlyenv}
+        if (|\only<1>{gen::next()}\only<2->{\textcolor{violet}{true}}| && |\only<1-2>{!gen::shrink()}\only<3->{\textcolor{blue}{false}}|)
+          x += |\only<1>{gen::next()}\only<2-5>{\textcolor{red}{false}}\only<6->{\textcolor{gray}{gen::next()}}| ? 1 : 0;
+        x += |\only<1>{gen::next()}\only<2-6>{\textcolor{orange}{true}}\only<7>{\textcolor{red}{false}}| ? 1 : 0;
+      \end{cppcode}
 
-    \begin{onlyenv}<.(3)>
-      \begin{minted}{c++}
+      \onslide<8->
+      \begin{cppcode}
+        gen::next → [|\color{violet}{true}|, |\color{red}{false}|], |\color{orange}{true}|
+
         int x = 0;
         {
-          auto _ = gen::group();
-          if (gen::next() && // a
-              !gen::shrink())
-            x += gen::next() ? 1 : 0; // b
+          auto _ = |\alert{gen::group}|();
+          if (|\only<8>{gen::next()}\only<9->{\textcolor{violet}{true}}| && |\only<8-9>{!gen::shrink()}\only<10->{\textcolor{blue}{false}}|)
+            x += |\only<8>{gen::next()}\only<9>{\textcolor{red}{true}}\only<10>{\textcolor{gray}{gen::next()}}| ? 1 : 0;
         }
-        x += gen::next() ? 1 : 0; // c
-      \end{minted}
-    \end{onlyenv}
+        x += |\only<8>{gen::next()}\only<9->{\textcolor{orange}{true}}| ? 1 : 0;
+      \end{cppcode}
+    \end{overprint}
 
-    \column{0.55\textwidth}
-    \begin{onlyenv}<+>
+    \column{0.6\textwidth}
+    \begin{overprint}
+      \onslide<1-4>
+      \textbf{Explanation:}
       \begin{itemize}
-        \item Suppose a test case failure occurs with \mintinline{c++}{a == b == true} and  \mintinline{c++}{c == false}.
-        \item Then \mintinline{c++}{!gen::shrink()} subsequently evaluates to \mintinline{c++}{false} and \mintinline{c++}{b} is not evaluated.
-        \item We expect that \mintinline{c++}{c} should still evaluate to \mintinline{c++}{false}.
+        \item<2-> Suppose a test case failure occurs.
+        \item<3-> Then \cppinline{!gen::shrink()} subsequently evaluates to \cppinline{false}.
+        \item<4-> Final call to \cppinline{gen::next} returns \texttt{\footnotesize\color{orange}{true}}.
       \end{itemize}
-    \end{onlyenv}
 
-    \begin{onlyenv}<+>
-      \textbf{Problem:} \halcheck{} is just a library. It cannot inspect the internal structure of a program!
+      \onslide<5-7>
+      \textbf{Problem:}
       \begin{itemize}
-        \item Internally, \halcheck{} only saves and replays the results of \mintinline{c++}{gen::next}.
-        \item Sequence 1: \mintinline{c++}{{a: true, b: true, c: false}}
-        \item Sequence 2: \mintinline{c++}{{a: true, c: true, [unused]: false}}
+        \item<5-> \halcheck{} is just a library. It can't inspect the internal structure of a program!
+        \item<5-> Internally, \halcheck{} only saves and replays the results of \cppinline{gen::next}.
+        \item<6-> Second call to \cppinline{gen::next} is never evaluated.
+        \item<7-> Final call to \cppinline{gen::next} returns next available value (\texttt{\footnotesize\color{red}{false}})!
       \end{itemize}
-    \end{onlyenv}
 
-    \begin{onlyenv}<+>
-      \textbf{Intuition:} \mintinline{c++}{gen::group} informs \halcheck{} that all subsequent calls to \mintinline{c++}{gen::next} (and \mintinline{c++}{gen::shrink}) should be treated as a single "step".
-
+      \onslide<8->
+      \textbf{Solution:} \cppinline{gen::group}
       \begin{itemize}
-        \item Sequence 1: \mintinline{c++}{{{a: true, b: true}, c: false}}
-        \item Sequence 2: \mintinline{c++}{{{a: true, [unused]: true}, c: false}}
+        \item<8-> \cppinline{gen::group} informs \halcheck{} that all subsequent calls to \cppinline{gen::next} (and \cppinline{gen::shrink}) should be treated as a single ``step''.
+        \item<9-> Evaluation before shrinking is unchanged.
+        \item<10-> Final call to \cppinline{gen::next} returns the proper value even after shrinking!
       \end{itemize}
-    \end{onlyenv}
+    \end{overprint}
   \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} --- Design --- Core}
+\begin{frame}[fragile,t]{\halcheck{} --- Design --- Core --- \cppinline{gen::group}}
+  When to use \cppinline{gen::group}?
   \begin{itemize}
-    \item All generators are implemented using the core functions.
-          \pause{}
-    \item How are the core functions themselves implemented?
-          \pause\alert{It depends!}
-    \item Core functions can be \alert{overridden}.
+    \item Number of calls to \cppinline{gen::group}, \cppinline{gen::next}, and \cppinline{gen::shrink} (excluding calls within a \cppinline{gen::group}) must be \alert{constant}.
+    \item Simple heuristic: wrap all conditionals and loops in a \cppinline{gen::group}.
+    \begin{itemize}
+      \item Future work: automatic \cppinline{gen::group} insertion via instrumentation.
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{\halcheck{} --- Design --- Core}
-  \textbf{Example:} Overriding \mintinline{c++}{gen::next}
-  \begin{minted}{c++}
+\begin{frame}[fragile]{\halcheck{} --- Design --- Effects}
+  \begin{itemize}
+    \item All generators are implemented using the six (and counting) core functions:
+          \begin{itemize}
+            \item \cppinline{gen::next}
+            \item \cppinline{gen::discard}
+            \item \cppinline{gen::size}
+            \item \cppinline{gen::label}
+            \item \cppinline{gen::shrink}
+            \item \cppinline{gen::group}
+          \end{itemize}
+    \item How are the core functions themselves implemented?
+          \pause{}
+          \alert{It depends!}
+    \item Behaviour differs depending on strategy (e.g., random vs exhaustive).
+    \item Sometimes users need to override behaviour (e.g., disable shrinking).
+    \item \halcheck{} lets you \alert{override} core functions!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\halcheck{} --- Design --- Effects}
+  \halcheck{}'s core functions are implemented using a primitive system of \alert{effect handlers}.
+
+  \begin{itemize}
+    \item<2-> Every core function \cppinline{f} is an \emph{effect}.
+    \item<3-> A \emph{handler} \cppinline{h} for \cppinline{f} can be \emph{installed} using \cppinline{auto _ = f.handle(h)}.
+    \item<4-> Handlers are \emph{uninstalled} when the return value (\cppinline{_}) goes out of scope.
+    \item<5-> Effects are \emph{invoked} via the call operator (\cppinline{f()}) and behave according to the last handler that was installed.
+    \item<6-> Effects are \alert{lexically scoped}: any effects invoked within an effect handler behave as if they were invoked \emph{just before the effect handler was installed}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\halcheck{} --- Design --- Effects}
+  \textbf{Example:} Overriding \cppinline{gen::next}
+  \begin{cppcode}
     CHECK_THROWS(gen::next()); // Throws by default
     {
-      //   ▿ gen::next calls the lambda as long as this is in scope
+      //   ↓ gen::next calls the lambda as long as this is in scope
       auto _ = gen::next.handle([](int x, int y) {
         CHECK_THROWS(gen::next()); // Calling gen::next within the handler
                                    // invokes the previous behaviour.
@@ -385,19 +292,5 @@
       CHECK_EQ(gen::next(0, 1), true);
     }
     CHECK_THROWS(gen::next()); // Original behaviour restored
-  \end{minted}
-\end{frame}
-
-\begin{frame}{\halcheck{} --- Design --- Core}
-  \halcheck{}'s core functions are implemented using a primitive system of \alert{effect handlers}.
-
-  \begin{itemize}
-    \item<+-> \mintinline{c++}{gen::next}, \mintinline{c++}{gen::discard}, etc. are \emph{effects}.
-    \item<+-> Effects are \emph{invoked} via the call operator (\mintinline{c++}{eff()}).
-    \item<+-> A \emph{handler} can be \emph{installed} using \mintinline{c++}{auto _ = eff.handle(my_handler)} is \emph{uninstalled} when the return value (\mintinline{c++}{_}) goes out of scope.
-    \item<+-> Effects are \alert{lexically scoped}: any effects invoked within an effect handler behave as if they were invoked \emph{just before the effect handler was installed}.
-      \begin{itemize}
-        \item This property is what makes strategies composable.
-      \end{itemize}
-  \end{itemize}
+  \end{cppcode}
 \end{frame}

@@ -1,5 +1,17 @@
 \section{Summary}
 
+\begin{frame}{\halcheck{} --- Summary}
+  \begin{itemize}
+    \item Every generator in \halcheck{} is built from a small set of first-order core functions, resulting in a ``direct-style'' API.
+    \item Every core function can be overridden.
+    \begin{itemize}
+      \item Enables custom generation strategies (e.g., random vs exhaustive).
+      \item Enables local modifications to generator behaviour (e.g., disabling shrinking).
+    \end{itemize}
+    \item Users must sometimes annotate functions with \cppinline{gen::group} to get proper shrinking behaviour.
+  \end{itemize}
+\end{frame}
+
 \begin{frame}{\halcheck{} --- In Progress}
   \begin{columns}[T,onlytextwidth]
     \column{0.5\textwidth}
@@ -25,11 +37,3 @@
     \end{block}
   \end{columns}
 \end{frame}
-
-% \begin{frame}{\halcheck{} --- Summary}
-%   \begin{itemize}
-%     \item Every generator in \halcheck{} is built from four first-order core functions, enabling a ``direct-style'' API.
-%     \item User-defined generation strategies are supported: every core function can be overriden.
-%     \item Shrinking is performed by changing generator inputs (\mintinline{c++}{gen::shrink}) instead of generator outputs, resulting in less memory usage.
-%   \end{itemize}
-% \end{frame}

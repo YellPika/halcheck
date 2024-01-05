@@ -10,45 +10,37 @@
 
 \usepackage{listings}
 \usepackage{lstautogobble}
-\lstdefinestyle{cpp}{
+\lstset{
   autogobble,
   basicstyle=\ttfamily\footnotesize,
   keywordstyle=\color{blue},
   commentstyle=\color{gray},
-  language=c++,
+  keepspaces,
   mathescape,
   escapechar=|,
+  columns=fixed,
   literate={∷}{{:\!\!:}}1
+           {₀}{{\textsubscript{0}}}1
+           {₁}{{\textsubscript{1}}}1
            {←}{{\csname u8:\detokenize{←}\endcsname}}1
            {→}{{\csname u8:\detokenize{→}\endcsname}}1
            {↓}{{\csname u8:\detokenize{↓}\endcsname}}1
-           {↑}{{\csname u8:\detokenize{↑}\endcsname}}1,
-  columns=fullflexible,
-  keepspaces
+           {↑}{{\csname u8:\detokenize{↑}\endcsname}}1
+}
+\lstdefinestyle{cpp}{
+  language=c++,
+  morekeywords={decltype}
 }
 \lstdefinestyle{haskell}{
-  autogobble,
-  basicstyle=\ttfamily\footnotesize,
   morecomment=[l]{--},
-  morekeywords={data},
-  keywordstyle=\color{blue},
-  commentstyle=\color{gray},
-  mathescape,
-  escapechar=|,
-  literate={∷}{{:\!\!:}}1
-           {←}{{\csname u8:\detokenize{←}\endcsname}}1
-           {→}{{\csname u8:\detokenize{→}\endcsname}}1
-           {↓}{{\csname u8:\detokenize{↓}\endcsname}}1
-           {↑}{{\csname u8:\detokenize{↑}\endcsname}}1,
-  columns=fixed,
-  keepspaces
+  morekeywords={data,type}
 }
 \lstnewenvironment{cppcode}{\lstset{style=cpp}}{}
 \lstnewenvironment{haskellcode}{\lstset{style=haskell}}{}
-\newcommand{\cppinline}[1]{\lstinline[style=cpp]!#1!}
-\newcommand{\haskellinline}[1]{\lstinline[style=haskell]!#1!}
+\newcommand{\cppinline}[1]{\lstinline[style=cpp]|#1|}
+\newcommand{\haskellinline}[1]{\lstinline[style=haskell]|#1|}
 
-\newcommand{\halcheck}{\texttt{halcheck}}
+\newcommand{\halcheck}{\texttt{\footnotesize{halcheck}}}
 
 \title{\halcheck}
 \author{Anthony Vandikas}
@@ -64,6 +56,7 @@
 \end{frame}
 
 \include{slides/0-overview}
+\include{slides/1-design}
 \include{slides/2-summary}
 
 \end{document}
