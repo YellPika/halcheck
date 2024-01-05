@@ -4,7 +4,6 @@
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/gen/next.hpp>
 #include <halcheck/gen/range.hpp>
-#include <halcheck/gen/weight.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/limited.hpp>
 #include <halcheck/test/shrinking.hpp>
@@ -38,7 +37,7 @@ HALCHECK_TEST_CASE("check experiment 1") {
   std::size_t size = 0;
   std::vector<int> vector;
 
-  auto commands = gen::weight::current;
+  auto commands = gen::size();
   while (gen::next(1, commands--)) {
     switch (gen::range(0, 2)) {
     case 0: {

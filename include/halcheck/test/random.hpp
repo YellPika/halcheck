@@ -3,7 +3,6 @@
 
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/gen/next.hpp>
-#include <halcheck/gen/weight.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <cstdint>
@@ -29,16 +28,13 @@ public:
     std::default_random_engine engine(seed);
     std::uintmax_t size = 0;
 
-    auto strategy = [&](const gen::weight &w0, const gen::weight &w1) {
-      auto x0 = w0(size);
-      auto x1 = w1(size);
-      return std::uniform_int_distribution<std::uintmax_t>(1, x0 + x1)(engine) > x0;
-    };
-
     while (true) {
       try {
-        auto _0 = gen::discard.handle([] { return discard(); });
-        auto _1 = gen::next.handle(strategy);
+        auto _0 = gen::size.handle([&] { return size; });
+        auto _1 = gen::discard.handle([] { return discard(); });
+        auto _2 = gen::next.handle([&](std::uintmax_t w0, std::uintmax_t w1) {
+          return std::uniform_int_distribution<std::uintmax_t>(1, w0 + w1)(engine) > w0;
+        });
         lib::invoke(func);
       } catch (const discard &) {
       }

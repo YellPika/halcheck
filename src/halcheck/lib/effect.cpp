@@ -3,7 +3,6 @@
 #include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/gen/element.hpp>
-#include <halcheck/gen/weight.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/check.hpp>
 
@@ -16,11 +15,9 @@ thread_local std::array<lib::context::frame, lib::context::size> lib::context::s
 thread_local std::size_t lib::context::top = 0;
 std::atomic_size_t lib::context::next{0};
 
-static void effect_test(
-    std::vector<std::pair<std::reference_wrapper<lib::effect<char>>, char>> state = {},
-    const gen::weight &size = gen::weight::current) {
+static void effect_test(std::vector<std::pair<std::reference_wrapper<lib::effect<char>>, char>> state = {}) {
   enum command { CALL, HANDLE, CREATE };
-  auto i = size;
+  auto i = gen::size();
   while (gen::next(1, i--)) {
     switch (gen::weighted<command>({{4 * !state.empty(), CALL}, {2 * !state.empty(), HANDLE}, {1, CREATE}})) {
 
@@ -32,25 +29,29 @@ static void effect_test(
     case HANDLE: {
       auto value = gen::arbitrary<char>();
       auto &&pair = gen::element(state);
-      auto _ = pair.first.get().handle([=] {
-        effect_test(state, size / 4);
+      auto _0 = pair.first.get().handle([=] {
+        auto _ = gen::size.handle(gen::size() / 4);
+        effect_test(state);
         return value;
       });
 
       std::swap(pair.second, value);
-      effect_test(state, size / 4);
+      auto _1 = gen::size.handle(gen::size() / 4);
+      effect_test(state);
       std::swap(pair.second, value);
     } break;
 
     case CREATE: {
       auto value = gen::arbitrary<char>();
       lib::effect<char> eff([=] {
-        effect_test(state, size / 4);
+        auto _ = gen::size.handle(gen::size() / 4);
+        effect_test(state);
         return value;
       });
 
       state.emplace_back(std::ref(eff), value);
-      effect_test(state, size / 4);
+      auto _ = gen::size.handle(gen::size() / 4);
+      effect_test(state);
       state.pop_back();
     } break;
     }

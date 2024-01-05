@@ -3,7 +3,6 @@
 
 #include <halcheck/gen/next.hpp>
 #include <halcheck/gen/range.hpp>
-#include <halcheck/gen/weight.hpp>
 #include <halcheck/lib/numeric.hpp>
 #include <halcheck/lib/ranges.hpp>
 #include <halcheck/lib/type_traits.hpp>

@@ -41,8 +41,7 @@ public:
           std::vector<shrink> cshrinks;
           try {
             auto _0 = gen::discard.handle([] { return discard(); });
-            auto _1 =
-                gen::next.handle([](const gen::weight &w0, const gen::weight &w1) { return w0(0) == 0 && w1(0) > 0; });
+            auto _1 = gen::next.handle([](std::uintmax_t w0, std::uintmax_t w1) { return w0 == 0 && w1 > 0; });
             exec(func, csamples, cshrinks);
           } catch (const discard &) {
           } catch (...) {

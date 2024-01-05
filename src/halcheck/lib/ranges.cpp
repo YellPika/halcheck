@@ -42,8 +42,7 @@ HALCHECK_TEST_CASE("auto_insert_iterator") {
   auto actual = gen::arbitrary<std::vector<int>>();
   auto expected = actual;
 
-  auto size = gen::weight::current;
-  while (gen::next(1, size))
+  while (gen::next(1, gen::size() - expected.size()))
     expected.push_back(gen::arbitrary<int>());
 
   auto it1 = expected.begin();

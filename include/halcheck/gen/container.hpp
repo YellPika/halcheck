@@ -4,7 +4,6 @@
 #include <halcheck/gen/group.hpp>
 #include <halcheck/gen/next.hpp>
 #include <halcheck/gen/shrink.hpp>
-#include <halcheck/gen/weight.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/ranges.hpp>
 #include <halcheck/lib/type_traits.hpp>
@@ -47,7 +46,7 @@ template<
     HALCHECK_REQUIRE(lib::is_insertable<T>()),
     HALCHECK_REQUIRE(lib::is_invocable_r<lib::range_value_t<T>, F>())>
 T container(F gen) {
-  auto size = weight::current;
+  auto size = gen::size();
   return gen::unfold<T>([&]() -> lib::optional<lib::range_value_t<T>> {
     while (true) {
       if (!gen::next(1, size))

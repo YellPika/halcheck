@@ -101,6 +101,9 @@ F<Args...> apply_helper(int);
 template<template<typename...> class F, typename... Args>
 using apply = decltype(detail::apply_helper<F, Args...>(0));
 
+template<typename T>
+using type_identity_t = T;
+
 }} // namespace halcheck::lib
 
 #endif

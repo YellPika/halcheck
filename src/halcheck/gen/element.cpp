@@ -3,7 +3,6 @@
 #include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/gen/next.hpp>
-#include <halcheck/gen/weight.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/check.hpp>
 #include <halcheck/test/shrinking.hpp>
@@ -16,7 +15,7 @@ using namespace halcheck;
 TEST_SUITE("gen::element") {
   HALCHECK_TEST_CASE("gen::element returns a reference to an element") {
     std::vector<int> xs;
-    while (gen::next(1, gen::weight::current - xs.size()))
+    while (gen::next(1, gen::size() - xs.size()))
       xs.push_back(gen::arbitrary<int>());
 
     auto &x = gen::element(xs);

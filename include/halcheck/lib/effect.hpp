@@ -3,11 +3,13 @@
 
 #include <halcheck/lib/scope.hpp>
 
+#include "halcheck/lib/type_traits.hpp"
 #include <array>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <type_traits>
 
 namespace halcheck { namespace lib {
 
@@ -78,6 +80,19 @@ public:
   template<typename F, HALCHECK_REQUIRE(lib::is_invocable_r<R, F, Args...>())>
   handler handle(F func) const {
     return handler(new derived<F>(_id, std::move(func)));
+  }
+
+  template<
+      typename T,
+      HALCHECK_REQUIRE(!lib::is_invocable_r<R, T, Args...>()),
+      HALCHECK_REQUIRE(std::is_convertible<T, R>())>
+  handler handle(T value) const {
+    struct only {
+      R operator()(Args...) { return value; }
+      R value;
+    };
+
+    return handle(only{std::move(value)});
   }
 
   /// @brief Invokes the last active handler.

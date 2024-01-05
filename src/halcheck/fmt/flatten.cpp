@@ -5,7 +5,6 @@
 #include <halcheck/gen/container.hpp>
 #include <halcheck/gen/next.hpp>
 #include <halcheck/gen/range.hpp>
-#include <halcheck/gen/weight.hpp>
 #include <halcheck/test/check.hpp>
 #include <halcheck/test/shrinking.hpp>
 
@@ -140,7 +139,7 @@ TEST_CASE("flatten check") {
     std::ostringstream os;
     fmt::flatten flatten(os, width);
 
-    auto size = gen::weight::current;
+    auto size = gen::size();
     while (gen::next(1, size--)) {
       auto indent = std::string(gen::range(0, width * 2), ' ');
       auto contents =
