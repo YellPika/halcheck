@@ -114,7 +114,7 @@
     \column{0.55\textwidth}
     \begin{itemize}
       \item<8->[\alert<8>{\textbullet}] \cppinline{int gen::size()}
-      \item<10->[\alert<10>{\textbullet}] \cppinline{std::optional<int> gen::shrink(int)}
+      \item<10->[\alert<10>{\textbullet}] \cppinline{???}
     \end{itemize}
   \end{columns}
 \end{frame}
@@ -183,17 +183,17 @@
 
       \onslide<1-7>
       \begin{cppcode}
-        gen::next → |\color{violet}{true}|, |\color{red}{false}|, |\color{orange}{true}|
+        gen::next → |\color{violet}{true}|, |\color{red}{false}|, |\color{olive}{true}|
 
         int x = 0;
         if (|\only<1>{gen::next()}\only<2->{\textcolor{violet}{true}}| && |\only<1-2>{!gen::shrink()}\only<3->{\textcolor{blue}{false}}|)
           x += |\only<1>{gen::next()}\only<2-5>{\textcolor{red}{false}}\only<6->{\textcolor{gray}{gen::next()}}| ? 1 : 0;
-        x += |\only<1>{gen::next()}\only<2-6>{\textcolor{orange}{true}}\only<7>{\textcolor{red}{false}}| ? 1 : 0;
+        x += |\only<1>{gen::next()}\only<2-6>{\textcolor{olive}{true}}\only<7>{\textcolor{red}{false}}| ? 1 : 0;
       \end{cppcode}
 
       \onslide<8->
       \begin{cppcode}
-        gen::next → [|\color{violet}{true}|, |\color{red}{false}|], |\color{orange}{true}|
+        gen::next → [|\color{violet}{true}|, |\color{red}{false}|], |\color{olive}{true}|
 
         int x = 0;
         {
@@ -201,7 +201,7 @@
           if (|\only<8>{gen::next()}\only<9->{\textcolor{violet}{true}}| && |\only<8-9>{!gen::shrink()}\only<10->{\textcolor{blue}{false}}|)
             x += |\only<8>{gen::next()}\only<9>{\textcolor{red}{true}}\only<10>{\textcolor{gray}{gen::next()}}| ? 1 : 0;
         }
-        x += |\only<8>{gen::next()}\only<9->{\textcolor{orange}{true}}| ? 1 : 0;
+        x += |\only<8>{gen::next()}\only<9->{\textcolor{olive}{true}}| ? 1 : 0;
       \end{cppcode}
     \end{overprint}
 
@@ -212,7 +212,7 @@
       \begin{itemize}
         \item<2-> Suppose a test case failure occurs.
         \item<3-> Then \cppinline{!gen::shrink()} subsequently evaluates to \cppinline{false}.
-        \item<4-> Final call to \cppinline{gen::next} returns \texttt{\footnotesize\color{orange}{true}}.
+        \item<4-> Final call to \cppinline{gen::next} should return the same value (\texttt{\footnotesize\color{olive}{true}}).
       \end{itemize}
 
       \onslide<5-7>
