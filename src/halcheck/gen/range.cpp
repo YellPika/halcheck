@@ -3,7 +3,7 @@
 #include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/lib/type_traits.hpp>
-#include <halcheck/test/limited.hpp>
+#include <halcheck/test/limit.hpp>
 #include <halcheck/test/random.hpp>
 
 #include <iostream>
@@ -15,7 +15,7 @@
 
 using namespace halcheck;
 
-HALCHECK_TEST_CASE_TEMPLATE_DEFINE("gen::range", T, gen_range, test::limited(test::random(), 1 << 16)) {
+HALCHECK_TEST_CASE_TEMPLATE_DEFINE("gen::range", T, gen_range, test::limit(test::random(), 1 << 16)) {
   auto min = gen::arbitrary<T>();
   CAPTURE(min);
 

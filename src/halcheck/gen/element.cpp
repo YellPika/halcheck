@@ -5,7 +5,6 @@
 #include <halcheck/gen/next.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/check.hpp>
-#include <halcheck/test/shrinking.hpp>
 
 #include <algorithm>
 #include <vector>

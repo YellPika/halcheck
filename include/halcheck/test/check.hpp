@@ -1,13 +1,13 @@
 #ifndef HALCHECK_TEST_CHECK_HPP
 #define HALCHECK_TEST_CHECK_HPP
 
-#include <halcheck/test/limited.hpp>
+#include <halcheck/test/limit.hpp>
 #include <halcheck/test/random.hpp>
-#include <halcheck/test/shrinking.hpp>
+#include <halcheck/test/shrink.hpp>
 
 namespace halcheck { namespace test {
 
-static constexpr auto check = test::shrinking(test::limited(test::random()));
+static constexpr auto check = test::shrink(test::limit(test::random()));
 
 }} // namespace halcheck::test
 

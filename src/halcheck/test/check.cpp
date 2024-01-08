@@ -5,8 +5,6 @@
 #include <halcheck/gen/next.hpp>
 #include <halcheck/gen/range.hpp>
 #include <halcheck/lib/type_traits.hpp>
-#include <halcheck/test/limited.hpp>
-#include <halcheck/test/shrinking.hpp>
 
 #include <cstddef>
 #include <iostream>

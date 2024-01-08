@@ -6,7 +6,6 @@
 #include <halcheck/gen/next.hpp>
 #include <halcheck/gen/range.hpp>
 #include <halcheck/test/check.hpp>
-#include <halcheck/test/shrinking.hpp>
 
 #include <iostream>
 #include <string>
