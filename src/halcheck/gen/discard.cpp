@@ -11,6 +11,8 @@ lib::effect<lib::raise> gen::discard([] {
   return 0;
 });
 
+lib::effect<void> gen::succeed(std::terminate);
+
 void gen::guard(bool cond) {
   if (!cond)
     gen::discard();

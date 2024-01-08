@@ -13,6 +13,8 @@ namespace halcheck { namespace test {
 /// @brief A strategy that produces random bit-sequences.
 struct random {
 public:
+  struct exit_exception {};
+
   /// @brief Creates a strategy with the given seed.
   /// @param seed The seed value driving random generation.
   /// @param max_size The maximum size of generated values.
@@ -24,6 +26,7 @@ public:
   template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
   void operator()(F func) const {
     struct discard {};
+    struct succeed {};
 
     std::default_random_engine engine(seed);
     std::uintmax_t size = 0;
@@ -31,11 +34,14 @@ public:
     while (true) {
       try {
         auto _0 = gen::size.handle([&] { return size; });
-        auto _1 = gen::discard.handle([] { return discard(); });
-        auto _2 = gen::next.handle([&](std::uintmax_t w0, std::uintmax_t w1) {
+        auto _1 = gen::succeed.handle([] { throw succeed(); });
+        auto _2 = gen::discard.handle([] { return discard(); });
+        auto _3 = gen::next.handle([&](std::uintmax_t w0, std::uintmax_t w1) {
           return std::uniform_int_distribution<std::uintmax_t>(1, w0 + w1)(engine) > w0;
         });
         lib::invoke(func);
+      } catch (const succeed &) {
+        break;
       } catch (const discard &) {
       }
 

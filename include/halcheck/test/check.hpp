@@ -7,7 +7,7 @@
 
 namespace halcheck { namespace test {
 
-static constexpr auto check = test::shrink(test::limit(test::random()));
+static constexpr auto check = test::limit(test::shrink(test::random()));
 
 }} // namespace halcheck::test
 

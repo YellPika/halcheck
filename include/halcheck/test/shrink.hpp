@@ -40,8 +40,9 @@ public:
           csamples[shrinks[i].index].shrink = j;
           std::vector<shrink> cshrinks;
           try {
-            auto _0 = gen::discard.handle([] { return discard(); });
-            auto _1 = gen::next.handle([](std::uintmax_t w0, std::uintmax_t w1) { return w0 == 0 && w1 > 0; });
+            auto _0 = gen::succeed.handle([] {});
+            auto _1 = gen::discard.handle([] { return discard(); });
+            auto _2 = gen::next.handle([](std::uintmax_t w0, std::uintmax_t w1) { return w0 == 0 && w1 > 0; });
             exec(func, csamples, cshrinks);
           } catch (const discard &) {
           } catch (...) {

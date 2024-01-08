@@ -10,8 +10,12 @@ namespace halcheck { namespace gen {
 /// @param cond The condition to check.
 void guard(bool cond);
 
-/// @brief Exits a property without indicating failure.
+/// @brief Exits a test-case without indicating failure.
 extern lib::effect<lib::raise> discard;
+
+/// @brief Causes a test to succeed immediately. This function may be a no-op in
+///        certain circumstances, such as during shrinking.
+extern lib::effect<void> succeed;
 
 }} // namespace halcheck::gen
 
