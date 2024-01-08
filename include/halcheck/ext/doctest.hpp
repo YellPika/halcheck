@@ -5,6 +5,8 @@
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/test/check.hpp>
 
+#include <exception>
+
 namespace doctest {
 struct String;
 } // namespace doctest
@@ -20,6 +22,8 @@ inline ::doctest::String stringify(const char *);
 #include <doctest/doctest.h>
 
 namespace halcheck { namespace ext { namespace doctest {
+int &failures();
+
 template<typename T>
 ::doctest::String stringify(const T &value) {
   auto output = fmt::to_string(value);
@@ -28,12 +32,19 @@ template<typename T>
 
 inline ::doctest::String stringify(const char *value) { return value; }
 
-template<typename Sampler = decltype(test::check)>
-void check(void (*func)(), const char *, Sampler sampler = test::check) {
-  lib::invoke(sampler, func);
-}
+struct assert_error : std::exception {
+  const char *what() const noexcept override { return "Assertion failures detected"; }
+};
 
-int &failures();
+template<typename Strategy = decltype(test::check)>
+void check(void (*func)(), const char *, Strategy strategy = test::check) {
+  lib::invoke(strategy, [&] {
+    failures() = 0;
+    func();
+    if (failures() > 0)
+      throw assert_error();
+  });
+}
 }}} // namespace halcheck::ext::doctest
 
 #define HALCHECK_EXPAND(x) x
@@ -41,19 +52,9 @@ int &failures();
 #define HALCHECK_1ST_HELPER(x, ...) x
 #define HALCHECK_1ST(...) HALCHECK_EXPAND(HALCHECK_1ST_HELPER(__VA_ARGS__, DOCTEST_EMPTY))
 
-#define HALCHECK_2ND_HELPER(x, ...) HALCHECK_EXPAND(HALCHECK_1ST(__VA_ARGS__))
-#define HALCHECK_2ND(...) HALCHECK_EXPAND(HALCHECK_2ND_HELPER(__VA_ARGS__, DOCTEST_EMPTY))
-
 #define HALCHECK_TEST_CASE_HELPER(anon, ...)                                                                           \
   static void anon();                                                                                                  \
-  TEST_CASE(HALCHECK_1ST(__VA_ARGS__)) {                                                                               \
-    HALCHECK_EXPAND(HALCHECK_2ND(__VA_ARGS__, ::halcheck::test::check))                                                \
-    ([] {                                                                                                              \
-      ::halcheck::ext::doctest::failures() = 0;                                                                        \
-      anon();                                                                                                          \
-      REQUIRE_EQ(::halcheck::ext::doctest::failures(), 0);                                                             \
-    });                                                                                                                \
-  }                                                                                                                    \
+  TEST_CASE(HALCHECK_1ST(__VA_ARGS__)) { ::halcheck::ext::doctest::check(anon, __VA_ARGS__); }                         \
   static void anon()
 
 #define HALCHECK_TEST_CASE(...) HALCHECK_TEST_CASE_HELPER(DOCTEST_ANONYMOUS(HALCHECK_ANON_FUNC_), __VA_ARGS__)
@@ -62,12 +63,8 @@ int &failures();
   template<typename T>                                                                                                 \
   static void anon();                                                                                                  \
   TEST_CASE_TEMPLATE_DEFINE(dec, T, HALCHECK_1ST(__VA_ARGS__)) {                                                       \
-    HALCHECK_EXPAND(HALCHECK_2ND(__VA_ARGS__, ::halcheck::test::check))                                                \
-    ([] {                                                                                                              \
-      ::halcheck::ext::doctest::failures() = 0;                                                                        \
-      anon<T>();                                                                                                       \
-      REQUIRE_EQ(::halcheck::ext::doctest::failures(), 0);                                                             \
-    });                                                                                                                \
+    const char *HALCHECK_1ST(__VA_ARGS__) = "";                                                                        \
+    ::halcheck::ext::doctest::check(anon<T>, __VA_ARGS__);                                                             \
   }                                                                                                                    \
   template<typename T>                                                                                                 \
   static void anon()

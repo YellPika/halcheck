@@ -5,7 +5,6 @@
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/test/check.hpp>
-#include <halcheck/test/shrink.hpp>
 
 #include <iomanip>
 #include <locale>
