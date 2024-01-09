@@ -1,5 +1,7 @@
 #include "halcheck/ext/doctest.hpp"
 
+#ifndef DOCTEST_CONFIG_DISABLE
+
 using namespace doctest;
 
 namespace {
@@ -13,7 +15,6 @@ struct halcheck_listener final : IReporter {
 
   void test_case_start(const TestCaseData &) override {}
   void test_case_reenter(const TestCaseData &) override {}
-
   void report_query(const QueryData &) override {}
   void test_run_start() override {}
   void test_run_end(const TestRunStats &) override {}
@@ -32,3 +33,5 @@ int &halcheck::ext::doctest::failures() {
 }
 
 REGISTER_LISTENER("halcheck_listener", 1, halcheck_listener);
+
+#endif

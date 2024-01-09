@@ -1,3 +1,6 @@
+#define DOCTEST_CONFIG_EVALUATE_ASSERTS_EVEN_WHEN_DISABLED
+#define DOCTEST_CONFIG_ASSERTS_RETURN_VALUES
+
 #include "halcheck/lib/numeric.hpp"
 
 #include <halcheck/ext/doctest.hpp>

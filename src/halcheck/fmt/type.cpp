@@ -1,3 +1,6 @@
+#define DOCTEST_CONFIG_EVALUATE_ASSERTS_EVEN_WHEN_DISABLED
+#define DOCTEST_CONFIG_ASSERTS_RETURN_VALUES
+
 #include "halcheck/fmt/type.hpp"
 
 #include <halcheck/ext/doctest.hpp>
@@ -13,9 +16,13 @@ using namespace halcheck;
 namespace {
 enum example0 { X, Y, Z };
 
-std::ostream &operator<<(std::ostream &os, fmt::type<example0>) { return os << "example0"; }
+template<typename = void>
+inline std::ostream &operator<<(std::ostream &os, fmt::type<example0>) {
+  return os << "example0";
+}
 
-std::ostream &operator<<(std::ostream &os, fmt::tag<example0> value) {
+template<typename = void>
+inline std::ostream &operator<<(std::ostream &os, fmt::tag<example0> value) {
   switch (value.value) {
   case X:
     return os << 'X';
@@ -30,12 +37,18 @@ std::ostream &operator<<(std::ostream &os, fmt::tag<example0> value) {
 
 enum example1 { A, B, C };
 
-std::ostream &operator<<(std::ostream &os, fmt::type<example1>) { return os << "example1"; }
+template<typename = void>
+inline std::ostream &operator<<(std::ostream &os, fmt::type<example1>) {
+  return os << "example1";
+}
 
 template<typename = int>
 struct example2 {};
 
-std::ostream &operator<<(std::ostream &os, fmt::type_fun<example2>) { return os << "example2"; }
+template<typename = void>
+inline std::ostream &operator<<(std::ostream &os, fmt::type_fun<example2>) {
+  return os << "example2";
+}
 } // namespace
 
 TEST_CASE("type example") {

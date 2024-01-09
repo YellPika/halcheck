@@ -6,6 +6,10 @@ project(halcheck
 
 include(cmake/CPM.cmake)
 
+set(HALCHECK_DEVELOPMENT
+  $<STREQUAL:${CMAKE_CURRENT_SOURCE_DIR},${CMAKE_SOURCE_DIR}>
+  CACHE BOOL "enable development mode")
+
 ### Dependencies ###
 
 # doctest: Testing Framework
@@ -39,17 +43,17 @@ target_link_libraries(${PROJECT_NAME}
 target_compile_options(${PROJECT_NAME} PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W4>
   $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic -Wdocumentation>
-  $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>)
+  $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>
+  $<$<NOT:$<BOOL:${HALCHECK_DEVELOPMENT}>>:-DDOCTEST_CONFIG_DISABLE>)
 target_include_directories(
   ${PROJECT_NAME} SYSTEM PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
                                 $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>)
 
-if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  target_compile_definitions(${PROJECT_NAME} PRIVATE -DDOCTEST_CONFIG_DISABLE)
+### Development ###
+
+if (NOT HALCHECK_DEVELOPMENT)
   return()
 endif()
-
-### Development ###
 
 # Sanitization options
 set(SANITIZE "" CACHE STRING "string to pass to -fsanitize")

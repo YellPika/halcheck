@@ -24,6 +24,14 @@ inline ::doctest::String stringify(const char *);
 
 #include <doctest/doctest.h>
 
+#ifdef DOCTEST_CONFIG_DISABLE
+#define HALCHECK_TEST_CASE(...)                                                                                        \
+  template<typename HALCHECK_UNUSED_TEMPLATE_TYPE>                                                                     \
+  static inline void DOCTEST_ANONYMOUS(HALCHECK_ANON_FUNC_)()
+#define HALCHECK_TEST_CASE_TEMPLATE_DEFINE(name, T, ...)                                                               \
+  template<typename T>                                                                                                 \
+  static inline void DOCTEST_ANONYMOUS(HALCHECK_ANON_FUNC_)()
+#else
 namespace halcheck { namespace ext { namespace doctest {
 int &failures();
 
@@ -85,4 +93,5 @@ void check(void (*func)(), const char *, Strategy strategy = test::check) {
 #define HALCHECK_TEST_CASE_TEMPLATE_DEFINE(dec, T, ...)                                                                \
   HALCHECK_TEST_CASE_TEMPLATE_DEFINE_HELPER(DOCTEST_ANONYMOUS(HALCHECK_ANON_FUNC_), dec, T, __VA_ARGS__)
 
+#endif
 #endif
