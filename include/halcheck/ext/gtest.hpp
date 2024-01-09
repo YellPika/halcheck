@@ -49,6 +49,7 @@ void check(void (*func)(), const char * = "", Strategy strategy = test::check) {
     }
   }
 }
+
 }}} // namespace halcheck::ext::gtest
 
 #define HALCHECK_EMPTY
