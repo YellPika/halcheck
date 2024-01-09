@@ -1,7 +1,5 @@
 #include "halcheck/ext/doctest.hpp"
 
-#ifndef DOCTEST_CONFIG_DISABLE
-
 using namespace doctest;
 
 namespace {
@@ -33,5 +31,3 @@ int &halcheck::ext::doctest::failures() {
 }
 
 REGISTER_LISTENER("halcheck_listener", 1, halcheck_listener);
-
-#endif

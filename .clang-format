@@ -10,7 +10,7 @@ IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: "<halcheck/"
     Priority: 1
-  - Regex: "<doctest/"
+  - Regex: "<(doctest|gtest)/"
     Priority: 2
   - Regex: ""
     Priority: 3

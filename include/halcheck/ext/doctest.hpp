@@ -52,14 +52,14 @@ void check(void (*func)(), const char *, Strategy strategy = test::check) {
   static const char *hex = "0123456789abcdef";
   auto test = ::doctest::getContextOptions()->currentTest;
   auto name = std::string(test->m_file.c_str()) + ":" + std::to_string(test->m_line);
-  std::string filename("halcheck-");
+  std::string filename("halcheck-doctest-");
   filename.reserve(filename.size() + name.size() * 2);
   for (char ch : name) {
     filename.push_back(hex[ch & 0xF]);
     filename.push_back(hex[(ch & 0xF0) >> 4]);
   }
 
-  lib::invoke(test::replay(test::capture(std::move(strategy), filename), filename), [&] {
+  lib::invoke(test::capture(test::replay(std::move(strategy), filename), filename), [&] {
     failures() = 0;
     func();
     if (failures() > 0)
@@ -68,10 +68,11 @@ void check(void (*func)(), const char *, Strategy strategy = test::check) {
 }
 }}} // namespace halcheck::ext::doctest
 
+#define HALCHECK_EMPTY
 #define HALCHECK_EXPAND(x) x
 
 #define HALCHECK_1ST_HELPER(x, ...) x
-#define HALCHECK_1ST(...) HALCHECK_EXPAND(HALCHECK_1ST_HELPER(__VA_ARGS__, DOCTEST_EMPTY))
+#define HALCHECK_1ST(...) HALCHECK_EXPAND(HALCHECK_1ST_HELPER(__VA_ARGS__, HALCHECK_EMPTY))
 
 #define HALCHECK_TEST_CASE_HELPER(anon, ...)                                                                           \
   static void anon();                                                                                                  \

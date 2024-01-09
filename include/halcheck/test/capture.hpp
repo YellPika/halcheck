@@ -26,7 +26,7 @@ struct capture_t {
         os.write(reinterpret_cast<const char *>(&level), sizeof(level));
         os.write(reinterpret_cast<const char *>(&next), sizeof(next));
 
-        auto flat = shrink ? *shrink : 0;
+        auto flat = shrink ? *shrink + 1 : 0;
         os.write(reinterpret_cast<char *>(&flat), sizeof(flat));
         return os;
       }

@@ -4,18 +4,30 @@ project(halcheck
   VERSION 1.0
   LANGUAGES CXX)
 
-include(cmake/CPM.cmake)
-
+# We default to development mode if we're not included from another directory.
 set(HALCHECK_DEVELOPMENT
   $<STREQUAL:${CMAKE_CURRENT_SOURCE_DIR},${CMAKE_SOURCE_DIR}>
   CACHE BOOL "enable development mode")
+set(HALCHECK_DOCTEST OFF CACHE BOOL "enable doctest integration")
+set(HALCHECK_GTEST   OFF CACHE BOOL "enable gtest integration")
+
+if(${HALCHECK_DEVELOPMENT})
+  set(HALCHECK_DOCTEST  ON CACHE BOOL "" FORCE)
+  set(HALCHECK_GTEST    ON CACHE BOOL "" FORCE)
+
+  include(CTest)
+
+  # Sanitization options
+  set(SANITIZE "" CACHE STRING "string to pass to -fsanitize")
+  if(SANITIZE AND NOT CXX_COMPILER_ID MATCHES MSVC)
+    add_compile_options(-fsanitize=${SANITIZE} -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=${SANITIZE} -fno-omit-frame-pointer)
+  endif()
+endif()
 
 ### Dependencies ###
 
-# doctest: Testing Framework
-# * For running tests.
-# * For compiling the source since tests are written in the same file.
-CPMAddPackage("gh:doctest/doctest@2.4.11")
+include(cmake/CPM.cmake)
 
 # mpark::variant: std::variant implementation
 # * For C++11/14 compatibility
@@ -32,88 +44,29 @@ CPMAddPackage("gh:TartanLlama/optional@1.1.0")
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp)
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
-add_library(${PROJECT_NAME} OBJECT ${SOURCES})
+add_library(${PROJECT_NAME} ${SOURCES})
 target_sources(${PROJECT_NAME} PUBLIC
   FILE_SET HEADERS
   BASE_DIRS include
   FILES ${HEADERS})
-target_link_libraries(${PROJECT_NAME}
-  PUBLIC mpark_variant tl::optional
-  PRIVATE doctest::doctest)
+target_link_libraries(${PROJECT_NAME} mpark_variant tl::optional)
 target_compile_options(${PROJECT_NAME} PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W4>
   $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic -Wdocumentation>
-  $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>
-  $<$<NOT:$<BOOL:${HALCHECK_DEVELOPMENT}>>:-DDOCTEST_CONFIG_DISABLE>)
+  $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>)
 target_include_directories(
   ${PROJECT_NAME} SYSTEM PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
                                 $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>)
+set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_COMPILE_COMMANDS ${HALCHECK_DEVELOPMENT})
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test/doctest)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test/gtest)
 
 ### Development ###
 
 if (NOT HALCHECK_DEVELOPMENT)
   return()
 endif()
-
-# Sanitization options
-set(SANITIZE "" CACHE STRING "string to pass to -fsanitize")
-if(SANITIZE AND NOT CXX_COMPILER_ID MATCHES MSVC)
-  add_compile_options(-fsanitize=${SANITIZE} -fno-omit-frame-pointer)
-  add_link_options(-fsanitize=${SANITIZE} -fno-omit-frame-pointer)
-endif()
-
-### Testing ###
-
-include(CTest)
-
-file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp)
-
-add_executable(${PROJECT_NAME}-test ${TEST_SOURCES})
-target_compile_options(${PROJECT_NAME}-test PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/W4>
-  $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic -Wdocumentation>
-  $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>)
-target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME} mpark_variant tl::optional doctest::doctest)
-
-include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
-doctest_discover_tests(${PROJECT_NAME}-test)
-
-set_target_properties(${PROJECT_NAME} ${PROJECT_NAME}-test PROPERTIES EXPORT_COMPILE_COMMANDS ON)
-
-### Installation ###
-
-include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PROJECT_NAME}.pc.in
-  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
-  @ONLY)
-
-install(
-  FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-
-write_basic_package_version_file(
-  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
-  COMPATIBILITY AnyNewerVersion)
-
-install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake
-  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME})
-
-install(
-  TARGETS ${PROJECT_NAME}
-  EXPORT ${PROJECT_NAME}Targets
-  FILE_SET HEADERS)
-
-install(
-  EXPORT ${PROJECT_NAME}Targets
-  NAMESPACE ${PROJECT_NAME}::
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME})
-
-### Maintenance ###
 
 find_program(CLANG_FORMAT_EXE NAMES clang-format)
 if (CLANG_FORMAT_EXE)
@@ -129,3 +82,7 @@ if (CLANG_TIDY_EXE)
     COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json ${SOURCES} ${TEST_SOURCES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
+
+### Installation ###
+
+install(TARGETS ${PROJECT_NAME} FILE_SET HEADERS)

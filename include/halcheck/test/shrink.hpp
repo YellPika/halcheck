@@ -117,7 +117,7 @@ private:
         ++i;
 
       if (i == samples.end() || i->level < level)
-        i = samples.insert(i, sample{level, false, lib::nullopt});
+        i = samples.insert(i, sample{level, false, gen::shrink(size)});
 
       auto j = i++;
       auto output = j->shrink;
