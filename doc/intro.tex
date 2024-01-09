@@ -1,0 +1,90 @@
+\documentclass{article}
+
+\usepackage{DejaVuSansMono}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{xcolor}
+
+\usepackage{listings}
+\usepackage{lstautogobble}
+\lstset{
+autogobble,
+basicstyle=\ttfamily\footnotesize,
+keywordstyle=\color{blue},
+commentstyle=\color{gray},
+keepspaces,
+mathescape,
+escapechar=|,
+columns=fixed,
+literate={∷}{{:\!\!:}}1
+{₀}{{\textsubscript{0}}}1
+{₁}{{\textsubscript{1}}}1
+{←}{{\csname u8:\detokenize{←}\endcsname}}1
+{→}{{\csname u8:\detokenize{→}\endcsname}}1
+{↓}{{\csname u8:\detokenize{↓}\endcsname}}1
+{↑}{{\csname u8:\detokenize{↑}\endcsname}}1
+}
+\lstdefinestyle{cpp}{
+  language=c++,
+  morekeywords={decltype}
+}
+\lstnewenvironment{cppcode}{\lstset{style=cpp}}{}
+\newcommand{\cppinline}[1]{\lstinline[style=cpp]|#1|}
+
+\newcommand{\halcheck}{\texttt{halcheck}}
+
+\begin{document}
+
+\title{Introduction to \halcheck}
+\author{Anthony Vandikas}
+\maketitle
+
+\halcheck\ is a property-based testing framework for C++. Property-based testing is a form of testing that focuses on executing \emph{properties} instead of specific test-cases. For example, a typical unit test for \cppinline{std::sort} might check that the output of \cppinline{std::sort} is exactly the sorted version of some specific input:
+\begin{cppcode}
+  HALCHECK_TEST("concrete example") {
+    using T = std::pair<int, int>;
+
+    std::vector<T> xs = {{3, 1}, {3, 2}, {1, 1}};
+
+    auto cmp = [](T x, T y) { return x.first < y.first; };
+    std::sort(xs.begin(), xs.end(), cmp);
+
+    REQUIRE_EQ(xs, std::vector<int>{{1, 1}, {3, 1}, {3, 2}});
+  }
+\end{cppcode}
+Unfortunately, this test is brittle: \cppinline{std::sort} is not guaranteed to be a stable sort, so a future version of this function could return the values \cppinline{\{\{1, 1\}},  \cppinline{\{3, 1\}},  \cppinline{\{3, 2\}\}} instead. A less brittle version of this test would check a more generic \emph{property}, such as the sortedness of the output.
+\begin{cppcode}
+  HALCHECK_TEST("sortedness example") {
+    ...
+
+    // REQUIRE_EQ(xs, std::vector<int>{{1, 1}, {3, 1}, {3, 2}});
+    REQUIRE(std::is_sorted(xs.begin(), xs.end(), cmp));
+  }
+\end{cppcode}
+Since the expected result in this new test is not hard-coded, it will require no future modifications. Furthermore, the test no longer depends on the specific value assigned to \cppinline{xs}. This allows us to easily write a \emph{parameterized test} (using \cppinline{SUBCASE} in \cppinline{doctest}).
+\begin{cppcode}
+  HALCHECK_TEST("parameterized example") {
+    ...
+
+    std::vector<T> xs;
+    SUBCASE("empty")    { xs = {}; }
+    SUBCASE("sorted")   { xs = {{1, 1}, {3, 1}, {3, 2}}; }
+    SUBCASE("unsorted") { xs = {{3, 1}, {3, 2}, {1, 1}}; }
+
+    ...
+  }
+\end{cppcode}
+But why write test cases when you can generate them? With \halcheck{}, you can randomly generate appropriate inputs for your tests and achieve greater test coverage with less code.
+\begin{cppcode}
+  HALCHECK_TEST("generated example") {
+    ...
+
+    using namespace halcheck;
+    auto xs = gen::arbitrary<std::vector<T>>();
+
+    ...
+  }
+\end{cppcode}
+
+\end{document}
