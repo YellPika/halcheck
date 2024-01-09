@@ -41,8 +41,8 @@ target_compile_options(${PROJECT_NAME} PRIVATE
   $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic -Wdocumentation>
   $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>)
 target_include_directories(
-  ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-                         $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>)
+  ${PROJECT_NAME} SYSTEM PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                                $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>)
 
 if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   target_compile_definitions(${PROJECT_NAME} PRIVATE -DDOCTEST_CONFIG_DISABLE)

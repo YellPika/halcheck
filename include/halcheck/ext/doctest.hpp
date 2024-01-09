@@ -3,9 +3,12 @@
 
 #include <halcheck/fmt/show.hpp>
 #include <halcheck/lib/functional.hpp>
+#include <halcheck/test/capture.hpp>
 #include <halcheck/test/check.hpp>
+#include <halcheck/test/replay.hpp>
 
 #include <exception>
+#include <string>
 
 namespace doctest {
 struct String;
@@ -38,7 +41,17 @@ struct assert_error : std::exception {
 
 template<typename Strategy = decltype(test::check)>
 void check(void (*func)(), const char *, Strategy strategy = test::check) {
-  lib::invoke(strategy, [&] {
+  static const char *hex = "0123456789abcdef";
+  auto test = ::doctest::getContextOptions()->currentTest;
+  auto name = std::string(test->m_file.c_str()) + ":" + std::to_string(test->m_line);
+  std::string filename("halcheck-");
+  filename.reserve(filename.size() + name.size() * 2);
+  for (char ch : name) {
+    filename.push_back(hex[ch & 0xF]);
+    filename.push_back(hex[(ch & 0xF0) >> 4]);
+  }
+
+  lib::invoke(test::replay(test::capture(std::move(strategy), filename), filename), [&] {
     failures() = 0;
     func();
     if (failures() > 0)
