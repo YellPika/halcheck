@@ -50,14 +50,15 @@ template<
     typename F2 = void (*)(),
     HALCHECK_REQUIRE(lib::is_invocable<F1>()),
     HALCHECK_REQUIRE(lib::is_invocable<F2>())>
-void if_(
+lib::common_type_t<lib::invoke_result_t<F1>, lib::invoke_result_t<F2>> if_(
     bool cond, F1 f1, F2 f2 = [] {}) {
   if (cond) {
-    gen::group(f1);
+    auto output = gen::group(f1);
     gen::group();
+    return output;
   } else {
     gen::group();
-    gen::group(f2);
+    return gen::group(f2);
   }
 }
 
