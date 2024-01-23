@@ -4,6 +4,7 @@
 #include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/scope.hpp>
+#include <halcheck/lib/type_traits.hpp>
 
 namespace halcheck { namespace gen {
 
@@ -43,6 +44,29 @@ public:
     return effect::handle(invoke{this, std::move(func)});
   }
 } group;
+
+template<
+    typename F1,
+    typename F2 = void (*)(),
+    HALCHECK_REQUIRE(lib::is_invocable<F1>()),
+    HALCHECK_REQUIRE(lib::is_invocable<F2>())>
+void if_(
+    bool cond, F1 f1, F2 f2 = [] {}) {
+  if (cond) {
+    gen::group(f1);
+    gen::group();
+  } else {
+    gen::group();
+    gen::group(f2);
+  }
+}
+
+template<typename F, HALCHECK_REQUIRE(lib::is_invocable_r<bool, F>())>
+void while_(F func) {
+  auto _ = gen::group();
+  while (gen::group(func))
+    ;
+}
 
 }} // namespace halcheck::gen
 
