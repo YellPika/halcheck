@@ -1,6 +1,7 @@
 #ifndef HALCHECK_EXT_GTEST_HPP
 #define HALCHECK_EXT_GTEST_HPP
 
+#include <halcheck/gen/discard.hpp>
 #include <halcheck/test/capture.hpp>
 #include <halcheck/test/check.hpp>
 #include <halcheck/test/replay.hpp>
@@ -39,8 +40,15 @@ void check(void (*func)(), const char * = "", Strategy strategy = test::check) {
             ScopedFakeTestPartResultReporter::INTERCEPT_ONLY_CURRENT_THREAD, results.get());
         func();
       }
-      if (results->size() > 0)
-        throw failure{std::move(results)};
+      if (results->size() > 0) {
+        auto &part = results->GetTestPartResult(0);
+        if (part.skipped()) {
+          GTEST_MESSAGE_AT_(part.file_name(), part.line_number(), part.message(), part.type());
+          gen::succeed();
+        } else {
+          throw failure{std::move(results)};
+        }
+      }
     });
   } catch (const failure &e) {
     for (std::size_t i = 0; i < e.results->size(); i++) {
