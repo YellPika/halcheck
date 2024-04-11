@@ -29,4 +29,17 @@ set_target_properties(${PROJECT_NAME}-doctest-test PROPERTIES EXPORT_COMPILE_COM
 include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
 doctest_discover_tests(${PROJECT_NAME}-doctest-test)
 
+if (CLANG_FORMAT_EXE)
+  add_custom_target(format-doctest
+    ALL
+    COMMAND ${CLANG_FORMAT_EXE} -n ${SOURCES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
+if (CLANG_TIDY_EXE)
+  add_custom_target(tidy-doctest
+    COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json ${SOURCES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
 install(TARGETS ${PROJECT_NAME}-doctest)

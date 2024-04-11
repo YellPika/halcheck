@@ -25,6 +25,9 @@ if(${HALCHECK_DEVELOPMENT})
     add_compile_options(-fsanitize=${SANITIZE} -fno-omit-frame-pointer)
     add_link_options(-fsanitize=${SANITIZE} -fno-omit-frame-pointer)
   endif()
+
+  find_program(CLANG_FORMAT_EXE NAMES clang-format)
+  find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 endif()
 
 ### Dependencies ###
@@ -66,18 +69,16 @@ if (NOT HALCHECK_DEVELOPMENT)
   return()
 endif()
 
-find_program(CLANG_FORMAT_EXE NAMES clang-format)
 if (CLANG_FORMAT_EXE)
   add_custom_target(format
     ALL
-    COMMAND ${CLANG_FORMAT_EXE} -n ${HEADERS} ${SOURCES} ${TEST_SOURCES}
+    COMMAND ${CLANG_FORMAT_EXE} -n ${HEADERS} ${SOURCES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
-find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 if (CLANG_TIDY_EXE)
   add_custom_target(tidy
-    COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json ${SOURCES} ${TEST_SOURCES}
+    COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json ${SOURCES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 

@@ -29,4 +29,17 @@ set_target_properties(${PROJECT_NAME}-gtest-test PROPERTIES EXPORT_COMPILE_COMMA
 include(GoogleTest)
 gtest_discover_tests(${PROJECT_NAME}-gtest-test)
 
+if (CLANG_FORMAT_EXE)
+  add_custom_target(format-gtest
+    ALL
+    COMMAND ${CLANG_FORMAT_EXE} -n ${SOURCES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
+if (CLANG_TIDY_EXE)
+  add_custom_target(tidy-gtest
+    COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json ${SOURCES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
 install(TARGETS ${PROJECT_NAME}-gtest)
