@@ -19,9 +19,12 @@ template<typename Strategy = decltype(test::check)>
 void check(void (*func)(), const char * = "", Strategy strategy = test::check) {
   using namespace testing;
 
+  static const char *replay = std::getenv("HALCHECK_REPLAY");
+  static std::string dir = replay ? std::string(replay) : ".";
+
   static const char *hex = "0123456789abcdef";
   std::string name(UnitTest::GetInstance()->current_test_info()->name());
-  std::string filename("halcheck-gtest-");
+  std::string filename(dir + "/halcheck-gtest-");
   filename.reserve(filename.size() + name.size() * 2);
   for (char ch : name) {
     filename.push_back(hex[ch & 0xF]);
@@ -32,24 +35,29 @@ void check(void (*func)(), const char * = "", Strategy strategy = test::check) {
     std::unique_ptr<TestPartResultArray> results;
   };
 
+  auto body = [&] {
+    std::unique_ptr<TestPartResultArray> results(new TestPartResultArray);
+    {
+      ScopedFakeTestPartResultReporter reporter(
+          ScopedFakeTestPartResultReporter::INTERCEPT_ONLY_CURRENT_THREAD, results.get());
+      func();
+    }
+    if (results->size() > 0) {
+      auto &part = results->GetTestPartResult(0);
+      if (part.skipped()) {
+        GTEST_MESSAGE_AT_(part.file_name(), part.line_number(), part.message(), part.type());
+        gen::succeed();
+      } else {
+        throw failure{std::move(results)};
+      }
+    }
+  };
+
   try {
-    lib::invoke(test::capture(test::replay(std::move(strategy), filename), filename), [&] {
-      std::unique_ptr<TestPartResultArray> results(new TestPartResultArray);
-      {
-        ScopedFakeTestPartResultReporter reporter(
-            ScopedFakeTestPartResultReporter::INTERCEPT_ONLY_CURRENT_THREAD, results.get());
-        func();
-      }
-      if (results->size() > 0) {
-        auto &part = results->GetTestPartResult(0);
-        if (part.skipped()) {
-          GTEST_MESSAGE_AT_(part.file_name(), part.line_number(), part.message(), part.type());
-          gen::succeed();
-        } else {
-          throw failure{std::move(results)};
-        }
-      }
-    });
+    if (dir.empty())
+      lib::invoke(std::move(strategy), std::move(body));
+    else
+      lib::invoke(test::capture(test::replay(std::move(strategy), filename), filename), std::move(body));
   } catch (const failure &e) {
     for (std::size_t i = 0; i < e.results->size(); i++) {
       auto &part = e.results->GetTestPartResult(i);
