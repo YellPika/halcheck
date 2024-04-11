@@ -32,8 +32,16 @@ struct capture_t {
       }
     };
 
+    auto directory = this->directory.value_or(default_directory());
+    if (directory.empty()) {
+      lib::invoke(strategy, std::move(func));
+      return;
+    }
+
+    auto path = directory + "/" + filename;
+
     auto input = [&] {
-      std::ifstream is(filename, std::ios_base::in | std::ios_base::binary);
+      std::ifstream is(path, std::ios_base::in | std::ios_base::binary);
       return std::string(std::istreambuf_iterator<char>(is), {});
     }();
 
@@ -42,19 +50,19 @@ struct capture_t {
       auto _ = lib::finally([&] {
         if (success) {
           if (input.empty())
-            std::remove(filename.c_str());
+            std::remove(path.c_str());
           else {
-            std::ofstream os(filename, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+            std::ofstream os(path, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
             os << input;
           }
         } else {
-          std::ifstream is(filename, std::ios_base::in | std::ios_base::binary);
+          std::ifstream is(path, std::ios_base::in | std::ios_base::binary);
           input = std::string(std::istreambuf_iterator<char>(is), {});
         }
       });
 
       std::size_t level = 0;
-      std::ofstream os(filename, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+      std::ofstream os(path, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
 
       auto _0 = gen::group.handle([&](bool open) {
         if (open)
@@ -95,6 +103,15 @@ struct capture_t {
 
   Strategy strategy;
   std::string filename;
+  lib::optional<std::string> directory;
+
+private:
+  static std::string default_directory() {
+    static const char *var1 = std::getenv("HALCHECK_CAPTURE");
+    static const char *var2 = std::getenv("HALCHECK_REPLAY");
+    static std::string dir = var1 ? std::string(var1) : var2 ? std::string(var2) : ".";
+    return dir;
+  }
 };
 
 template<typename Strategy>

@@ -49,30 +49,22 @@ struct assert_error : std::exception {
 
 template<typename Strategy = decltype(test::check)>
 void check(void (*func)(), const char *, Strategy strategy = test::check) {
-  static const char *replay = std::getenv("HALCHECK_REPLAY");
-  static std::string dir = replay ? std::string(replay) : ".";
-
   static const char *hex = "0123456789abcdef";
   auto test = ::doctest::getContextOptions()->currentTest;
   auto name = std::string(test->m_file.c_str()) + ":" + std::to_string(test->m_line);
-  std::string filename(dir + "/halcheck-doctest-");
+  std::string filename("halcheck-doctest-");
   filename.reserve(filename.size() + name.size() * 2);
   for (char ch : name) {
     filename.push_back(hex[ch & 0xF]);
     filename.push_back(hex[(ch & 0xF0) >> 4]);
   }
 
-  auto body = [&] {
+  lib::invoke(test::capture(test::replay(std::move(strategy), filename), filename), [&] {
     failures() = 0;
     func();
     if (failures() > 0)
       throw assert_error();
-  };
-
-  if (dir.empty())
-    lib::invoke(std::move(strategy), std::move(body));
-  else
-    lib::invoke(test::capture(test::replay(std::move(strategy), filename), filename), std::move(body));
+  });
 }
 }}} // namespace halcheck::ext::doctest
 

@@ -15,6 +15,7 @@ namespace halcheck { namespace test {
 
 template<typename Strategy>
 struct replay_t {
+public:
   template<typename F>
   void operator()(F func) {
     struct sample_t {
@@ -23,9 +24,15 @@ struct replay_t {
       lib::optional<uintmax_t> shrink;
     };
 
+    auto directory = this->directory.value_or(default_directory());
+    if (directory.empty()) {
+      lib::invoke(strategy, std::move(func));
+      return;
+    }
+
     std::vector<sample_t> input;
     {
-      std::ifstream is(filename, std::ios_base::in | std::ios_base::binary);
+      std::ifstream is(directory + "/" + filename, std::ios_base::in | std::ios_base::binary);
       while (is) {
         sample_t sample;
         is.read(reinterpret_cast<char *>(&sample.level), sizeof(sample.level));
@@ -86,11 +93,32 @@ struct replay_t {
 
   Strategy strategy;
   std::string filename;
+  lib::optional<std::string> directory;
+
+private:
+  static std::string default_directory() {
+    static const char *var1 = std::getenv("HALCHECK_REPLAY");
+    static const char *var2 = std::getenv("HALCHECK_CAPTURE");
+    static std::string dir = var1 ? std::string(var1) : var2 ? std::string(var2) : ".";
+    return dir;
+  }
 };
 
+/// @brief Constructs a strategy where inputs are drawn from a given file.
+/// @tparam Strategy The type of base strategy.
+/// @param strategy A base strategy used if the file doesn't exist or doesn't contain enough data.
+/// @param filename The input file to read.
+/// @param directory The directory containing the file to read. The default value is chosen as follows:
+///                  1. $HALCHECK_REPLAY, if the environment variable HALCHECK_REPLAY is set.
+///                  2. $HALCHECK_CAPTURE, if the environment variable HALCHECK_CAPTURE is set.
+///                  3. The current working directory.
+///                  If the empty string is specified, then this strategy behaves identically to the base strategy.
+/// @remark The input file is read entirely before a test starts. Changes to the file during test-case execution will
+///         not affect the operation of this strategy.
+/// @return A strategy where inputs are drawn from a given file.
 template<typename Strategy>
-replay_t<Strategy> replay(Strategy strategy, std::string filename) {
-  return {std::move(strategy), std::move(filename)};
+replay_t<Strategy> replay(Strategy strategy, std::string filename, lib::optional<std::string> directory = {}) {
+  return {std::move(strategy), std::move(filename), std::move(directory)};
 }
 
 }} // namespace halcheck::test
