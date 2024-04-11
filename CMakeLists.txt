@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.22)
 
 project(halcheck
   VERSION 1.0
@@ -45,10 +45,6 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
 add_library(${PROJECT_NAME} ${SOURCES})
-target_sources(${PROJECT_NAME} PUBLIC
-  FILE_SET HEADERS
-  BASE_DIRS include
-  FILES ${HEADERS})
 target_link_libraries(${PROJECT_NAME} mpark_variant tl::optional)
 target_compile_options(${PROJECT_NAME} PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W4>
@@ -85,4 +81,5 @@ endif()
 
 ### Installation ###
 
-install(TARGETS ${PROJECT_NAME} FILE_SET HEADERS)
+install(TARGETS ${PROJECT_NAME})
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include)
