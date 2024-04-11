@@ -16,7 +16,6 @@ set(HALCHECK_GTEST   OFF CACHE BOOL "enable gtest integration")
 if(${HALCHECK_DEVELOPMENT})
   set(HALCHECK_DOCTEST              ON CACHE BOOL "" FORCE)
   set(HALCHECK_GTEST                ON CACHE BOOL "" FORCE)
-  set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
 
   include(CTest)
 
