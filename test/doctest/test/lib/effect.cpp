@@ -1,8 +1,7 @@
-#include <halcheck/lib/effect.hpp>
-
 #include <halcheck/ext/doctest.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/gen/element.hpp>
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/check.hpp>
 
@@ -11,46 +10,52 @@
 
 using namespace halcheck;
 
-static void effect_test(std::vector<std::pair<std::reference_wrapper<lib::effect<char>>, char>> state = {}) {
-  enum command { CALL, HANDLE, CREATE };
-  auto i = gen::size();
-  while (gen::next(1, i--)) {
-    switch (gen::weighted<command>({{4 * !state.empty(), CALL}, {2 * !state.empty(), HANDLE}, {1, CREATE}})) {
+using model = std::vector<std::pair<std::reference_wrapper<lib::effect<char>>, char>>;
 
-    case CALL: {
-      auto &&pair = gen::element(state);
-      CHECK_EQ(pair.first.get()(), pair.second);
-    } break;
+static void effect_test(model state = {}) {
+  auto call = [&] {
+    auto &&pair = gen::element(state);
+    CHECK_EQ(pair.first.get()(), pair.second);
+  };
 
-    case HANDLE: {
-      auto value = gen::arbitrary<char>();
-      auto &&pair = gen::element(state);
-      auto _0 = pair.first.get().handle([=] {
-        auto _ = gen::size.handle(gen::size() / 4);
-        effect_test(state);
-        return value;
-      });
-
-      std::swap(pair.second, value);
-      auto _1 = gen::size.handle(gen::size() / 4);
-      effect_test(state);
-      std::swap(pair.second, value);
-    } break;
-
-    case CREATE: {
-      auto value = gen::arbitrary<char>();
-      lib::effect<char> eff([=] {
-        auto _ = gen::size.handle(gen::size() / 4);
-        effect_test(state);
-        return value;
-      });
-
-      state.emplace_back(std::ref(eff), value);
+  auto handle = [&] {
+    auto value = gen::arbitrary<char>();
+    auto &&pair = gen::element(state);
+    auto _0 = pair.first.get().handle([=] {
       auto _ = gen::size.handle(gen::size() / 4);
       effect_test(state);
-      state.pop_back();
-    } break;
-    }
+      return value;
+    });
+
+    std::swap(pair.second, value);
+    auto _1 = gen::size.handle(gen::size() / 4);
+    effect_test(state);
+    std::swap(pair.second, value);
+  };
+
+  auto create = [&] {
+    auto value = gen::arbitrary<char>();
+    lib::effect<char> eff([=] {
+      auto _ = gen::size.handle(gen::size() / 4);
+      effect_test(state);
+      return value;
+    });
+
+    state.emplace_back(std::ref(eff), value);
+    auto _ = gen::size.handle(gen::size() / 4);
+    effect_test(state);
+    state.pop_back();
+  };
+
+  auto i = gen::size();
+  while (gen::next(1, i--)) {
+    auto command = gen::weighted<std::function<void()>>({
+        {4 * !state.empty(), call  },
+        {2 * !state.empty(), handle},
+        {1,                  create}
+    });
+
+    command();
   }
 }
 

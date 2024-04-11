@@ -70,7 +70,7 @@ public:
   template<typename F, HALCHECK_REQUIRE(lib::is_invocable_r<R, F, Args...>())>
   explicit effect(F func) : _id(context::next++), _def(new derived<F>(_id, std::move(func))) {}
 
-  /// @brief Installs a handler for ths effect. While this handler is in scope,
+  /// @brief Installs a handler for this effect. While this handler is in scope,
   ///        all calls to this effect will invoke func. Any calls to other
   ///        effects during the execution of func will have the same behaviour
   ///        as if they were called at the point func was installed.
