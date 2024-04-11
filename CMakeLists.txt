@@ -5,15 +5,18 @@ project(halcheck
   LANGUAGES CXX)
 
 # We default to development mode if we're not included from another directory.
-set(HALCHECK_DEVELOPMENT
-  $<STREQUAL:${CMAKE_CURRENT_SOURCE_DIR},${CMAKE_SOURCE_DIR}>
-  CACHE BOOL "enable development mode")
+if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+  set(HALCHECK_DEVELOPMENT ON CACHE BOOL "enable development mode")
+else()
+  set(HALCHECK_DEVELOPMENT OFF CACHE BOOL "enable development mode")
+endif()
 set(HALCHECK_DOCTEST OFF CACHE BOOL "enable doctest integration")
 set(HALCHECK_GTEST   OFF CACHE BOOL "enable gtest integration")
 
 if(${HALCHECK_DEVELOPMENT})
-  set(HALCHECK_DOCTEST  ON CACHE BOOL "" FORCE)
-  set(HALCHECK_GTEST    ON CACHE BOOL "" FORCE)
+  set(HALCHECK_DOCTEST              ON CACHE BOOL "" FORCE)
+  set(HALCHECK_GTEST                ON CACHE BOOL "" FORCE)
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
 
   include(CTest)
 
