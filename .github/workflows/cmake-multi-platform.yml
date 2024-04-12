@@ -60,7 +60,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_CXX_STANDARD=${{ matrix.standard }}
-        -DCMAKE_CXX_FLAGS=${{ matrix.compiler == 'clang++' && '-stdlib=libc++' || '' }}
+        ${{ matrix.compiler == 'clang++' && '-DCMAKE_CXX_FLAGS=-stdlib=libc++' || '' }}
         -DCMAKE_CXX_EXTENSIONS=0
         -S ${{ github.workspace }}
 
