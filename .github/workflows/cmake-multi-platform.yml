@@ -60,6 +60,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_CXX_STANDARD=${{ matrix.standard }}
+        -DCMAKE_CXX_FLAGS=${{ matrix.compiler == 'clang++' && '-stdlib=libc++' || '' }}
         -DCMAKE_CXX_EXTENSIONS=0
         -DSANITIZE=address
         -S ${{ github.workspace }}
