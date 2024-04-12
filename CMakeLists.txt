@@ -19,17 +19,6 @@ if(${HALCHECK_DEVELOPMENT})
 
   include(CTest)
 
-  # Sanitization options
-  set(SANITIZE "" CACHE STRING "string to pass to -fsanitize")
-  if(SANITIZE)
-    if(MSVC)
-      add_compile_options(/fsanitize=${SANITIZE} /Zi)
-    else()
-      add_compile_options(-fsanitize=${SANITIZE} -fno-omit-frame-pointer)
-      add_link_options(-fsanitize=${SANITIZE} -fno-omit-frame-pointer)
-    endif()
-  endif()
-
   find_program(CLANG_FORMAT_EXE NAMES clang-format)
   find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 endif()
