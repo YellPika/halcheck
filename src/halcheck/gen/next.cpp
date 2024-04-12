@@ -1,7 +1,6 @@
 #include "halcheck/gen/next.hpp"
 
 #include <stdexcept>
-#include <utility>
 
 using namespace halcheck;
 

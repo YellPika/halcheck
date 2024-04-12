@@ -6,7 +6,6 @@
 #include <halcheck/test/check.hpp>
 
 #include <iomanip>
-#include <locale>
 
 using namespace halcheck;
 

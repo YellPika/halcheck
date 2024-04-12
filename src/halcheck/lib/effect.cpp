@@ -5,9 +5,6 @@
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/test/check.hpp>
 
-#include <functional>
-#include <vector>
-
 using namespace halcheck;
 
 thread_local std::array<lib::context::frame, lib::context::size> lib::context::stack;
