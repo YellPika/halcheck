@@ -18,13 +18,12 @@ HALCHECK_TEST_CASE("flatten check") {
   std::ostringstream os;
   fmt::flatten flatten(os, width);
 
-  auto size = gen::size();
-  while (gen::next(1, size--)) {
+  gen::repeat([&] {
     auto indent = std::string(gen::range(0, width * 2), ' ');
-    auto contents =
-        gen::container<std::string>(gen::range(0, width * 2), [] { return gen::range('a', char('z' + 1)); });
+    auto gen_char = [] { return gen::range('a', char('z' + 1)); };
+    auto contents = gen::container<std::string>(gen::range(0, width * 2), gen_char);
     os << indent << contents << '\n';
-  }
+  });
 }
 
 TEST_CASE("flatten example") {

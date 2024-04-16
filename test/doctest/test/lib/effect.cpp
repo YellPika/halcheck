@@ -47,8 +47,7 @@ static void effect_test(model state = {}) {
     state.pop_back();
   };
 
-  auto i = gen::size();
-  while (gen::next(1, i--)) {
+  gen::repeat([&] {
     auto command = gen::weighted<std::function<void()>>({
         {4 * !state.empty(), call  },
         {2 * !state.empty(), handle},
@@ -56,7 +55,7 @@ static void effect_test(model state = {}) {
     });
 
     command();
-  }
+  });
 }
 
 HALCHECK_TEST_CASE("lib::effect") { effect_test(); }

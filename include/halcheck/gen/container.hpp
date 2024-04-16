@@ -14,6 +14,22 @@
 
 namespace halcheck { namespace gen {
 
+/// @brief Repeatedly calls a function. During shrinking, one or more calls may
+///        may be omitted.
+/// @tparam F A nullary function type.
+/// @param func The function to call.
+template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
+void repeat(F func) {
+  auto size = gen::size();
+  gen::while_([&] {
+    if (!gen::next(1, size--))
+      return false;
+    if (!gen::shrink())
+      lib::invoke(func);
+    return true;
+  });
+}
+
 /// @brief Generates a random container value.
 /// @tparam T The type of container to generate.
 /// @tparam F A nullary function type.
@@ -27,14 +43,7 @@ template<
 T container(F gen) {
   T output;
   auto it = lib::end(output);
-  auto size = gen::size();
-  gen::while_([&] {
-    if (!gen::next(1, size--))
-      return false;
-    if (!gen::shrink())
-      it = std::next(output.insert(it, lib::invoke(gen)));
-    return true;
-  });
+  gen::repeat([&] { it = std::next(output.insert(it, lib::invoke(gen))); });
   return output;
 }
 
