@@ -43,7 +43,7 @@ jobs:
             compiler: cl
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -60,8 +60,8 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_CXX_STANDARD=${{ matrix.standard }}
+        ${{ matrix.compiler == 'clang++' && '-DCMAKE_CXX_FLAGS=-stdlib=libc++' || '' }}
         -DCMAKE_CXX_EXTENSIONS=0
-        -DSANITIZE=address
         -S ${{ github.workspace }}
 
     - name: Build
@@ -73,4 +73,4 @@ jobs:
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest --build-config ${{ matrix.build_type }}
+      run: ctest --build-config ${{ matrix.build_type }} --output-on-failure

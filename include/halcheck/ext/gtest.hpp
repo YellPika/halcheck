@@ -10,7 +10,6 @@
 #include <gtest/gtest.h>
 
 #include "gtest/gtest.h"
-#include <exception>
 #include <memory>
 
 namespace halcheck { namespace ext { namespace gtest {
