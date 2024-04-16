@@ -17,6 +17,29 @@ extern lib::effect<lib::raise> discard;
 ///        certain circumstances, such as during shrinking.
 extern lib::effect<void> succeed;
 
+/// @brief Executes a function. If the function calls discard, then it is
+///        retried, up to a certain number of times.
+/// @tparam T The type of function to call.
+/// @param func The function to call.
+/// @param max The maximum number of tries.
+/// @return The result of func.
+template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
+lib::invoke_result_t<F> retry(F func, std::intmax_t max = 100) {
+  {
+    struct e {};
+    auto _ = discard.handle([]() { return lib::raise(e()); });
+    for (std::intmax_t i = 0; max != 0 && i < max; i++) {
+      try {
+        return lib::invoke(func);
+      } catch (const e &) {
+        --max;
+      }
+    }
+  }
+
+  return gen::discard();
+}
+
 }} // namespace halcheck::gen
 
 #endif
