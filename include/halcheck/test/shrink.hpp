@@ -54,9 +54,11 @@ public:
             samples = std::move(csamples);
             shrinks = std::move(cshrinks);
             success = true;
-            fmt::log(fmt::shrink_success{++successes, e});
+            fmt::log(fmt::shrink_step{++successes, e});
             break;
           }
+
+          fmt::log(fmt::shrink_step{successes, nullptr});
         }
 
         i = success ? 0 : i + 1;

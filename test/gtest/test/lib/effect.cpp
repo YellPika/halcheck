@@ -16,7 +16,7 @@ static void effect_test(model state = {}) {
   auto call = [&] {
     gen::guard(!state.empty());
     auto &&pair = gen::element(state);
-    std::clog << "CALL " << fmt::show(pair.second) << std::endl;
+    std::clog << "(" << state.size() << ") CALL " << fmt::show(pair.second) << std::endl;
     ASSERT_EQ(pair.first.get()(), pair.second);
   };
 
@@ -29,7 +29,7 @@ static void effect_test(model state = {}) {
       effect_test(state);
       return value;
     });
-    std::clog << "HANDLE " << fmt::show(pair.second) << std::endl;
+    std::clog << "(" << state.size() << ") HANDLE " << fmt::show(pair.second) << std::endl;
 
     std::swap(pair.second, value);
     auto _1 = gen::size.handle(gen::size() / 4);
@@ -40,7 +40,7 @@ static void effect_test(model state = {}) {
   auto create = [&] {
     auto value = gen::arbitrary<char>();
     lib::effect<char> eff([=] { return value; });
-    std::clog << "CREATE " << fmt::show(value) << std::endl;
+    std::clog << "(" << state.size() << ") CREATE " << fmt::show(value) << std::endl;
 
     state.emplace_back(std::ref(eff), value);
     auto _ = gen::size.handle(gen::size() / 4);

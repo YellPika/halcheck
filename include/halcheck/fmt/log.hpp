@@ -53,29 +53,33 @@ struct shrink_end {
     }
 
     fmt::indent indent(os);
-    os << "Completed Shrinking (" << value.iterations << "):\n" << message;
+    os << "Shrink Complete (" << value.iterations << "):\n" << message;
   }
 };
 
-struct shrink_success {
+struct shrink_step {
   std::uintmax_t iteration;
   std::exception_ptr exception;
-  friend void operator<<(std::ostream &os, const shrink_success &value) {
-    std::string message;
-    try {
-      std::rethrow_exception(value.exception);
-    } catch (const std::exception &e) {
-      message = e.what();
-    } catch (const std::string &e) {
-      message = e;
-    } catch (const char *e) {
-      message = e;
-    } catch (...) {
-      message = "unknown exception";
-    }
+  friend void operator<<(std::ostream &os, const shrink_step &value) {
+    if (value.exception) {
+      std::string message;
+      try {
+        std::rethrow_exception(value.exception);
+      } catch (const std::exception &e) {
+        message = e.what();
+      } catch (const std::string &e) {
+        message = e;
+      } catch (const char *e) {
+        message = e;
+      } catch (...) {
+        message = "unknown exception";
+      }
 
-    fmt::indent indent(os);
-    os << "Shrinking (" << value.iteration << "):\n" << message;
+      fmt::indent indent(os);
+      os << "Shrink Success (" << value.iteration << "):\n" << message;
+    } else {
+      os << "Shrink Failure (" << value.iteration << ")";
+    }
   }
 };
 
@@ -86,7 +90,7 @@ struct message : lib::variant<
                      test_case_capture,
                      shrink_start,
                      shrink_end,
-                     shrink_success> {
+                     shrink_step> {
   struct listener {
     template<typename T>
     void operator()(T value) const {

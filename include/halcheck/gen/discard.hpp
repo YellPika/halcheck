@@ -26,19 +26,21 @@ extern lib::effect<void> succeed;
 /// @return The result of func.
 template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
 lib::invoke_result_t<F> retry(std::intmax_t max, F func) {
-  {
-    struct e {};
-    auto _ = discard.handle([]() { return e(); });
-    while (true) {
-      try {
-        return gen::group(func);
-      } catch (const e &) {
-        if (max > 0 && --max == 0)
-          break;
+  return gen::group([&] {
+    {
+      struct e {};
+      auto _ = discard.handle([]() { return e(); });
+      while (true) {
+        try {
+          return gen::group(func);
+        } catch (const e &) {
+          if (max > 0 && --max == 0)
+            break;
+        }
       }
     }
-  }
-  return static_cast<lib::invoke_result_t<F>>(gen::discard());
+    return static_cast<lib::invoke_result_t<F>>(gen::discard());
+  });
 }
 
 /// @brief Executes a function. If the function calls discard, then it is
