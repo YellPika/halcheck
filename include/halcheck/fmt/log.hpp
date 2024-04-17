@@ -97,7 +97,7 @@ struct message : lib::variant<
   };
 
   template<typename T>
-  message(T value) : variant(std::move(value)){}
+  message(T value) : variant(std::move(value)) {}
 
   friend void operator<<(std::ostream &os, const message &value) { lib::visit(listener{os}, value); }
 };
