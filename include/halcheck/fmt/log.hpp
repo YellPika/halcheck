@@ -8,14 +8,14 @@
 namespace halcheck { namespace fmt {
 
 struct test_case_start {
-  int iteration;
+  std::uintmax_t iteration;
   friend void operator<<(std::ostream &os, const test_case_start &value) {
     os << "Test Case Start (" << value.iteration << ")";
   }
 };
 
 struct test_case_end {
-  int iteration;
+  std::uintmax_t iteration;
   friend void operator<<(std::ostream &os, const test_case_end &value) {
     os << "Test Case End (" << value.iteration << ")";
   }
@@ -36,7 +36,7 @@ struct shrink_start {
 };
 
 struct shrink_end {
-  int iterations;
+  std::uintmax_t iterations;
   std::exception_ptr exception;
   friend void operator<<(std::ostream &os, const shrink_end &value) {
     std::string message;
@@ -58,7 +58,7 @@ struct shrink_end {
 };
 
 struct shrink_success {
-  int iteration;
+  std::uintmax_t iteration;
   std::exception_ptr exception;
   friend void operator<<(std::ostream &os, const shrink_success &value) {
     std::string message;
