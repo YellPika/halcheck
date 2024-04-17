@@ -4,8 +4,8 @@
 #include <halcheck/fmt/log.hpp>
 #include <halcheck/fmt/show.hpp>
 #include <halcheck/gen/discard.hpp>
-#include <halcheck/test/capture.hpp>
 #include <halcheck/test/check.hpp>
+#include <halcheck/test/record.hpp>
 #include <halcheck/test/replay.hpp>
 
 #include <gtest/gtest-spi.h>
@@ -45,7 +45,7 @@ void check(void (*func)(), const char * = "", Strategy strategy = test::check) {
   auto _ = fmt::log.handle(log);
 
   try {
-    lib::invoke(test::capture(test::replay(std::move(strategy), filename), filename), [&] {
+    lib::invoke(test::record(test::replay(std::move(strategy), filename), filename), [&] {
       std::unique_ptr<TestPartResultArray> results(new TestPartResultArray);
       {
         ScopedFakeTestPartResultReporter reporter(

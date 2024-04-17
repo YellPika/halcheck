@@ -1,5 +1,5 @@
-#ifndef HALCHECK_TEST_CAPTURE_HPP
-#define HALCHECK_TEST_CAPTURE_HPP
+#ifndef HALCHECK_TEST_RECORD_HPP
+#define HALCHECK_TEST_RECORD_HPP
 
 #include <halcheck/fmt/log.hpp>
 #include <halcheck/gen/discard.hpp>
@@ -15,7 +15,7 @@
 namespace halcheck { namespace test {
 
 template<typename Strategy>
-struct capture_t {
+struct record_t {
   template<typename F>
   void operator()(F func) {
     struct sample_t {
@@ -40,7 +40,7 @@ struct capture_t {
     }
 
     auto path = directory + "/" + filename;
-    fmt::log(fmt::test_case_capture{path});
+    fmt::log(fmt::test_case_record{path});
 
     auto input = [&] {
       std::ifstream is(path, std::ios_base::in | std::ios_base::binary);
@@ -117,7 +117,7 @@ private:
 };
 
 template<typename Strategy>
-capture_t<Strategy> capture(Strategy strategy, std::string filename) {
+record_t<Strategy> record(Strategy strategy, std::string filename) {
   return {std::move(strategy), std::move(filename)};
 }
 

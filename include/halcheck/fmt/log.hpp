@@ -26,9 +26,9 @@ struct test_case_replay {
   friend void operator<<(std::ostream &os, const test_case_replay &value) { os << "Replaying " << value.filename; }
 };
 
-struct test_case_capture {
+struct test_case_record {
   std::string filename;
-  friend void operator<<(std::ostream &os, const test_case_capture &value) { os << "Capturing " << value.filename; }
+  friend void operator<<(std::ostream &os, const test_case_record &value) { os << "Recording " << value.filename; }
 };
 
 struct shrink_start {
@@ -87,7 +87,7 @@ struct message : lib::variant<
                      test_case_start,
                      test_case_end,
                      test_case_replay,
-                     test_case_capture,
+                     test_case_record,
                      shrink_start,
                      shrink_end,
                      shrink_step> {

@@ -4,8 +4,8 @@
 #include <halcheck/fmt/log.hpp>
 #include <halcheck/fmt/show.hpp>
 #include <halcheck/lib/functional.hpp>
-#include <halcheck/test/capture.hpp>
 #include <halcheck/test/check.hpp>
+#include <halcheck/test/record.hpp>
 #include <halcheck/test/replay.hpp>
 
 #include <exception>
@@ -67,7 +67,7 @@ void check(void (*func)(), const char *, Strategy strategy = test::check) {
 
   auto _ = fmt::log.handle([](const fmt::message &message) { ADD_MESSAGE_AT("HALCHECK", 0, message); });
 
-  lib::invoke(test::capture(test::replay(std::move(strategy), filename), filename), [&] {
+  lib::invoke(test::record(test::replay(std::move(strategy), filename), filename), [&] {
     failures() = 0;
     func();
     if (failures() > 0)
