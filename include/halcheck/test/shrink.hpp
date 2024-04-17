@@ -31,15 +31,15 @@ public:
         exec(func, samples, shrinks);
       });
     } catch (...) {
-      fmt::log(fmt::shrink_start{});
-
       struct discard {};
       auto e = std::current_exception();
+      fmt::log(fmt::shrink_start{e});
 
       std::uintmax_t successes = 0;
       for (std::size_t i = 0; i < shrinks.size();) {
         bool success = false;
         for (std::uintmax_t j = 0; j < shrinks[i].size; j++) {
+          fmt::log(fmt::shrink_case_start{successes});
           auto csamples = samples;
           csamples[shrinks[i].index].shrink = j;
           std::vector<shrink> cshrinks;
@@ -54,11 +54,11 @@ public:
             samples = std::move(csamples);
             shrinks = std::move(cshrinks);
             success = true;
-            fmt::log(fmt::shrink_step{++successes, e});
+            fmt::log(fmt::shrink_case_end{successes++, e});
             break;
           }
 
-          fmt::log(fmt::shrink_step{successes, nullptr});
+          fmt::log(fmt::shrink_case_end{successes, nullptr});
         }
 
         i = success ? 0 : i + 1;

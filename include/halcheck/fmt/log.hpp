@@ -10,14 +10,14 @@ namespace halcheck { namespace fmt {
 struct test_case_start {
   std::uintmax_t iteration;
   friend void operator<<(std::ostream &os, const test_case_start &value) {
-    os << "Test Case Start (" << value.iteration << ")";
+    os << "Test Case (" << value.iteration << "): Start";
   }
 };
 
 struct test_case_end {
   std::uintmax_t iteration;
   friend void operator<<(std::ostream &os, const test_case_end &value) {
-    os << "Test Case End (" << value.iteration << ")";
+    os << "Test Case (" << value.iteration << "): End";
   }
 };
 
@@ -32,35 +32,58 @@ struct test_case_record {
 };
 
 struct shrink_start {
-  friend void operator<<(std::ostream &os, const shrink_start &) { os << "Shrinking..."; }
+  std::exception_ptr exception;
+  friend void operator<<(std::ostream &os, const shrink_start &value) {
+    {
+      fmt::indent indent(os);
+      os << "Exception:\n";
+      try {
+        std::rethrow_exception(value.exception);
+      } catch (const std::exception &e) {
+        os << e.what();
+      } catch (const std::string &e) {
+        os << e;
+      } catch (const char *e) {
+        os << e;
+      } catch (...) {
+        os << "unknown exception";
+      }
+    }
+    os << "\nShrinking...";
+  }
 };
 
 struct shrink_end {
   std::uintmax_t iterations;
   std::exception_ptr exception;
   friend void operator<<(std::ostream &os, const shrink_end &value) {
-    std::string message;
+    fmt::indent indent(os);
+    os << "Shrinking (" << value.iterations << "): Complete\n";
     try {
       std::rethrow_exception(value.exception);
     } catch (const std::exception &e) {
-      message = e.what();
+      os << e.what();
     } catch (const std::string &e) {
-      message = e;
+      os << e;
     } catch (const char *e) {
-      message = e;
+      os << e;
     } catch (...) {
-      message = "unknown exception";
+      os << "unknown exception";
     }
-
-    fmt::indent indent(os);
-    os << "Shrink Complete (" << value.iterations << "):\n" << message;
   }
 };
 
-struct shrink_step {
+struct shrink_case_start {
+  std::uintmax_t iteration;
+  friend void operator<<(std::ostream &os, const shrink_case_start &value) {
+    os << "Shrinking (" << value.iteration << "): Start";
+  }
+};
+
+struct shrink_case_end {
   std::uintmax_t iteration;
   std::exception_ptr exception;
-  friend void operator<<(std::ostream &os, const shrink_step &value) {
+  friend void operator<<(std::ostream &os, const shrink_case_end &value) {
     if (value.exception) {
       std::string message;
       try {
@@ -76,9 +99,9 @@ struct shrink_step {
       }
 
       fmt::indent indent(os);
-      os << "Shrink Success (" << value.iteration << "):\n" << message;
+      os << "Shrinking (" << value.iteration << "): Success\n" << message;
     } else {
-      os << "Shrink Failure (" << value.iteration << ")";
+      os << "Shrinking (" << value.iteration << "): Failure";
     }
   }
 };
@@ -90,7 +113,8 @@ struct message : lib::variant<
                      test_case_record,
                      shrink_start,
                      shrink_end,
-                     shrink_step> {
+                     shrink_case_start,
+                     shrink_case_end> {
   struct listener {
     template<typename T>
     void operator()(T value) const {
