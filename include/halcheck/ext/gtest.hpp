@@ -15,6 +15,8 @@
 
 namespace halcheck { namespace ext { namespace gtest {
 
+void log(const fmt::message &);
+
 template<typename Strategy = decltype(test::check)>
 void check(void (*func)(), const char * = "", Strategy strategy = test::check) {
   using namespace testing;
@@ -40,7 +42,7 @@ void check(void (*func)(), const char * = "", Strategy strategy = test::check) {
     const char *what() const noexcept override { return message.c_str(); }
   };
 
-  auto _ = fmt::log.handle([](const fmt::message &msg) { std::clog << "[ HALCHECK ] " << fmt::show(msg) << "\n"; });
+  auto _ = fmt::log.handle(log);
 
   try {
     lib::invoke(test::capture(test::replay(std::move(strategy), filename), filename), [&] {

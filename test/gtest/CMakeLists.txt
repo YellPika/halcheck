@@ -9,7 +9,7 @@ target_compile_options(${PROJECT_NAME}-gtest PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W4>
   $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic -Wdocumentation>
   $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>)
-target_link_libraries(${PROJECT_NAME}-gtest ${PROJECT_NAME} gtest)
+target_link_libraries(${PROJECT_NAME}-gtest PUBLIC ${PROJECT_NAME} gtest PRIVATE rang)
 set_target_properties(${PROJECT_NAME}-gtest PROPERTIES EXPORT_COMPILE_COMMANDS ${HALCHECK_DEVELOPMENT})
 
 if (NOT ${HALCHECK_DEVELOPMENT})
