@@ -7,6 +7,5 @@
 
 using namespace halcheck;
 
-thread_local std::array<lib::context::frame, lib::context::size> lib::context::stack;
-thread_local std::size_t lib::context::top = 0;
+thread_local std::vector<void *> lib::context::state;
 std::atomic_size_t lib::context::next{0};

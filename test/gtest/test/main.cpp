@@ -9,6 +9,7 @@
 using namespace halcheck;
 
 TEST(gtest, example) {
+  ::testing::GTEST_FLAG(throw_on_failure) = false;
   EXPECT_NONFATAL_FAILURE(
       halcheck::ext::gtest::check([] {
         auto xs = gen::arbitrary<std::vector<bool>>();

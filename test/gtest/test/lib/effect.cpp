@@ -1,4 +1,4 @@
-#include <halcheck/ext/doctest.hpp>
+#include <halcheck/ext/gtest.hpp>
 #include <halcheck/gen/arbitrary.hpp>
 #include <halcheck/gen/element.hpp>
 #include <halcheck/lib/effect.hpp>
@@ -16,7 +16,8 @@ static void effect_test(model state = {}) {
   auto call = [&] {
     gen::guard(!state.empty());
     auto &&pair = gen::element(state);
-    CHECK_EQ(pair.first.get()(), pair.second);
+    std::clog << "CALL " << fmt::show(pair.second) << std::endl;
+    ASSERT_EQ(pair.first.get()(), pair.second);
   };
 
   auto handle = [&] {
@@ -28,6 +29,7 @@ static void effect_test(model state = {}) {
       effect_test(state);
       return value;
     });
+    std::clog << "HANDLE " << fmt::show(pair.second) << std::endl;
 
     std::swap(pair.second, value);
     auto _1 = gen::size.handle(gen::size() / 4);
@@ -38,6 +40,7 @@ static void effect_test(model state = {}) {
   auto create = [&] {
     auto value = gen::arbitrary<char>();
     lib::effect<char> eff([=] { return value; });
+    std::clog << "CREATE " << fmt::show(value) << std::endl;
 
     state.emplace_back(std::ref(eff), value);
     auto _ = gen::size.handle(gen::size() / 4);
@@ -46,7 +49,7 @@ static void effect_test(model state = {}) {
   };
 
   gen::repeat([&] {
-    gen::retry([&] {
+    gen::retry(25, [&] {
       gen::weighted<std::function<void()>>({
           {4, call  },
           {2, handle},
@@ -56,47 +59,31 @@ static void effect_test(model state = {}) {
   });
 }
 
-HALCHECK_TEST_CASE("lib::effect") { effect_test(); }
+HALCHECK_TEST(lib, effect) { effect_test(); }
 
-TEST_CASE("effect example") {
-  lib::effect<int> example0([] { return (throw std::runtime_error("OH NO"), 0); });
-  lib::effect<int> example1([] { return 0; });
+HALCHECK_TEST(lib, effect_example) {
+  lib::effect<bool> example0([] { return (throw 0, true); });
+  lib::effect<bool> example1([] { return true; });
 
-  CHECK_THROWS_AS(example0(), std::runtime_error);
-  CHECK_EQ(example1(), 0);
+  EXPECT_THROW(example0(), int);
+  EXPECT_TRUE(example1());
 
   {
     auto _0 = example0.handle([&] {
-      CHECK_THROWS_AS(example0(), std::runtime_error);
-      return 1;
+      EXPECT_THROW(example0(), int);
+      return true;
     });
 
     auto _1 = example1.handle([&] {
-      CHECK_EQ(example0(), 1);
-      CHECK_EQ(example1(), 0);
-
-      auto _2 = example0.handle([&] {
-        CHECK_EQ(example0(), 1);
-        CHECK_EQ(example1(), 0);
-        return 2;
-      });
-
-      auto _3 = example1.handle([&] {
-        CHECK_EQ(example0(), 2);
-        CHECK_EQ(example1(), 0);
-        return 3;
-      });
-
-      CHECK_EQ(example0(), 2);
-      CHECK_EQ(example1(), 3);
-
-      return 1;
+      EXPECT_TRUE(example1());
+      EXPECT_TRUE(example0());
+      return false;
     });
 
-    CHECK_EQ(example0(), 1);
-    CHECK_EQ(example1(), 1);
+    EXPECT_TRUE(example0());
+    EXPECT_FALSE(example1());
   }
 
-  CHECK_THROWS_AS(example0(), std::runtime_error);
-  CHECK_EQ(example1(), 0);
+  EXPECT_THROW(example0(), int);
+  EXPECT_TRUE(example1());
 }

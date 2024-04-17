@@ -3,26 +3,18 @@
 
 #include <halcheck/lib/scope.hpp>
 
-#include "halcheck/lib/type_traits.hpp"
 #include <array>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <type_traits>
+#include <vector>
 
 namespace halcheck { namespace lib {
 
 class context {
-  static constexpr std::size_t size = 300;
-
-  struct frame {
-    std::uintmax_t id;
-    void *handler;
-  };
-
-  static thread_local std::array<frame, size> stack;
-  static thread_local std::size_t top;
+  static thread_local std::vector<void *> state;
   static std::atomic_size_t next;
 
   template<typename R, typename... Args>
@@ -41,24 +33,45 @@ private:
   };
 
   template<typename F>
-  class derived final : public base {
+  class fallback final : public base {
   public:
-    derived(std::uintmax_t id, F func)
-        : _frame{id, static_cast<base *>(this)}, _top(context::top), _func(std::move(func)) {
-      std::swap(context::stack[context::top++], _frame);
-    }
-
-    ~derived() override { std::swap(context::stack[--context::top], _frame); }
+    fallback(F func) : _func(std::move(func)) {}
 
     R operator()(Args... args) override {
-      context::top = _top;
+      std::vector<void *> state;
+      auto _ = finally([&] { std::swap(context::state, state); });
+      std::swap(context::state, state);
       return lib::invoke(_func, args...);
     }
 
   private:
-    context::frame _frame;
-    std::size_t _top;
     F _func;
+  };
+
+  template<typename F>
+  class derived final : public base {
+  public:
+    derived(std::uintmax_t id, F func)
+        : _id(id), _state(context::state), _func(std::move(func)), _prev(static_cast<base *>(this)) {
+      if (id >= context::state.size())
+        context::state.insert(context::state.end(), _id - context::state.size() + 1, nullptr);
+      std::swap(context::state[id], _prev);
+    }
+
+    ~derived() { context::state[_id] = _prev; }
+
+    R operator()(Args... args) override {
+      auto state = _state;
+      auto _ = finally([&] { std::swap(context::state, state); });
+      std::swap(context::state, state);
+      return lib::invoke(_func, args...);
+    }
+
+  private:
+    std::uintmax_t _id;
+    std::vector<void *> _state;
+    F _func;
+    void *_prev;
   };
 
   std::uintmax_t _id;
@@ -68,7 +81,7 @@ public:
   using handler = std::unique_ptr<base>;
 
   template<typename F, HALCHECK_REQUIRE(lib::is_invocable_r<R, F, Args...>())>
-  explicit effect(F func) : _id(context::next++), _def(new derived<F>(_id, std::move(func))) {}
+  explicit effect(F func) : _id(context::next++), _def(new fallback<F>(std::move(func))) {}
 
   /// @brief Installs a handler for this effect. While this handler is in scope,
   ///        all calls to this effect will invoke func. Any calls to other
@@ -99,11 +112,10 @@ public:
   /// @param args The list of arguments to pass to the handler.
   /// @return The result of calling the handler.
   R operator()(Args... args) const {
-    auto old = context::top;
-    while (context::stack[context::top - 1].id != _id)
-      --context::top;
-    auto reset = lib::finally([&] { context::top = old; });
-    return (*reinterpret_cast<base *>(context::stack[context::top - 1].handler))(std::forward<Args>(args)...);
+    if (_id < context::state.size() && context::state[_id])
+      return (*reinterpret_cast<base *>(context::state[_id]))(args...);
+    else
+      return (*_def)(args...);
   }
 };
 

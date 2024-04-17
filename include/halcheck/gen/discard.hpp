@@ -1,6 +1,7 @@
 #ifndef HALCHECK_GEN_DISCARD_HPP
 #define HALCHECK_GEN_DISCARD_HPP
 
+#include <halcheck/gen/group.hpp>
 #include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/raise.hpp>
 
@@ -20,24 +21,34 @@ extern lib::effect<void> succeed;
 /// @brief Executes a function. If the function calls discard, then it is
 ///        retried, up to a certain number of times.
 /// @tparam T The type of function to call.
-/// @param func The function to call.
 /// @param max The maximum number of tries.
+/// @param func The function to call.
 /// @return The result of func.
 template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
-lib::invoke_result_t<F> retry(F func, std::intmax_t max = 100) {
+lib::invoke_result_t<F> retry(std::intmax_t max, F func) {
   {
     struct e {};
-    auto _ = discard.handle([]() { return lib::raise(e()); });
-    for (std::intmax_t i = 0; max != 0 && i < max; i++) {
+    auto _ = discard.handle([]() { return e(); });
+    while (true) {
       try {
-        return lib::invoke(func);
+        return gen::group(func);
       } catch (const e &) {
-        --max;
+        if (max > 0 && --max == 0)
+          break;
       }
     }
   }
+  return static_cast<lib::invoke_result_t<F>>(gen::discard());
+}
 
-  return gen::discard();
+/// @brief Executes a function. If the function calls discard, then it is
+///        retried, up to 100 times.
+/// @tparam T The type of function to call.
+/// @param func The function to call.
+/// @return The result of func.
+template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
+lib::invoke_result_t<F> retry(F func) {
+  return gen::retry(100, std::move(func));
 }
 
 }} // namespace halcheck::gen

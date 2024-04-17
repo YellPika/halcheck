@@ -28,8 +28,16 @@ void check(void (*func)(), const char * = "", Strategy strategy = test::check) {
     filename.push_back(hex[(ch & 0xF0) >> 4]);
   }
 
-  struct failure {
+  struct failure : std::exception {
     std::unique_ptr<TestPartResultArray> results;
+    std::string message;
+
+    explicit failure(std::unique_ptr<TestPartResultArray> results) : results(std::move(results)) {
+      for (int i = 0; i < this->results->size(); i++)
+        message += testing::PrintToString(this->results->GetTestPartResult(i));
+    }
+
+    const char *what() const noexcept override { return message.c_str(); }
   };
 
   auto _ = fmt::log.handle([](const fmt::message &msg) { std::clog << "[ HALCHECK ] " << fmt::show(msg) << "\n"; });
@@ -48,7 +56,7 @@ void check(void (*func)(), const char * = "", Strategy strategy = test::check) {
           GTEST_MESSAGE_AT_(part.file_name(), part.line_number(), part.message(), part.type());
           gen::succeed();
         } else {
-          throw failure{std::move(results)};
+          throw failure(std::move(results));
         }
       }
     });

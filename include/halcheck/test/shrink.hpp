@@ -54,7 +54,7 @@ public:
             samples = std::move(csamples);
             shrinks = std::move(cshrinks);
             success = true;
-            fmt::log(fmt::shrink_success{++successes});
+            fmt::log(fmt::shrink_success{++successes, e});
             break;
           }
         }
@@ -62,7 +62,7 @@ public:
         i = success ? 0 : i + 1;
       }
 
-      fmt::log(fmt::shrink_end{successes});
+      fmt::log(fmt::shrink_end{successes, e});
       std::rethrow_exception(e);
     }
   }

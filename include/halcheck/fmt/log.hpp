@@ -1,6 +1,7 @@
 #ifndef HALCHECK_FMT_LOG_HPP
 #define HALCHECK_FMT_LOG_HPP
 
+#include <halcheck/fmt/indent.hpp>
 #include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/variant.hpp>
 
@@ -36,15 +37,45 @@ struct shrink_start {
 
 struct shrink_end {
   int iterations;
+  std::exception_ptr exception;
   friend void operator<<(std::ostream &os, const shrink_end &value) {
-    os << "Completed Shrinking (" << value.iterations << ")";
+    std::string message;
+    try {
+      std::rethrow_exception(value.exception);
+    } catch (const std::exception &e) {
+      message = e.what();
+    } catch (const std::string &e) {
+      message = e;
+    } catch (const char *e) {
+      message = e;
+    } catch (...) {
+      message = "unknown exception";
+    }
+
+    fmt::indent indent(os);
+    os << "Completed Shrinking (" << value.iterations << "):\n" << message;
   }
 };
 
 struct shrink_success {
   int iteration;
+  std::exception_ptr exception;
   friend void operator<<(std::ostream &os, const shrink_success &value) {
-    os << "Shrinking (" << value.iteration << ")";
+    std::string message;
+    try {
+      std::rethrow_exception(value.exception);
+    } catch (const std::exception &e) {
+      message = e.what();
+    } catch (const std::string &e) {
+      message = e;
+    } catch (const char *e) {
+      message = e;
+    } catch (...) {
+      message = "unknown exception";
+    }
+
+    fmt::indent indent(os);
+    os << "Shrinking (" << value.iteration << "):\n" << message;
   }
 };
 
