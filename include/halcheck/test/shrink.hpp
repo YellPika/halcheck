@@ -1,6 +1,7 @@
 #ifndef HALCHECK_TEST_SHRINK_HPP
 #define HALCHECK_TEST_SHRINK_HPP
 
+#include <halcheck/fmt/log.hpp>
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/gen/group.hpp>
 #include <halcheck/gen/next.hpp>
@@ -30,9 +31,12 @@ public:
         exec(func, samples, shrinks);
       });
     } catch (...) {
+      fmt::log(fmt::shrink_start{});
+
       struct discard {};
       auto e = std::current_exception();
 
+      std::uintmax_t successes = 0;
       for (std::size_t i = 0; i < shrinks.size();) {
         bool success = false;
         for (std::uintmax_t j = 0; j < shrinks[i].size; j++) {
@@ -50,6 +54,7 @@ public:
             samples = std::move(csamples);
             shrinks = std::move(cshrinks);
             success = true;
+            fmt::log(fmt::shrink_success{++successes});
             break;
           }
         }
@@ -57,6 +62,7 @@ public:
         i = success ? 0 : i + 1;
       }
 
+      fmt::log(fmt::shrink_end{successes});
       std::rethrow_exception(e);
     }
   }

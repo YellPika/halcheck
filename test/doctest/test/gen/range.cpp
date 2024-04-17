@@ -27,7 +27,7 @@ HALCHECK_TEST_CASE_TEMPLATE_DEFINE("gen::range", T, gen_range, test::limit(test:
   CHECK_LE(min, value);
   CHECK_LT(value, max);
 
-  std::clog << min << " ≤ " << value << " < " << max << "\n";
+  MESSAGE(min, " ≤ ", value, " < ", max);
 }
 
 TEST_SUITE("gen::range") {

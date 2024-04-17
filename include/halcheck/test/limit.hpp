@@ -5,6 +5,7 @@
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/test/strategy.hpp>
 
+#include <cinttypes>
 #include <exception>
 #include <stdexcept>
 
@@ -17,8 +18,8 @@ public:
   void operator()(F func) const {
     std::uintmax_t successes = 0, discarded = 0;
 
-    auto max_success = this->max_success.value_or(default_max_success());
-    auto discard_ratio = this->discard_ratio.value_or(default_discard_ratio());
+    auto max_success = max_success_var().value_or(this->max_success.value_or(100));
+    auto discard_ratio = discard_ratio_var().value_or(this->discard_ratio.value_or(10));
 
     lib::invoke(strategy, [&] {
       if (successes >= max_success)
@@ -43,16 +44,30 @@ public:
   lib::constexpr_optional<std::uintmax_t> discard_ratio;
 
 private:
-  static std::uintmax_t default_max_success() {
+  static lib::optional<std::uintmax_t> max_success_var() {
     static const char *var = std::getenv("HALCHECK_MAX_SUCCESS");
-    static int value = var ? std::atoi(var) : 100;
-    return value;
+
+    if (var) {
+      try {
+        return std::strtoumax(var, nullptr, 10);
+      } catch (const std::invalid_argument &) {
+      }
+    }
+
+    return {};
   }
 
-  static std::uintmax_t default_discard_ratio() {
+  static lib::optional<std::uintmax_t> discard_ratio_var() {
     static const char *var = std::getenv("HALCHECK_DISCARD_RATIO");
-    static int value = var ? std::atoi(var) : 10;
-    return value;
+
+    if (var) {
+      try {
+        return std::strtoumax(var, nullptr, 10);
+      } catch (const std::invalid_argument &) {
+      }
+    }
+
+    return {};
   }
 };
 

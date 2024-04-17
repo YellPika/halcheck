@@ -55,12 +55,11 @@ HALCHECK_TEST_CASE("binary_search test", test::limit(test::random(), 1024)) {
     test::check([&] {
       auto x = gen::range(min, max);
       if (x >= err) {
-        std::clog << +x << " > " << +err << "\n";
+        MESSAGE(+x, " > ", +err);
         throw x;
       }
     });
   } catch (const decltype(err) &e) {
-    std::clog << "DONE\n";
     CHECK_EQ(e, err);
   }
 }

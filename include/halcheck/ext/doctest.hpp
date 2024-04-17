@@ -1,6 +1,7 @@
 #ifndef HALCHECK_EXT_DOCTEST_HPP
 #define HALCHECK_EXT_DOCTEST_HPP
 
+#include <halcheck/fmt/log.hpp>
 #include <halcheck/fmt/show.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/test/capture.hpp>
@@ -8,6 +9,7 @@
 #include <halcheck/test/replay.hpp>
 
 #include <exception>
+#include <iostream>
 #include <string>
 
 namespace doctest {
@@ -32,7 +34,11 @@ inline ::doctest::String stringify(const char *);
   template<typename T>                                                                                                 \
   static inline void DOCTEST_ANONYMOUS(HALCHECK_ANON_FUNC_)()
 #else
+
 namespace halcheck { namespace ext { namespace doctest {
+
+using namespace ::doctest;
+
 int &failures();
 
 template<typename T>
@@ -58,6 +64,8 @@ void check(void (*func)(), const char *, Strategy strategy = test::check) {
     filename.push_back(hex[ch & 0xF]);
     filename.push_back(hex[(ch & 0xF0) >> 4]);
   }
+
+  auto _ = fmt::log.handle([](const fmt::message &message) { ADD_MESSAGE_AT("HALCHECK", 0, message); });
 
   lib::invoke(test::capture(test::replay(std::move(strategy), filename), filename), [&] {
     failures() = 0;

@@ -1,11 +1,13 @@
 #ifndef HALCHECK_TEST_RANDOM_HPP
 #define HALCHECK_TEST_RANDOM_HPP
 
+#include <halcheck/fmt/log.hpp>
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/gen/next.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
+#include <cinttypes>
 #include <cstdint>
 #include <cstdlib>
 #include <random>
@@ -32,10 +34,13 @@ public:
     struct discard {};
     struct succeed {};
 
-    std::default_random_engine engine(seed.value_or(default_seed()));
-    std::uintmax_t size = 0, max_size = this->max_size.value_or(default_max_size());
+    std::default_random_engine engine(seed_var().value_or(seed.value_or(0)));
+    std::uintmax_t i = 0, size = 0, max_size = max_size_var().value_or(this->max_size.value_or(100));
 
     while (true) {
+      fmt::log(fmt::test_case_start{i});
+      auto _ = lib::finally([&] { fmt::log(fmt::test_case_end{i++}); });
+
       try {
         auto _0 = gen::size.handle([&] { return size; });
         auto _1 = gen::succeed.handle([] { throw succeed(); });
@@ -56,16 +61,30 @@ public:
   }
 
 private:
-  static std::uint_fast32_t default_seed() {
+  static lib::optional<std::uint_fast32_t> seed_var() {
     static const char *var = std::getenv("HALCHECK_SEED");
-    static int value = var ? std::atoi(var) : 0;
-    return value;
+
+    if (var) {
+      try {
+        return std::strtoumax(var, nullptr, 10);
+      } catch (const std::invalid_argument &) {
+      }
+    }
+
+    return {};
   }
 
-  static std::uintmax_t default_max_size() {
+  static lib::optional<std::uintmax_t> max_size_var() {
     static const char *var = std::getenv("HALCHECK_MAX_SIZE");
-    static int value = var ? std::atoi(var) : 0;
-    return value;
+
+    if (var) {
+      try {
+        return std::strtoumax(var, nullptr, 10);
+      } catch (const std::invalid_argument &) {
+      }
+    }
+
+    return {};
   }
 
   lib::constexpr_optional<std::uint_fast32_t> seed;

@@ -1,6 +1,7 @@
 #ifndef HALCHECK_TEST_CAPTURE_HPP
 #define HALCHECK_TEST_CAPTURE_HPP
 
+#include <halcheck/fmt/log.hpp>
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/gen/group.hpp>
 #include <halcheck/gen/next.hpp>
@@ -39,6 +40,7 @@ struct capture_t {
     }
 
     auto path = directory + "/" + filename;
+    fmt::log(fmt::test_case_capture{path});
 
     auto input = [&] {
       std::ifstream is(path, std::ios_base::in | std::ios_base::binary);

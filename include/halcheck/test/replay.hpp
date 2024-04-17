@@ -1,6 +1,7 @@
 #ifndef HALCHECK_TEST_REPLAY_HPP
 #define HALCHECK_TEST_REPLAY_HPP
 
+#include <halcheck/fmt/log.hpp>
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/gen/group.hpp>
 #include <halcheck/gen/next.hpp>
@@ -47,6 +48,9 @@ public:
 
         input.push_back(sample);
       }
+
+      if (!input.empty())
+        fmt::log(fmt::test_case_replay{directory + "/" + filename});
     }
 
     lib::invoke(strategy, [&] {

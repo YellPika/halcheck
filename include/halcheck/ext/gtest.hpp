@@ -1,6 +1,8 @@
 #ifndef HALCHECK_EXT_GTEST_HPP
 #define HALCHECK_EXT_GTEST_HPP
 
+#include <halcheck/fmt/log.hpp>
+#include <halcheck/fmt/show.hpp>
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/test/capture.hpp>
 #include <halcheck/test/check.hpp>
@@ -9,7 +11,6 @@
 #include <gtest/gtest-spi.h>
 #include <gtest/gtest.h>
 
-#include "gtest/gtest.h"
 #include <memory>
 
 namespace halcheck { namespace ext { namespace gtest {
@@ -30,6 +31,8 @@ void check(void (*func)(), const char * = "", Strategy strategy = test::check) {
   struct failure {
     std::unique_ptr<TestPartResultArray> results;
   };
+
+  auto _ = fmt::log.handle([](const fmt::message &msg) { std::clog << "[ HALCHECK ] " << fmt::show(msg) << "\n"; });
 
   try {
     lib::invoke(test::capture(test::replay(std::move(strategy), filename), filename), [&] {
