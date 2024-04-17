@@ -109,7 +109,7 @@ struct record_t {
 
 private:
   static std::string default_directory() {
-    static const char *var1 = std::getenv("HALCHECK_CAPTURE");
+    static const char *var1 = std::getenv("HALCHECK_RECORD");
     static const char *var2 = std::getenv("HALCHECK_REPLAY");
     static std::string dir = var1 ? std::string(var1) : var2 ? std::string(var2) : ".";
     return dir;

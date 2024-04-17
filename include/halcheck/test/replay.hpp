@@ -102,7 +102,7 @@ public:
 private:
   static std::string default_directory() {
     static const char *var1 = std::getenv("HALCHECK_REPLAY");
-    static const char *var2 = std::getenv("HALCHECK_CAPTURE");
+    static const char *var2 = std::getenv("HALCHECK_RECORD");
     static std::string dir = var1 ? std::string(var1) : var2 ? std::string(var2) : ".";
     return dir;
   }
@@ -114,7 +114,7 @@ private:
 /// @param filename The input file to read.
 /// @param directory The directory containing the file to read. The default value is chosen as follows:
 ///                  1. $HALCHECK_REPLAY, if the environment variable HALCHECK_REPLAY is set.
-///                  2. $HALCHECK_CAPTURE, if the environment variable HALCHECK_CAPTURE is set.
+///                  2. $HALCHECK_RECORD, if the environment variable HALCHECK_RECORD is set.
 ///                  3. The current working directory.
 ///                  If the empty string is specified, then this strategy behaves identically to the base strategy.
 /// @remark The input file is read entirely before a test starts. Changes to the file during test-case execution will
