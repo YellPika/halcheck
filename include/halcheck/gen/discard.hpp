@@ -39,7 +39,7 @@ lib::invoke_result_t<F> retry(std::intmax_t max, F func) {
         }
       }
     }
-    return static_cast<lib::invoke_result_t<F>>(gen::discard());
+    gen::discard();
   });
 }
 
