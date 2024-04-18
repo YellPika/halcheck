@@ -2,7 +2,15 @@ if (NOT ${HALCHECK_GTEST})
   return()
 endif()
 
-CPMAddPackage("gh:google/googletest@1.14.0")
+if (NOT TARGET gtest)
+  CPMAddPackage("gh:google/googletest@1.14.0")
+endif()
+
+if (NOT TARGET rang)
+  # rang: cross-platform colored printing
+  # * For nice GTest output
+  CPMAddPackage("gh:agauniyal/rang@3.2")
+endif()
 
 add_library(${PROJECT_NAME}-gtest gtest.cpp)
 target_compile_options(${PROJECT_NAME}-gtest PRIVATE

@@ -2,7 +2,9 @@ if (NOT ${HALCHECK_DOCTEST})
   return()
 endif()
 
-CPMAddPackage("gh:doctest/doctest@2.4.11")
+if (NOT TARGET doctest::doctest)
+  CPMAddPackage("gh:doctest/doctest@2.4.11")
+endif()
 
 add_library(${PROJECT_NAME}-doctest doctest.cpp)
 target_compile_options(${PROJECT_NAME}-doctest PRIVATE

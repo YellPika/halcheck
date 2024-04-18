@@ -27,19 +27,19 @@ endif()
 
 include(cmake/CPM.cmake)
 
-# mpark::variant: std::variant implementation
-# * For C++11/14 compatibility
-CPMAddPackage("gh:mpark/variant@1.4.0")
+if (NOT TARGET mpark_variant)
+  # mpark::variant: std::variant implementation
+  # * For C++11/14 compatibility
+  CPMAddPackage("gh:mpark/variant@1.4.0")
+endif()
 
-# tl::optional: std::optional implementation
-# * For C++11/14 compatibility
-set(OPTIONAL_BUILD_PACKAGE OFF) # tl::optional does not need to be packaged
-set(OPTIONAL_BUILD_TESTS OFF)   # and tested when used as a dependency.
-CPMAddPackage("gh:TartanLlama/optional@1.1.0")
-
-# rang: cross-platform colored printing
-# * For nice GTest output
-CPMAddPackage("gh:agauniyal/rang@3.2")
+if (NOT TARGET tl::optional)
+  # tl::optional: std::optional implementation
+  # * For C++11/14 compatibility
+  set(OPTIONAL_BUILD_PACKAGE OFF) # tl::optional does not need to be packaged
+  set(OPTIONAL_BUILD_TESTS OFF)   # and tested when used as a dependency.
+  CPMAddPackage("gh:TartanLlama/optional@1.1.0")
+endif()
 
 ### Configuration ###
 
