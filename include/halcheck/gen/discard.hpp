@@ -2,6 +2,7 @@
 #define HALCHECK_GEN_DISCARD_HPP
 
 #include <halcheck/gen/group.hpp>
+#include <halcheck/gen/next.hpp>
 #include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/raise.hpp>
 
@@ -29,13 +30,17 @@ lib::invoke_result_t<F> retry(std::intmax_t max, F func) {
   return gen::group([&] {
     {
       struct e {};
-      auto _ = discard.handle([]() { return e(); });
+      std::uintmax_t i = 0;
+      auto _0 = gen::discard.handle([] { return e(); });
+      auto _1 = gen::size.handle([&] { return gen::size() + i; });
       while (true) {
         try {
           return gen::group(func);
         } catch (const e &) {
-          if (max > 0 && --max == 0)
+          if (max > 0 && i >= max)
             break;
+
+          ++i;
         }
       }
     }
