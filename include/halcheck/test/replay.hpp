@@ -77,6 +77,10 @@ public:
 
         if (i == input.end() || i->level < level)
           return gen::next(w0, w1);
+        else if (w0 == 0)
+          return ++i, true;
+        else if (w1 == 0)
+          return ++i, false;
         else
           return (i++)->next;
       });
