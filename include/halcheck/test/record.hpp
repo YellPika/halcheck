@@ -10,7 +10,6 @@
 #include <halcheck/lib/scope.hpp>
 
 #include <fstream>
-#include <vector>
 
 namespace halcheck { namespace test {
 
@@ -33,13 +32,12 @@ struct record_t {
       }
     };
 
-    auto directory = this->directory.value_or(default_directory());
-    if (directory.empty()) {
+    if (!directory) {
       lib::invoke(strategy, std::move(func));
       return;
     }
 
-    auto path = directory + "/" + filename;
+    auto path = *directory + "/" + filename;
     fmt::log(fmt::test_case_record{path});
 
     auto input = [&] {
@@ -106,19 +104,14 @@ struct record_t {
   Strategy strategy;
   std::string filename;
   lib::optional<std::string> directory;
-
-private:
-  static std::string default_directory() {
-    static const char *var1 = std::getenv("HALCHECK_RECORD");
-    static const char *var2 = std::getenv("HALCHECK_REPLAY");
-    static std::string dir = var1 ? std::string(var1) : var2 ? std::string(var2) : ".";
-    return dir;
-  }
 };
 
+lib::optional<std::string> default_record_directory();
+
 template<typename Strategy>
-record_t<Strategy> record(Strategy strategy, std::string filename) {
-  return {std::move(strategy), std::move(filename)};
+record_t<Strategy>
+record(Strategy strategy, std::string filename, lib::optional<std::string> directory = default_record_directory()) {
+  return {std::move(strategy), std::move(filename), std::move(directory)};
 }
 
 }} // namespace halcheck::test
