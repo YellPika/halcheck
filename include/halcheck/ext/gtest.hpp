@@ -21,14 +21,8 @@ template<typename Strategy = decltype(test::check)>
 void check(void (*func)(), const char * = "", Strategy strategy = test::check) {
   using namespace testing;
 
-  static const char *hex = "0123456789abcdef";
-  std::string name(UnitTest::GetInstance()->current_test_info()->name());
   std::string filename("halcheck-gtest-");
-  filename.reserve(filename.size() + name.size() * 2);
-  for (char ch : name) {
-    filename.push_back(hex[ch & 0xF]);
-    filename.push_back(hex[(ch & 0xF0) >> 4]);
-  }
+  filename += UnitTest::GetInstance()->current_test_info()->name();
 
   struct failure : std::exception {
     std::unique_ptr<TestPartResultArray> results;
