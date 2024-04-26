@@ -64,7 +64,7 @@ lib::invoke_result_t<F> retry(F func) {
 /// @tparam F The type of function to invoke.
 /// @param func The function to invoke.
 /// @return The return value of func, or lib::nullopt.
-template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
+template<typename F, HALCHECK_REQUIRE(!std::is_void<lib::invoke_result_t<F>>())>
 lib::optional<lib::invoke_result_t<F>> backtrack(F func) {
   return gen::group([&]() -> lib::optional<lib::invoke_result_t<F>> {
     struct discard {};
@@ -79,6 +79,34 @@ lib::optional<lib::invoke_result_t<F>> backtrack(F func) {
     } catch (const discard &) {
       if (ok)
         return lib::nullopt;
+      else
+        gen::discard();
+    }
+  });
+}
+
+/// @brief Executes a function. If the function calls discard before calling
+/// next, then false is returned.
+/// @tparam F The type of function to invoke.
+/// @param func The function to invoke.
+/// @return true if the func returns without calling discard, and false if func
+/// calls discard before the first call to next.
+template<typename F, HALCHECK_REQUIRE(std::is_void<lib::invoke_result_t<F>>())>
+bool backtrack(F func) {
+  return gen::group([&] {
+    struct discard {};
+    bool ok = true;
+    try {
+      auto _0 = gen::next.handle([&](std::uintmax_t w0, std::uintmax_t w1) {
+        ok = false;
+        return gen::next(w0, w1);
+      });
+      auto _1 = gen::discard.handle([&] { return lib::raise(discard()); });
+      lib::invoke(std::move(func));
+      return true;
+    } catch (const discard &) {
+      if (ok)
+        return false;
       else
         gen::discard();
     }
