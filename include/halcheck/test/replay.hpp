@@ -25,15 +25,15 @@ public:
       lib::optional<uintmax_t> shrink;
     };
 
-    auto directory = this->directory.value_or(default_directory());
-    if (directory.empty()) {
+    if (!directory) {
       lib::invoke(strategy, std::move(func));
       return;
     }
 
     std::vector<sample_t> input;
     {
-      std::ifstream is(directory + "/" + filename, std::ios_base::in | std::ios_base::binary);
+      auto path = *directory + "/" + filename;
+      std::ifstream is(path, std::ios_base::in | std::ios_base::binary);
       while (is) {
         sample_t sample;
         is.read(reinterpret_cast<char *>(&sample.level), sizeof(sample.level));
@@ -50,7 +50,7 @@ public:
       }
 
       if (!input.empty())
-        fmt::log(fmt::test_case_replay{directory + "/" + filename});
+        fmt::log(fmt::test_case_replay{path});
     }
 
     lib::invoke(strategy, [&] {
@@ -102,30 +102,22 @@ public:
   Strategy strategy;
   std::string filename;
   lib::optional<std::string> directory;
-
-private:
-  static std::string default_directory() {
-    static const char *var1 = std::getenv("HALCHECK_REPLAY");
-    static const char *var2 = std::getenv("HALCHECK_RECORD");
-    static std::string dir = var1 ? std::string(var1) : var2 ? std::string(var2) : ".";
-    return dir;
-  }
 };
+
+lib::optional<std::string> default_replay_directory();
 
 /// @brief Constructs a strategy where inputs are drawn from a given file.
 /// @tparam Strategy The type of base strategy.
 /// @param strategy A base strategy used if the file doesn't exist or doesn't contain enough data.
 /// @param filename The input file to read.
-/// @param directory The directory containing the file to read. The default value is chosen as follows:
-///                  1. $HALCHECK_REPLAY, if the environment variable HALCHECK_REPLAY is set.
-///                  2. $HALCHECK_RECORD, if the environment variable HALCHECK_RECORD is set.
-///                  3. The current working directory.
-///                  If the empty string is specified, then this strategy behaves identically to the base strategy.
+/// @param directory The directory containing the file to read. If lib::nullopt is specified, then this strategy behaves
+///                  identically to the base strategy.
 /// @remark The input file is read entirely before a test starts. Changes to the file during test-case execution will
 ///         not affect the operation of this strategy.
 /// @return A strategy where inputs are drawn from a given file.
 template<typename Strategy>
-replay_t<Strategy> replay(Strategy strategy, std::string filename, lib::optional<std::string> directory = {}) {
+replay_t<Strategy>
+replay(Strategy strategy, std::string filename, lib::optional<std::string> directory = default_replay_directory()) {
   return {std::move(strategy), std::move(filename), std::move(directory)};
 }
 
