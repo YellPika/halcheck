@@ -127,7 +127,7 @@ struct message : lib::variant<
   template<typename T>
   message(T value) : variant(std::move(value)) {}
 
-  friend void operator<<(std::ostream &os, const message &value) { lib::visit(listener{os}, value); }
+  friend void operator<<(std::ostream &os, const message &value) { lib::visit(listener{os}, variant(value)); }
 };
 
 extern const lib::effect<void, const message &> log;
