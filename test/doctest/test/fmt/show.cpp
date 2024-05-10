@@ -28,4 +28,6 @@ TEST_CASE("show test") {
     os << "new int(" << x << ")";
     CHECK_EQ(fmt::to_string(&x), os.str());
   });
+
+  CHECK_EQ(fmt::to_string(std::vector<int>{0, 1}), "{0, 1}");
 }

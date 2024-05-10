@@ -12,6 +12,7 @@
 #include <halcheck/lib/utility.hpp>
 
 #include <algorithm>
+#include <cctype>
 #include <cstddef>
 #include <sstream>
 #include <type_traits>
@@ -53,12 +54,19 @@ std::ostream &operator<<(std::ostream &os, tag<T> value);
 /// @return A std::string containing the string representation of value.
 template<typename T>
 std::string to_string(const T &value) {
-  auto output = [&] {
+  std::string output = [&] {
     std::ostringstream os;
     os << fmt::show<T>(value);
     return os.str();
   }();
-  output.erase(std::remove(output.begin(), output.end(), '\n'), output.end());
+  for (auto i = output.begin(); i != output.end();) {
+    if (*i == '\n') {
+      auto j = std::find_if(i, output.end(), [&](unsigned char ch) { return !std::isspace(ch); });
+      i = output.erase(i, j);
+    } else {
+      ++i;
+    }
+  }
   return output;
 }
 
