@@ -3,6 +3,7 @@
 
 #include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
+#include <halcheck/lib/ranges.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
@@ -25,10 +26,10 @@ public:
     return lib::finally(ungroup{this});
   }
 
-  template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
-  lib::invoke_result_t<F> operator()(F func) const {
+  template<typename F, typename... Args, HALCHECK_REQUIRE(lib::is_invocable<F, Args...>())>
+  lib::invoke_result_t<F, Args...> operator()(F func, Args &&...args) const {
     auto _ = (*this)();
-    return lib::invoke(func);
+    return lib::invoke(func, std::forward<Args>(args)...);
   }
 
   template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F, bool>())>
@@ -67,6 +68,26 @@ void while_(F func) {
   auto _ = gen::group();
   while (gen::group(func))
     ;
+}
+
+template<
+    typename I,
+    typename F,
+    HALCHECK_REQUIRE(lib::is_iterator<I>()),
+    HALCHECK_REQUIRE(lib::is_invocable<F, typename std::iterator_traits<I>::reference>())>
+void for_each(I begin, I end, F func) {
+  auto _ = gen::group();
+  for (auto i = begin; i != end; ++i)
+    gen::group(func, *i);
+}
+
+template<
+    typename R,
+    typename F,
+    HALCHECK_REQUIRE(lib::is_range<R>()),
+    HALCHECK_REQUIRE(lib::is_invocable<F, lib::range_reference_t<R>>())>
+void for_each(R range, F func) {
+  gen::for_each(lib::begin(range), lib::end(range), std::move(func));
 }
 
 }} // namespace halcheck::gen

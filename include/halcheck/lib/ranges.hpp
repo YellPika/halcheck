@@ -51,6 +51,9 @@ static constexpr struct {
 
 template<typename T>
 using range_value_t = typename std::iterator_traits<iterator_t<T>>::value_type;
+
+template<typename T>
+using range_reference_t = typename std::iterator_traits<iterator_t<T>>::reference;
 #endif
 
 /// @brief Tests if a type T supports begin(T) and end(T).

@@ -81,7 +81,7 @@ HALCHECK_TEST(gtest, linearizability, test::random()) {
   std::vector<std::future<std::pair<stamp, checker>>> tasks;
   std::vector<std::mutex> locks(gen::range(0, 3));
   std::vector<std::size_t> clock(locks.size());
-  for (auto &&action : actions) {
+  gen::for_each(actions, [&](const command &action) {
     auto deps = gen::container<std::set<std::size_t>>([&] { return gen::range(0, locks.size()); });
     tasks.push_back(std::async(std::launch::async, [&, deps, action] {
       stamp stamp;
@@ -95,7 +95,7 @@ HALCHECK_TEST(gtest, linearizability, test::random()) {
       });
       return std::make_pair(stamp, action());
     }));
-  }
+  });
 
   std::vector<std::tuple<std::size_t, stamp, checker>> checkers;
   for (auto &&task : tasks) {
