@@ -48,7 +48,7 @@ HALCHECK_TEST(gtest, binary_search, test::limit(test::random(), 1024)) {
 HALCHECK_TEST(gtest, linearizability, test::random()) {
   using namespace std::chrono_literals;
 
-  std::atomic_int counter = 0;
+  std::atomic_int counter(0);
 
   auto inc = [=, &counter] {
     int x = counter;
