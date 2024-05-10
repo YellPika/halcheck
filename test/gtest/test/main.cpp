@@ -45,98 +45,108 @@ HALCHECK_TEST(gtest, binary_search, test::limit(test::random(), 1024)) {
   }
 }
 
-HALCHECK_TEST(gtest, linearizability, test::random()) {
-  using namespace std::chrono_literals;
+TEST(gtest, linearizability) {
+  ::testing::GTEST_FLAG(throw_on_failure) = false;
+  EXPECT_NONFATAL_FAILURE(
+      halcheck::ext::gtest::check(
+          [] {
+            using namespace std::chrono_literals;
 
-  std::atomic_int counter(0);
+            std::atomic_int counter(0);
 
-  auto inc = [=, &counter] {
-    int x = counter;
-    std::this_thread::sleep_for(10ms);
-    counter = x + 1;
-    std::clog << "inc: " << x << " → " << x + 1 << "\n";
-    return [=, &counter] {
-      counter++;
-      return true;
-    };
-  };
+            auto inc = [=, &counter] {
+              int x = counter;
+              std::this_thread::sleep_for(10ms);
+              counter = x + 1;
+              std::clog << "inc: " << x << " → " << x + 1 << "\n";
+              return [=, &counter] {
+                counter++;
+                return true;
+              };
+            };
 
-  auto get = [=, &counter] {
-    int x = counter;
-    std::clog << "get: " << x << "\n";
-    return [=, &counter] {
-      int y = counter;
-      return x == y;
-    };
-  };
+            auto get = [=, &counter] {
+              int x = counter;
+              std::clog << "get: " << x << "\n";
+              return [=, &counter] {
+                int y = counter;
+                return x == y;
+              };
+            };
 
-  using checker = std::function<bool()>;
-  using command = std::function<checker()>;
-  using stamp = std::map<std::size_t, std::size_t>;
+            using checker = std::function<bool()>;
+            using command = std::function<checker()>;
+            using stamp = std::map<std::size_t, std::size_t>;
 
-  auto actions = gen::container<std::vector<command>>(gen::range(1, 9), [&] {
-    return gen::element<command>({inc, get});
-  });
+            auto actions = gen::container<std::vector<command>>(gen::range(1, 9), [&] {
+              return gen::element<command>({inc, get});
+            });
 
-  std::vector<std::future<std::pair<stamp, checker>>> tasks;
-  std::vector<std::mutex> locks(gen::range(0, 3));
-  std::vector<std::size_t> clock(locks.size());
-  gen::for_each(actions, [&](const command &action) {
-    auto deps = gen::container<std::set<std::size_t>>([&] { return gen::range(0, locks.size()); });
-    tasks.push_back(std::async(std::launch::async, [&, deps, action] {
-      stamp stamp;
-      for (auto i : deps) {
-        locks[i].lock();
-        stamp[i] = ++clock[i];
-      }
-      auto _ = lib::finally([&] {
-        for (auto i : deps)
-          locks[i].unlock();
-      });
-      return std::make_pair(stamp, action());
-    }));
-  });
+            std::vector<std::future<std::pair<stamp, checker>>> tasks;
+            std::vector<std::mutex> locks(gen::range(0, 3));
+            std::vector<std::size_t> clock(locks.size());
+            gen::for_each(actions, [&](const command &action) {
+              auto deps = gen::container<std::set<std::size_t>>([&] { return gen::range(0, locks.size()); });
+              tasks.push_back(std::async(std::launch::async, [&, deps, action] {
+                stamp stamp;
+                for (auto i : deps) {
+                  locks[i].lock();
+                  stamp[i] = ++clock[i];
+                }
+                auto _ = lib::finally([&] {
+                  for (auto i : deps)
+                    locks[i].unlock();
+                });
+                return std::make_pair(stamp, action());
+              }));
+            });
 
-  std::vector<std::tuple<std::size_t, stamp, checker>> checkers;
-  for (auto &&task : tasks) {
-    auto pair = task.get();
-    checkers.push_back({checkers.size(), pair.first, pair.second});
-  }
+            std::vector<std::tuple<std::size_t, stamp, checker>> checkers;
+            for (auto &&task : tasks) {
+              auto pair = task.get();
+              checkers.push_back({checkers.size(), pair.first, pair.second});
+            }
 
-  do {
-    std::fill(clock.begin(), clock.end(), 0);
+            do {
+              std::fill(clock.begin(), clock.end(), 0);
 
-    bool ok = true;
-    for (auto &&checker : checkers) {
-      for (auto &&pair : std::get<1>(checker)) {
-        if (pair.second > clock[pair.first])
-          clock[pair.first] = pair.second;
-        else {
-          ok = false;
-          break;
-        }
-      }
+              bool ok = true;
+              for (auto &&checker : checkers) {
+                for (auto &&pair : std::get<1>(checker)) {
+                  if (pair.second > clock[pair.first])
+                    clock[pair.first] = pair.second;
+                  else {
+                    ok = false;
+                    break;
+                  }
+                }
 
-      if (!ok)
-        break;
-    }
+                if (!ok)
+                  break;
+              }
 
-    if (!ok)
-      continue;
+              if (!ok)
+                continue;
 
-    counter = 0;
-    if (std::all_of(checkers.begin(), checkers.end(), [](const std::tuple<std::size_t, stamp, checker> &func) {
-          return std::get<2>(func)();
-        }))
-      return;
-  } while (std::next_permutation(
-      checkers.begin(),
-      checkers.end(),
-      [](const std::tuple<std::size_t, stamp, checker> &lhs, const std::tuple<std::size_t, stamp, checker> &rhs) {
-        return std::get<0>(lhs) < std::get<0>(rhs);
-      }));
+              counter = 0;
+              if (std::all_of(
+                      checkers.begin(), checkers.end(), [](const std::tuple<std::size_t, stamp, checker> &func) {
+                        return std::get<2>(func)();
+                      }))
+                return;
+            } while (std::next_permutation(
+                checkers.begin(),
+                checkers.end(),
+                [](const std::tuple<std::size_t, stamp, checker> &lhs,
+                   const std::tuple<std::size_t, stamp, checker> &rhs) {
+                  return std::get<0>(lhs) < std::get<0>(rhs);
+                }));
 
-  FAIL();
+            ADD_FAILURE() << "Linearizability failed!";
+          },
+          "",
+          test::random()),
+      "");
 }
 
 int main(int argc, char **argv) {
