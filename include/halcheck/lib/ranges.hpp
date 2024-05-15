@@ -16,6 +16,7 @@ namespace halcheck { namespace lib {
 using std::ranges::begin;
 using std::ranges::end;
 using std::ranges::iterator_t;
+using std::ranges::range_reference_t;
 using std::ranges::range_value_t;
 using std::ranges::sentinel_t;
 #else

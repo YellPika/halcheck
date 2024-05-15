@@ -104,7 +104,7 @@ TEST(gtest, linearizability) {
             std::vector<std::tuple<std::size_t, stamp, checker>> checkers;
             for (auto &&task : tasks) {
               auto pair = task.get();
-              checkers.push_back({checkers.size(), pair.first, pair.second});
+              checkers.emplace_back(checkers.size(), pair.first, pair.second);
             }
 
             do {
