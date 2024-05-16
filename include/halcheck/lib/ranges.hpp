@@ -136,6 +136,22 @@ auto_insert_iterator<T> auto_insert(T &container, lib::iterator_t<T> it) {
   return auto_insert_iterator<T>(container, it);
 }
 
+template<typename I, typename F>
+bool any_permutation(I begin, I end, F func) {
+  if (begin == end)
+    return func();
+
+  for (auto i = begin; i != end; ++i) {
+    std::swap(*begin, *i);
+    if (any_permutation(begin + 1, end, func))
+      return true;
+
+    std::swap(*begin, *i);
+  }
+
+  return false;
+}
+
 }} // namespace halcheck::lib
 
 #endif
