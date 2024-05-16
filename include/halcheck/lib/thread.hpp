@@ -7,11 +7,20 @@
 #include <future>
 #include <map>
 #include <set>
+#include <type_traits>
 #include <vector>
 
 namespace halcheck { namespace lib {
 
-template<typename I, typename O>
+template<
+    typename I,
+    typename O,
+    HALCHECK_REQUIRE(lib::is_iterator<I>()),
+    HALCHECK_REQUIRE(lib::is_invocable<typename std::iterator_traits<I>::reference>()),
+    HALCHECK_REQUIRE(lib::is_iterator<O>()),
+    HALCHECK_REQUIRE(std::is_assignable<
+                     decltype(*std::declval<O>()),
+                     lib::invoke_result_t<typename std::iterator_traits<I>::reference>>())>
 void parallel(I begin, I end, O output) {
   using T = decltype(lib::invoke(*begin));
 
@@ -41,8 +50,15 @@ void parallel(I begin, I end, O output) {
   }
 }
 
-template<typename Range, typename O>
-void parallel(const Range &range, O output) {
+template<
+    typename T,
+    typename O,
+    HALCHECK_REQUIRE(lib::is_range<T>()),
+    HALCHECK_REQUIRE(lib::is_invocable<lib::range_reference_t<T>>()),
+    HALCHECK_REQUIRE(lib::is_iterator<O>()),
+    HALCHECK_REQUIRE(
+        std::is_assignable<decltype(*std::declval<O>()), lib::invoke_result_t<lib::range_reference_t<T>>>())>
+void parallel(const T &range, O output) {
   parallel(lib::begin(range), lib::end(range), std::move(output));
 }
 
@@ -75,12 +91,18 @@ public:
 
   resource lock(const std::initializer_list<std::size_t> &range) { return lock(range.begin(), range.end()); }
 
-  template<typename Range>
-  resource lock(const Range &range) {
+  template<
+      typename T,
+      HALCHECK_REQUIRE(lib::is_range<T>()),
+      HALCHECK_REQUIRE(std::is_convertible<lib::range_reference_t<T>, std::size_t>())>
+  resource lock(const T &range) {
     return lock(lib::begin(range), lib::end(range));
   }
 
-  template<typename I>
+  template<
+      typename I,
+      HALCHECK_REQUIRE(lib::is_iterator<I>()),
+      HALCHECK_REQUIRE(std::is_convertible<typename std::iterator_traits<I>::reference, std::size_t>())>
   resource lock(I begin, I end) {
     std::set<std::size_t> indices(begin, end);
 

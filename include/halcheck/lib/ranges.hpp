@@ -1,6 +1,7 @@
 #ifndef HALCHECK_LIB_RANGES_HPP
 #define HALCHECK_LIB_RANGES_HPP
 
+#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <iterator>
@@ -136,7 +137,11 @@ auto_insert_iterator<T> auto_insert(T &container, lib::iterator_t<T> it) {
   return auto_insert_iterator<T>(container, it);
 }
 
-template<typename I, typename F>
+template<
+    typename I,
+    typename F,
+    HALCHECK_REQUIRE(lib::is_iterator<I>()),
+    HALCHECK_REQUIRE(lib::is_invocable_r<bool, F>())>
 bool any_permutation(I begin, I end, F func) {
   if (begin == end)
     return func();
