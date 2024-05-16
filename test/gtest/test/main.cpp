@@ -128,6 +128,12 @@ HALCHECK_TEST(gtest, counter_linearizability, test::random()) {
               }};
     }
 
+    verifier sync() {
+      auto res = pool.lock({0, 1});
+      std::clog << fmt::to_string(res.version) + ": sync()\n";
+      return {res.version, [](std::uintmax_t &) { return true; }};
+    }
+
     lib::pool pool{2};
     counter system;
   } monitor;
@@ -135,7 +141,9 @@ HALCHECK_TEST(gtest, counter_linearizability, test::random()) {
   auto commands = gen::container<std::vector<std::function<verifier()>>>(gen::range(1, 10), [&] {
     auto thread = gen::range<std::size_t>(0, monitor.pool.size());
     return gen::element<std::function<verifier()>>(
-        {[&monitor, thread] { return monitor.get(thread); }, [&monitor, thread] { return monitor.inc(thread); }});
+        {[&monitor, thread] { return monitor.get(thread); },
+         [&monitor, thread] { return monitor.inc(thread); },
+         [&monitor] { return monitor.sync(); }});
   });
 
   std::vector<verifier> verifiers;
