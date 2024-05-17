@@ -2,7 +2,11 @@
 
 using namespace halcheck;
 
-void lib::version::bump(std::size_t i) { ++counters[i]; }
+lib::version lib::version::bump(std::size_t id) const {
+  auto output = *this;
+  ++output.counters[id];
+  return output;
+}
 
 lib::version &lib::version::operator|=(const lib::version &other) {
   for (auto &&pair : other.counters) {
@@ -10,6 +14,11 @@ lib::version &lib::version::operator|=(const lib::version &other) {
     counter = std::max(counter, pair.second);
   }
   return *this;
+}
+
+lib::version lib::version::operator|(lib::version other) const {
+  other |= *this;
+  return other;
 }
 
 bool lib::version::operator<(const lib::version &other) const {
