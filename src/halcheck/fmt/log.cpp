@@ -2,6 +2,4 @@
 
 using namespace halcheck;
 
-const lib::effect<void, const fmt::message &> fmt::log([](const fmt::message &) {
-
-});
+const lib::effect<void, const fmt::message &> fmt::log([](const fmt::message &) {});
