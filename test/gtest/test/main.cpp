@@ -1,6 +1,7 @@
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/ranges.hpp>
-#include <halcheck/lib/thread.hpp>
+#include <halcheck/thread.hpp>
+#include <halcheck/thread/mutex.hpp>
 
 #include <algorithm>
 #include <cstdint>
@@ -56,20 +57,18 @@ HALCHECK_TEST(gtest, binary_search, test::limit(test::random(), 1024)) {
 
 class counter {
 public:
-  void inc() {
-    using namespace std::chrono_literals;
-
-    std::uintmax_t x = value;
-    if (x < 10)
-      value = x + 1;
+  std::uintmax_t inc() {
+    std::uintmax_t output = value;
+    if (output < 10)
+      value = output + 1;
     else
       value = 0;
+    return output;
   }
 
-  std::uintmax_t get() const { return value; }
+  void reset() { value = 0; }
 
 private:
-  std::mutex mutex;
   std::atomic_uintmax_t value{0};
 };
 
@@ -83,23 +82,28 @@ HALCHECK_TEST(gtest, counter_monotonicity) {
   public:
     void inc() {
       std::clog << "inc()\n";
-      base.inc();
+      auto output = system.inc();
+      EXPECT_GE(output, last);
+      last = output;
     }
 
-    void get() {
-      std::clog << "get(): ";
-      auto output = base.get();
-      std::clog << output << "\n";
-      EXPECT_LE(last, output);
-      last = output;
+    void reset() {
+      std::clog << "reset()\n";
+      last = 0;
+      system.reset();
     }
 
   private:
     std::uintmax_t last = 0;
-    counter base;
+    counter system;
   } counter;
 
-  gen::repeat([&] { gen::element<std::function<void()>>({[&] { counter.get(); }, [&] { counter.inc(); }})(); });
+  gen::repeat([&] {
+    gen::weighted<std::function<void()>>({
+        {2, [&] { counter.inc(); }  },
+        {1, [&] { counter.reset(); }}
+    })();
+  });
 }
 
 HALCHECK_TEST(gtest, counter_linearizability, test::random()) {
@@ -115,8 +119,10 @@ HALCHECK_TEST(gtest, counter_linearizability, test::random()) {
   // While eval requires a system (counter) as an argument, this could have been
   // implemented with a model instead.
   struct verifier {
-    lib::version version;
-    std::function<bool(counter &)> eval;
+    thread::version version;
+    std::function<bool(std::uintmax_t &)> eval;
+
+    bool operator<(const verifier &other) const { return version < other.version; }
   };
 
   // The monitor wraps the get and inc functions of the system (counter) and,
@@ -126,48 +132,39 @@ HALCHECK_TEST(gtest, counter_linearizability, test::random()) {
   // Each function takes an extra id argument, which is just used to impose
   // artificial ordering constraints.
   struct {
-    verifier get(std::size_t id) {
-      std::lock_guard<std::mutex> lock(mutexes[id]);
-      auto version = versions[id] = versions[id].bump(id);
+    verifier inc(std::size_t id) {
+      std::lock_guard<thread::mutex> lock(mutexes[id]);
 
-      auto actual = system.get();
-      std::clog << fmt::to_string(version) + ": get() → " + fmt::to_string(actual) + "\n";
-      return {version, [=](counter &system) { return system.get() == actual; }};
+      auto actual = system.inc();
+
+      auto version = thread::version::next();
+      std::clog << fmt::to_string(version) + ": inc() → " << actual << "\n";
+      return {version, [actual](std::uintmax_t &model) {
+                auto output = model == actual;
+                if (model == 10)
+                  model = 0;
+                else
+                  ++model;
+                return output;
+              }};
     }
 
-    verifier inc(std::size_t id) {
-      std::lock_guard<std::mutex> lock(mutexes[id]);
-      auto version = versions[id] = versions[id].bump(id);
+    verifier reset() {
+      std::vector<std::unique_lock<thread::mutex>> locks;
+      for (auto &&mutex : mutexes)
+        locks.emplace_back(mutex);
 
-      system.inc();
-      std::clog << fmt::to_string(version) + ": inc()\n";
-      return {version, [](counter &system) {
-                system.inc();
+      system.reset();
+
+      auto version = thread::version::next();
+      std::clog << fmt::to_string(version) + ": reset()\n";
+      return {version, [](std::uintmax_t &model) {
+                model = 0;
                 return true;
               }};
     }
 
-    verifier sync() {
-      std::vector<std::unique_lock<std::mutex>> locks;
-      lib::version version;
-      for (std::size_t i = 0; i < MAXCONCURRENCY; i++) {
-        locks.emplace_back(mutexes[i]);
-        version |= versions[i];
-      }
-      for (std::size_t i = 0; i < MAXCONCURRENCY; i++)
-        version = version.bump(i);
-      for (std::size_t i = 0; i < MAXCONCURRENCY; i++)
-        versions[i] = version;
-
-      std::clog << fmt::to_string(version) + ": sync()\n";
-      return {version, [](counter &) { return true; }};
-    }
-
-    std::array<std::mutex, MAXCONCURRENCY> mutexes;
-    std::array<lib::version, MAXCONCURRENCY> versions;
-
-    std::mutex verifiers_mutex;
-    std::vector<verifier> verifiers;
+    std::array<thread::mutex, MAXCONCURRENCY> mutexes;
 
     counter system;
   } monitor;
@@ -176,26 +173,19 @@ HALCHECK_TEST(gtest, counter_linearizability, test::random()) {
   auto commands = gen::container<std::vector<std::function<verifier()>>>(gen::range(1, 10), [&] {
     auto thread = gen::range<std::size_t>(0, MAXCONCURRENCY);
     return gen::element<std::function<verifier()>>(
-        {[&monitor, thread] { return monitor.get(thread); },
-         [&monitor, thread] { return monitor.inc(thread); },
-         [&monitor] { return monitor.sync(); }});
+        {[&monitor, thread] { return monitor.inc(thread); }, [&monitor] { return monitor.reset(); }});
   });
 
   // Executes each command in its own thread.
   std::vector<verifier> verifiers;
-  lib::parallel(commands, std::back_inserter(verifiers));
+  thread::parallel(commands, std::back_inserter(verifiers));
 
-  EXPECT_TRUE(lib::any_permutation(verifiers.begin(), verifiers.end(), [&] {
-    for (std::size_t i = 0; i < verifiers.size(); i++) {
-      for (std::size_t j = i + 1; j < verifiers.size(); j++) {
-        if (verifiers[j].version < verifiers[i].version)
-          return false;
-      }
-    }
+  auto result = lib::any_sorted(verifiers.begin(), verifiers.end(), [&] {
+    std::uintmax_t model = 0;
+    return std::all_of(verifiers.begin(), verifiers.end(), [&](verifier &f) { return f.eval(model); });
+  });
 
-    counter system;
-    return std::all_of(verifiers.begin(), verifiers.end(), [&](verifier &f) { return f.eval(system); });
-  }));
+  EXPECT_TRUE(result);
 }
 
 int main(int argc, char **argv) {

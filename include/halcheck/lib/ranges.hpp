@@ -2,10 +2,13 @@
 #define HALCHECK_LIB_RANGES_HPP
 
 #include <halcheck/lib/functional.hpp>
+#include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
+#include <algorithm>
 #include <iterator>
 #include <type_traits>
+#include <vector>
 
 #if __cplusplus >= 202002L
 #include <ranges>
@@ -148,7 +151,34 @@ bool any_permutation(I begin, I end, F func) {
 
   for (auto i = begin; i != end; ++i) {
     std::swap(*begin, *i);
+
     if (any_permutation(begin + 1, end, func))
+      return true;
+
+    std::swap(*begin, *i);
+  }
+
+  return false;
+}
+
+template<
+    typename I,
+    typename F,
+    HALCHECK_REQUIRE(lib::is_iterator<I>()),
+    HALCHECK_REQUIRE(lib::is_invocable_r<bool, F>())>
+bool any_sorted(I begin, I end, F func) {
+  using R = typename std::iterator_traits<I>::reference;
+
+  if (begin == end)
+    return func();
+
+  for (auto i = begin; i != end; ++i) {
+    if (std::any_of(begin, i, [&](R other) { return other < *i; }))
+      continue;
+
+    std::swap(*begin, *i);
+
+    if (any_sorted(begin + 1, end, func))
       return true;
 
     std::swap(*begin, *i);

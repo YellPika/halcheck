@@ -1,16 +1,13 @@
-#ifndef HALCHECK_LIB_THREAD_HPP
-#define HALCHECK_LIB_THREAD_HPP
+#ifndef HALCHECK_THREAD_PARALLEL_HPP
+#define HALCHECK_THREAD_PARALLEL_HPP
 
-#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/ranges.hpp>
+#include <halcheck/thread/version.hpp>
 
 #include <future>
-#include <map>
-#include <thread>
-#include <type_traits>
 #include <vector>
 
-namespace halcheck { namespace lib {
+namespace halcheck { namespace thread {
 
 /**
  * @brief Executes a range of functions in parallel.
@@ -35,8 +32,10 @@ void parallel(I begin, I end, O output) {
   std::vector<std::future<T>> threads;
   std::promise<void> promise;
   auto future = promise.get_future();
+  auto version = thread::version::next();
   for (auto i = begin; i != end; i++) {
-    threads.push_back(std::async(std::launch::async, [i, &future] {
+    threads.push_back(std::async(std::launch::async, [i, &future, &version] {
+      thread::version::join(version);
       future.wait();
       return lib::invoke(*i);
     }));
@@ -44,6 +43,7 @@ void parallel(I begin, I end, O output) {
   promise.set_value();
 
   for (auto &&thread : threads) {
+    thread::version::next();
     try {
       *output++ = std::move(thread.get());
     } catch (...) {
@@ -74,8 +74,10 @@ void parallel(I begin, I end) {
   std::vector<std::future<T>> threads;
   std::promise<void> promise;
   auto future = promise.get_future();
+  auto version = thread::version::next();
   for (auto i = begin; i != end; i++) {
-    threads.push_back(std::async(std::launch::async, [i, &future] {
+    threads.push_back(std::async(std::launch::async, [i, &future, &version] {
+      thread::version::join(version);
       future.wait();
       lib::invoke(*i);
     }));
@@ -83,6 +85,7 @@ void parallel(I begin, I end) {
   promise.set_value();
 
   for (auto &&thread : threads) {
+    thread::version::next();
     try {
       thread.wait();
     } catch (...) {
@@ -129,58 +132,6 @@ void parallel(const T &range) {
   parallel(lib::begin(range), lib::end(range));
 }
 
-/**
- * @brief An implementation of Lamport vector clocks.
- */
-class version {
-public:
-  /**
-   * @brief Registers a new event for the specified node.
-   * @param id The id of the node to register an event for.
-   * @returns The incremented version.
-   */
-  version bump(std::size_t id) const;
-
-  /**
-   * @brief Computes the least upper bound of this version and another.
-   * @param other The other version to compute the bound of.
-   * @returns The least upper bound.
-   */
-  version &operator|=(const version &other);
-
-  /**
-   * @brief Computes the least upper bound of this version and another.
-   * @param other The other version to compute the bound of.
-   * @returns The least upper bound.
-   */
-  version operator|(version other) const;
-
-  /**
-   * @brief Determines if this version occurs before another.
-   * @param other The other version to compare to.
-   * @returns true iff this version "happens before" the other.
-   */
-  bool operator<(const version &other) const;
-
-  /**
-   * @brief Determines if this version equals another.
-   * @param other The other version to compare to.
-   * @returns true iff this version is identical to the other.
-   */
-  bool operator==(const version &other) const;
-
-  /**
-   * @brief Prints a version to a stream.
-   * @param os The stream to print to.
-   * @param value The version to print.
-   * @returns The given stream.
-   */
-  friend std::ostream &operator<<(std::ostream &os, const version &value);
-
-private:
-  std::map<std::size_t, std::uintmax_t> counters;
-};
-
-}} // namespace halcheck::lib
+}} // namespace halcheck::thread
 
 #endif
