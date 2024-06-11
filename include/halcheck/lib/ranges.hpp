@@ -173,7 +173,7 @@ bool any_sorted(I begin, I end, F func) {
     return func();
 
   for (auto i = begin; i != end; ++i) {
-    if (std::any_of(begin, i, [&](R other) { return other < *i; }))
+    if (std::any_of(begin, end, [&](R other) { return other < *i; }))
       continue;
 
     std::swap(*begin, *i);

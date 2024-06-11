@@ -170,7 +170,7 @@ HALCHECK_TEST(gtest, counter_linearizability, test::random()) {
   } monitor;
 
   // We generate at most 9 commands since 10! > 3 * 10⁶!
-  auto commands = gen::container<std::vector<std::function<verifier()>>>(gen::range(1, 10), [&] {
+  auto commands = gen::container<std::vector<std::function<verifier()>>>(gen::range(1, 20), [&] {
     auto thread = gen::range<std::size_t>(0, MAXCONCURRENCY);
     return gen::element<std::function<verifier()>>(
         {[&monitor, thread] { return monitor.inc(thread); }, [&monitor] { return monitor.reset(); }});
