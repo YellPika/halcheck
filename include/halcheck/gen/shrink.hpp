@@ -144,7 +144,9 @@ static struct noshrink_t : gen::labelable<noshrink_t> {
 
   template<typename F, typename... Args, HALCHECK_REQUIRE(lib::is_invocable<F, Args...>())>
   lib::invoke_result_t<F, Args...> operator()(F func, Args &&...args) const {
-    return eff::handle([&] { return lib::invoke(std::move(func), std::forward<Args>(args)...); }, handler());
+    return eff::handle(
+        [&]() -> lib::invoke_result_t<F, Args...> { return lib::invoke(std::move(func), std::forward<Args>(args)...); },
+        handler());
   }
 } noshrink;
 

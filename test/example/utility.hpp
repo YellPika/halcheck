@@ -22,7 +22,7 @@ static std::vector<std::size_t> gen_threads() {
   std::iota(output.begin(), output.end(), 0);
 
   if (!gen::shrink("seq"_s))
-    output = {gen::element_of("thread"_s, output)};
+    output = {gen::noshrink(gen::element_of, output)};
 
   return output;
 }
