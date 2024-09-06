@@ -1,5 +1,7 @@
 #include "halcheck/test/shrink.hpp"
 
+#include "json.hpp"
+
 #include <halcheck/eff/api.hpp>
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/gen/shrink.hpp>
@@ -28,61 +30,6 @@
 
 using namespace halcheck;
 using json = nlohmann::json;
-
-namespace halcheck { namespace lib {
-
-template<typename K, typename V>
-void to_json(json &j, const lib::trie<K, V> &t) {
-  j = json{
-      {"value",    t.get()     },
-      {"children", t.children()}
-  };
-}
-
-template<typename K, typename V>
-void from_json(const json &j, lib::trie<K, V> &t) {
-  auto value = j.at("value").get<V>();
-  auto children = j.at("children").get<std::unordered_map<K, lib::trie<K, V>>>();
-  t = lib::trie<K, V>(std::move(value), std::move(children));
-}
-
-}} // namespace halcheck::lib
-
-namespace halcheck { namespace lib {
-
-void to_json(json &j, const lib::atom &t) {
-  lib::visit(lib::overload([&](lib::number value) { j = *value; }, [&](lib::symbol value) { j = *value; }), t);
-}
-
-void from_json(const json &j, lib::atom &t) {
-  if (j.is_string())
-    t = lib::symbol(j.get<std::string>());
-  else
-    t = lib::number(j.get<std::uintmax_t>());
-}
-
-}} // namespace halcheck::lib
-
-namespace nlohmann {
-template<typename T>
-struct adl_serializer<lib::optional<T>> {
-  static void to_json(json &j, const lib::optional<T> &opt) {
-    if (opt == lib::nullopt) {
-      j = nullptr;
-    } else {
-      j = *opt;
-    }
-  }
-
-  static void from_json(const json &j, lib::optional<T> &opt) {
-    if (j.is_null()) {
-      opt = lib::nullopt;
-    } else {
-      opt = j.template get<T>();
-    }
-  }
-};
-} // namespace nlohmann
 
 test::strategy test::shrink(std::uintmax_t repetitions) {
   return [=](const std::function<void()> &func) {
