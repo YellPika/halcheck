@@ -27,12 +27,12 @@ private:
 
 } // namespace concepts
 
-struct strategy : public lib::unique_poly<concepts::strategy> {
-  using lib::unique_poly<concepts::strategy>::unique_poly;
+struct strategy : public lib::unique_poly<test::concepts::strategy> {
+  using lib::unique_poly<test::concepts::strategy>::unique_poly;
 };
 
-strategy operator|(strategy, strategy);
-strategy operator&(strategy, strategy);
+test::strategy operator|(test::strategy, test::strategy);
+test::strategy operator&(test::strategy, test::strategy);
 
 }} // namespace halcheck::test
 

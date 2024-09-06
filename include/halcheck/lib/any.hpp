@@ -71,6 +71,7 @@ public:
   /// @param value The value to store.
   template<
       typename T,
+      HALCHECK_REQUIRE(lib::is_constructible<lib::decay_t<T>, T &&>()),
       HALCHECK_REQUIRE(!std::is_base_of<lib::concept_base, lib::decay_t<T>>()),
       HALCHECK_REQUIRE(lib::conjunction<lib::is_satisfied<Concepts, lib::decay_t<T>>...>())>
   unique_poly(T &&value) // NOLINT: implicit conversion from any non-concept type

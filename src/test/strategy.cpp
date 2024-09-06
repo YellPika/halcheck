@@ -6,20 +6,20 @@
 using namespace halcheck;
 
 test::strategy test::operator|(test::strategy lhs, test::strategy rhs) {
-  struct {
+  struct impl {
     void operator()(std::function<void()> func) {
       lhs([&] { rhs(func); });
     }
 
     test::strategy lhs;
     test::strategy rhs;
-  } output{std::move(lhs), std::move(rhs)};
+  };
 
-  return output;
+  return impl{std::move(lhs), std::move(rhs)};
 }
 
 test::strategy test::operator&(test::strategy lhs, test::strategy rhs) {
-  struct {
+  struct impl {
     void operator()(const std::function<void()> &func) {
       lhs(func);
       rhs(func);
@@ -27,7 +27,7 @@ test::strategy test::operator&(test::strategy lhs, test::strategy rhs) {
 
     test::strategy lhs;
     test::strategy rhs;
-  } output{std::move(lhs), std::move(rhs)};
+  };
 
-  return output;
+  return impl{std::move(lhs), std::move(rhs)};
 }

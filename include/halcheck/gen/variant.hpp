@@ -77,16 +77,30 @@ static const struct one_t : gen::labelable<one_t> {
     return lib::visit([](T output) { return output; }, gen::variant(std::move(args)...));
   }
 
+  struct trivial {};
+
+  template<typename F>
+  struct wrap {
+    template<bool _ = true, HALCHECK_REQUIRE(lib::is_invocable<const F>() && _)>
+    trivial operator()() const {
+      lib::invoke(func);
+      return {};
+    }
+
+    trivial operator()() {
+      lib::invoke(func);
+      return {};
+    }
+
+    F func;
+  };
+
   template<
       typename... Args,
       HALCHECK_REQUIRE(!lib::disjunction<std::is_convertible<Args, lib::atom>...>()),
       HALCHECK_REQUIRE(lib::conjunction<lib::is_invocable<Args>...>())>
   void operator()(lib::in_place_type_t<void>, Args... args) const {
-    struct trivial {};
-    (*this)(lib::in_place_type_t<trivial>(), ([&] {
-              args();
-              return trivial();
-            })...);
+    (*this)(lib::in_place_type_t<trivial>(), wrap<Args>{std::move(args)}...);
   }
 } one;
 
