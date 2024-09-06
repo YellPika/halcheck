@@ -1,0 +1,9 @@
+CompileFlags:
+  CompilationDatabase: "build/release"
+InlayHints:
+  Enabled: false
+Diagnostics:
+  UnusedIncludes: None
+  MissingIncludes: None
+Hover:
+  ShowAKA: true

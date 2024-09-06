@@ -1,0 +1,24 @@
+Language: Cpp
+AllowAllArgumentsOnNextLine: false
+AlignAfterOpenBracket: AlwaysBreak
+AlwaysBreakTemplateDeclarations: Yes
+BasedOnStyle: LLVM
+BinPackArguments: false
+BinPackParameters: false
+CompactNamespaces: true
+ColumnLimit: 120
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: "\".*.hpp"
+    Priority: 1
+  - Regex: "<halcheck(/|.hpp)"
+    Priority: 2
+  - Regex: "(<|\")(doctest|gtest|boost|glog|ghc|nlohmann)/"
+    Priority: 3
+  - Regex: "<"
+    Priority: 4
+PenaltyBreakOpenParenthesis: 50
+QualifierAlignment: Left
+ShortNamespaceLines: 0
+SpaceAfterTemplateKeyword: false
+AlignArrayOfStructures: Left

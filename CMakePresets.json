@@ -1,0 +1,61 @@
+{
+  "version": 8,
+  "$schema": "https://cmake.org/cmake/help/latest/_downloads/3e2d73bff478d88a7de0de736ba5e361/schema.json",
+  "configurePresets": [
+    {
+      "name": "common",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_COLOR_DIAGNOSTICS": "ON",
+        "CMAKE_CXX_INCLUDE_WHAT_YOU_USE": "include-what-you-use;-Xiwyu;--no-fwd_decls;-Xiwyu;--transitive_includes_only",
+        "CMAKE_CXX_STANDARD": "11",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "USE_CCACHE": true
+      }
+    },
+    {
+      "name": "common-clang",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    },
+    {
+      "name": "common-gcc-5",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++-5"
+      }
+    },
+    {
+      "name": "common-asan",
+      "hidden": true,
+      "cacheVariables": {
+        "HALCHECK_SANITIZE": "address,undefined"
+      }
+    },
+    {
+      "name": "common-tsan",
+      "hidden": true,
+      "cacheVariables": {
+        "HALCHECK_SANITIZE": "thread"
+      }
+    },
+    {
+      "name": "common-debug",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "common-release",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ]
+}
