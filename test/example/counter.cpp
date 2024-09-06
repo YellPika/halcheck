@@ -39,7 +39,7 @@ public:
     static thread_local std::random_device random;
 
     int i = value.load();
-    std::this_thread::sleep_for(std::chrono::microseconds(std::uniform_int_distribution<int>(0, 50)(random)));
+    delay();
     value.store(i + 1 < 10 ? i + 1 : 0);
   }
 
