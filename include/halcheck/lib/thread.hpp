@@ -11,6 +11,13 @@
 
 namespace halcheck { namespace lib {
 
+/// @brief A serializability checker. Allows users to queue concurrent
+///        operations and determine whether the results correspond to the
+///        sequential operation of some model.
+///
+/// @tparam ThreadID User-specified type of thread IDs.
+/// @tparam State The type of model used to validate the results of the=
+///         concurrent operations.
 template<
     typename ThreadID,
     typename State,
@@ -18,8 +25,32 @@ template<
     HALCHECK_REQUIRE(lib::is_copyable<State>())>
 struct serializability_monitor {
 public:
+  /// @brief Constructs a new serializability monitor.
+  /// @param seed The initial state of the model.
   explicit serializability_monitor(State seed = State()) : _seed(std::move(seed)) {}
 
+  /// @brief Queues a function to run concurrently.
+  /// @tparam R A range type of threads.
+  /// @tparam F The type of function to execute.
+  /// @param range The set of threads to run the function on. All future
+  ///              operations that run on any of these threads will be blocked
+  ///              until this operation completes.
+  /// @param func The system operation to execute. Must return a "validator",
+  ///             which is an unary function that performs a corresponding
+  ///             "model operation" (the model is given as a reference to this
+  ///             function). The validator should check that the result of the
+  ///             system operation matches the model operation, and throw an
+  ///             exception otherwise.
+  ///
+  ///             Invocations should look roughly as such:
+  ///
+  ///             my_monitor.invoke(threads, [&] {
+  ///                auto result = my_system.op();
+  ///                return [=](State &model) {
+  ///                  if (result != model.op())
+  ///                     throw some_exception();
+  ///                };
+  ///             });
   template<
       typename R,
       typename F,
@@ -41,6 +72,11 @@ public:
     return invoke(lib::make_view(std::move(begin), std::move(end)), std::move(func));
   }
 
+  /// @brief Waits for all queued operations to complete and verifies their
+  ///        results correspond to some sequence of commands on the model.
+  ///
+  /// @return true The observed results match the model.
+  /// @return false The observed results do not match the model.
   bool check();
 
 private:
