@@ -7,6 +7,7 @@
 #include "gtest/gtest-spi.h"
 #include "gtest/gtest.h"
 
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -31,8 +32,7 @@ test::strategy gtest::wrap() {
       ScopedFakeTestPartResultReporter reporter(ScopedFakeTestPartResultReporter::INTERCEPT_ALL_THREADS, &results);
       func();
     } catch (const testing::internal::GoogleTestFailureException &e) {
-      const auto &result = results.GetTestPartResult(results.size() - 1);
-      GTEST_MESSAGE_AT_(result.file_name(), result.line_number(), result.message(), result.type());
+      GTEST_FAIL() << "\n" << e.what();
     }
   };
 }
