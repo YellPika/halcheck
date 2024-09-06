@@ -1,5 +1,11 @@
 CPMAddPackage("gh:gulrak/filesystem@1.5.14")
-CPMAddPackage("gh:nlohmann/json@3.2.0")
+CPMAddPackage(
+  NAME json
+  VERSION 3.2.0
+  GITHUB_REPOSITORY nlohmann/json
+  OPTIONS "JSON_BuildTests OFF"
+  EXCLUDE_FROM_ALL
+  SYSTEM)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS *.cpp)
 add_library(${PROJECT_NAME}-test ${SOURCES})
