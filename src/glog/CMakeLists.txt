@@ -6,6 +6,7 @@ CPMAddPackage(
           "WITH_GTEST OFF"
           "BUILD_EXAMPLES OFF"
           "BUILD_TESTING OFF"
+          "BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS}"
   EXCLUDE_FROM_ALL
   SYSTEM)
 
