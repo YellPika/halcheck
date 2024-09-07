@@ -29,7 +29,7 @@ public:
     static_assert(lib::is_movable<T>(), "T must be movable");
   }
 
-  template<typename... Args, HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+  template<typename... Args, HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
   explicit unique_box(lib::in_place_t, Args &&...args) : _impl(new T(std::forward<Args>(args)...)) {}
 
   template<
@@ -42,7 +42,7 @@ public:
   template<
       typename U = T,
       HALCHECK_REQUIRE(!std::is_convertible<U &&, T>()),
-      HALCHECK_REQUIRE(lib::is_constructible<T, U &&>()),
+      HALCHECK_REQUIRE(std::is_constructible<T, U &&>()),
       HALCHECK_REQUIRE(!std::is_same<lib::decay_t<U>, unique_box>())>
   explicit unique_box(U &&value) : _impl(new T(std::forward<U>(value))) {}
 
@@ -100,7 +100,7 @@ public:
 
   box(const box &other) : unique_box<T>(*other) { static_assert(lib::is_copyable<T>(), "T must be copyable"); }
 
-  template<typename... Args, HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+  template<typename... Args, HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
   explicit box(lib::in_place_t tag, Args &&...args) : unique_box<T>(tag, std::forward<Args>(args)...) {}
 
   template<
@@ -113,7 +113,7 @@ public:
   template<
       typename U = T,
       HALCHECK_REQUIRE(!std::is_convertible<U &&, T>()),
-      HALCHECK_REQUIRE(lib::is_constructible<T, U &&>()),
+      HALCHECK_REQUIRE(std::is_constructible<T, U &&>()),
       HALCHECK_REQUIRE(!std::is_same<lib::decay_t<U>, box>())>
   explicit box(U &&value) : unique_box<T>(std::forward<U>(value)) {}
 
@@ -179,7 +179,7 @@ template<
     typename T,
     typename... Args,
     HALCHECK_REQUIRE(lib::is_movable<T>()),
-    HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+    HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
 lib::unique_box<T> make_unique_box(Args &&...args) {
   return lib::unique_box<T>(lib::in_place_type_t<T>(), std::forward<Args>(args)...);
 }
@@ -188,7 +188,7 @@ template<
     typename T,
     typename... Args,
     HALCHECK_REQUIRE(lib::is_copyable<T>()),
-    HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+    HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
 lib::box<T> make_box(Args &&...args) {
   return lib::box<T>(lib::in_place_type_t<T>(), std::forward<Args>(args)...);
 }
@@ -197,7 +197,7 @@ template<
     typename T,
     typename... Args,
     HALCHECK_REQUIRE(lib::is_copyable<T>()),
-    HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+    HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
 lib::cloned_ptr<T> make_cloned_ptr(Args &&...args) {
   return lib::cloned_ptr<T>(lib::in_place_type_t<T>(), std::forward<Args>(args)...);
 }

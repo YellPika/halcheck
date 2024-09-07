@@ -39,7 +39,8 @@ public:
   pointer operator->() const { return &*_data->inner_begin; }
 
   concat_iterator &operator++() {
-    if (++_data->inner_begin == _data->inner_end) {
+    ++_data->inner_begin;
+    while (_data && _data->inner_begin == _data->inner_end) {
       if (++_data->outer_begin == _data->outer_end)
         _data.reset();
       else {

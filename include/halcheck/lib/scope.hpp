@@ -61,7 +61,7 @@ public:
   destructable(T &&value) // NOLINT: implicit conversion
       : _impl(new derived<T>(std::forward<T>(value))) {}
 
-  template<typename T, typename... Args, HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+  template<typename T, typename... Args, HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
   explicit destructable(lib::in_place_type_t<T>, Args &&...args) : _impl(new derived<T>(std::forward<Args>(args)...)) {}
 
 private:

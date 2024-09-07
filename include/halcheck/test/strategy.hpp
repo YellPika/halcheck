@@ -34,7 +34,7 @@ struct strategy : public lib::unique_poly<test::concepts::strategy> {
 template<
     typename T,
     typename... Args,
-    HALCHECK_REQUIRE(lib::is_constructible<T, Args...>()),
+    HALCHECK_REQUIRE(std::is_constructible<T, Args...>()),
     HALCHECK_REQUIRE(lib::is_invocable<T, std::function<void()>>())>
 test::strategy make_strategy(Args &&...args) {
   return test::strategy(lib::in_place_type_t<T>(), std::forward<Args>(args)...);

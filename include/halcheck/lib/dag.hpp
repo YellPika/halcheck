@@ -66,7 +66,7 @@ public:
       typename... Args,
       HALCHECK_REQUIRE(lib::is_iterator<I>()),
       HALCHECK_REQUIRE(std::is_convertible<typename std::iterator_traits<I>::reference, const_iterator>()),
-      HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+      HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
   iterator emplace(I begin, I end, Args &&...args) {
     auto index = _nodes.size();
     _nodes.emplace_back(std::forward<Args>(args)...);
@@ -102,12 +102,12 @@ public:
       typename... Args,
       HALCHECK_REQUIRE(lib::is_range<R>()),
       HALCHECK_REQUIRE(std::is_convertible<lib::range_reference_t<R>, const_iterator>()),
-      HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+      HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
   iterator emplace(R &&range, Args &&...args) {
     return emplace(lib::begin(range), lib::end(range), std::forward<Args>(args)...);
   }
 
-  template<typename... Args, HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+  template<typename... Args, HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
   iterator emplace(const std::initializer_list<const_iterator> &range, Args &&...args) {
     return emplace(range.begin(), range.end(), std::forward<Args>(args)...);
   }

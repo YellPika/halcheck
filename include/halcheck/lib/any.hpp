@@ -60,7 +60,7 @@ public:
   template<
       typename T,
       typename... Args,
-      HALCHECK_REQUIRE(lib::is_constructible<T, Args...>()),
+      HALCHECK_REQUIRE(std::is_constructible<T, Args...>()),
       HALCHECK_REQUIRE(lib::conjunction<lib::is_satisfied<Concepts, T>...>())>
   explicit unique_poly(lib::in_place_type_t<T> tag, Args &&...args)
       : Concepts(tag)..., _type(lib::type_id::make<T>()),
@@ -71,7 +71,7 @@ public:
   /// @param value The value to store.
   template<
       typename T,
-      HALCHECK_REQUIRE(lib::is_constructible<lib::decay_t<T>, T &&>()),
+      HALCHECK_REQUIRE(std::is_constructible<lib::decay_t<T>, T &&>()),
       HALCHECK_REQUIRE(!std::is_base_of<lib::concept_base, lib::decay_t<T>>()),
       HALCHECK_REQUIRE(lib::conjunction<lib::is_satisfied<Concepts, lib::decay_t<T>>...>())>
   unique_poly(T &&value) // NOLINT: implicit conversion from any non-concept type
@@ -90,7 +90,7 @@ public:
 
   void reset() { _impl.reset(); }
 
-  template<typename T, typename... Args, HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+  template<typename T, typename... Args, HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
   T &emplace(Args &&...args) {
     auto output = new T(std::forward<Args>(args)...);
     _impl.reset(output);
@@ -148,7 +148,7 @@ lib::poly<Concepts...> make_poly(Args &&...args) {
   return lib::poly<Concepts...>(lib::in_place_type_t<T>(), std::forward<Args>(args)...);
 }
 
-template<typename T, typename... Args, HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+template<typename T, typename... Args, HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
 lib::unique_any make_unique_any(Args &&...args) {
   return lib::make_unique_poly<T>(std::forward<Args>(args)...);
 }
@@ -156,8 +156,8 @@ lib::unique_any make_unique_any(Args &&...args) {
 template<
     typename T,
     typename... Args,
-    HALCHECK_REQUIRE(lib::is_copy_constructible<T>()),
-    HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+    HALCHECK_REQUIRE(std::is_copy_constructible<T>()),
+    HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
 lib::any make_any(Args &&...args) {
   return lib::make_poly<T>(std::forward<Args>(args)...);
 }
@@ -166,7 +166,7 @@ template<
     typename T,
     typename... Args,
     HALCHECK_REQUIRE(lib::is_equality_comparable<T>()),
-    HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+    HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
 lib::unique_equality_comparable make_unique_equality_comparable(Args &&...args) {
   return lib::make_unique_poly<T, lib::concepts::equality_comparable>(std::forward<Args>(args)...);
 }
@@ -174,9 +174,9 @@ lib::unique_equality_comparable make_unique_equality_comparable(Args &&...args) 
 template<
     typename T,
     typename... Args,
-    HALCHECK_REQUIRE(lib::is_copy_constructible<T>()),
+    HALCHECK_REQUIRE(std::is_copy_constructible<T>()),
     HALCHECK_REQUIRE(lib::is_equality_comparable<T>()),
-    HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+    HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
 lib::equality_comparable make_equality_comparable(Args &&...args) {
   return lib::make_poly<T, lib::concepts::equality_comparable>(std::forward<Args>(args)...);
 }

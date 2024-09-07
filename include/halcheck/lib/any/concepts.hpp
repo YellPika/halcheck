@@ -38,7 +38,7 @@ class copyable : public virtual lib::concept_base {
 public:
   copyable() = default;
 
-  template<typename T, HALCHECK_REQUIRE(lib::is_copy_constructible<T>())>
+  template<typename T, HALCHECK_REQUIRE(std::is_copy_constructible<T>())>
   explicit copyable(lib::in_place_type_t<T>)
       : _copy([](const lib::concept_base &value) {
           return std::unique_ptr<void, detail::poly_deleter>(

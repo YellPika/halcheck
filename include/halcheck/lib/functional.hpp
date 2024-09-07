@@ -199,7 +199,7 @@ assignable<T> make_assignable(T value) {
 
 template<typename T>
 struct constructor {
-  template<typename... Args, HALCHECK_REQUIRE(lib::is_constructible<T, Args...>())>
+  template<typename... Args, HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
   T operator()(Args... args) {
     return T(std::forward<Args>(args)...);
   }

@@ -43,7 +43,7 @@ protected:
 /// @tparam Concept The concept to check.
 /// @tparam T The type to check against the concept.
 template<typename Concept, typename T, HALCHECK_REQUIRE(std::is_base_of<lib::concept_base, Concept>())>
-struct is_satisfied : lib::is_constructible<Concept, lib::in_place_type_t<T>> {};
+struct is_satisfied : std::is_constructible<Concept, lib::in_place_type_t<T>> {};
 
 }} // namespace halcheck::lib
 

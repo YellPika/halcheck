@@ -82,7 +82,8 @@ namespace test9 {
 using iterator = lib::concat_iterator<std::vector<std::vector<int>>::const_iterator>;
 static_assert(lib::is_iterator<iterator>(), "");
 static_assert(lib::is_input_iterator<iterator>(), "");
+static_assert(std::is_default_constructible<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
-// static_assert(lib::is_bidirectional_iterator<iterator>(), "");
-// static_assert(lib::is_random_access_iterator<iterator>(), "");
+static_assert(!lib::is_bidirectional_iterator<iterator>(), "");
+static_assert(!lib::is_random_access_iterator<iterator>(), "");
 } // namespace test9

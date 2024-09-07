@@ -86,14 +86,6 @@ template<typename T>
 using type_identity_t = T;
 
 namespace detail {
-template<typename T, typename... Args>
-using is_constructible_helper = decltype(T(std::declval<Args>()...));
-} // namespace detail
-
-template<typename T, typename... Args>
-struct is_constructible : lib::is_detected<detail::is_constructible_helper, T, Args...> {};
-
-namespace detail {
 template<class T, typename... Args>
 decltype(void(T{std::declval<Args>()...}), std::true_type()) is_brace_constructible_helper(int);
 
@@ -105,13 +97,10 @@ template<class T, typename... Args>
 struct is_brace_constructible : decltype(detail::is_brace_constructible_helper<T, Args...>(0)) {};
 
 template<typename T>
-struct is_move_constructible : lib::is_constructible<T, T &&> {};
-
-template<typename T>
-struct is_copy_constructible : lib::is_constructible<T, const T &> {};
-
-template<typename T>
 using remove_reference_t = typename std::remove_reference<T>::type;
+
+template<typename T>
+using remove_const_t = typename std::remove_const<T>::type;
 
 namespace detail {
 template<typename T, typename U>
@@ -138,18 +127,24 @@ using std::swap;
 
 template<typename T>
 using is_swappable_helper = decltype(swap(std::declval<T &>(), std::declval<T &>()));
+
+template<typename T>
+using is_nothrow_swappable_helper = lib::enable_if_t<noexcept(swap(std::declval<T &>(), std::declval<T &>()))>;
 } // namespace detail
 
 template<typename T>
 struct is_swappable : lib::is_detected<detail::is_swappable_helper, T> {};
 
 template<typename T>
+struct is_nothrow_swappable : lib::is_detected<detail::is_nothrow_swappable_helper, T> {};
+
+template<typename T>
 using is_movable = lib::
-    conjunction<std::is_object<T>, lib::is_move_constructible<T>, std::is_assignable<T &, T>, lib::is_swappable<T>>;
+    conjunction<std::is_object<T>, std::is_move_constructible<T>, std::is_assignable<T &, T>, lib::is_swappable<T>>;
 
 template<typename T>
 using is_copyable = lib::conjunction<
-    lib::is_copy_constructible<T>,
+    std::is_copy_constructible<T>,
     lib::is_movable<T>,
     std::is_assignable<T &, T &>,
     std::is_assignable<T &, const T &>,
@@ -193,6 +188,12 @@ using is_streamable_helper = lib::enable_if_t<
 
 template<typename T>
 struct is_streamable : lib::is_detected<detail::is_streamable_helper, T> {};
+
+template<typename, template<typename...> class>
+struct is_specialization_of : std::false_type {};
+
+template<typename... Args, template<typename...> class F>
+struct is_specialization_of<F<Args...>, F> : std::true_type {};
 
 }} // namespace halcheck::lib
 
