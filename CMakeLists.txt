@@ -63,6 +63,7 @@ add_subdirectory(src/test)
 add_subdirectory(src/glog)
 add_subdirectory(src/gtest)
 add_subdirectory(src/clang)
+add_subdirectory(src/tyche)
 
 #[[ Tests ]]
 
