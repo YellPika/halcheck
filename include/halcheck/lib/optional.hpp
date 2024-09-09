@@ -3,6 +3,7 @@
 
 #include <halcheck/lib/tuple.hpp>
 #include <halcheck/lib/type_traits.hpp>
+#include <halcheck/lib/utility.hpp>
 
 #include <array>
 #include <memory>
@@ -12,10 +13,6 @@
 #endif
 
 namespace halcheck { namespace lib {
-
-struct in_place_t {};
-
-static constexpr in_place_t in_place;
 
 struct nullopt_t {
   struct tag {};

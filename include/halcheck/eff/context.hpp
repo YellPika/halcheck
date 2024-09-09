@@ -9,6 +9,7 @@
 
 #include <array>
 #include <cstddef>
+#include <functional>
 
 namespace halcheck { namespace eff {
 
@@ -34,12 +35,6 @@ private:
 
   static thread_local const std::array<entry, size> empty, *current;
 
-  struct apply {
-    explicit apply(const std::array<entry, size> &state);
-    ~apply();
-    const std::array<entry, size> *state;
-  };
-
   struct clone_effect {
     std::function<lib::destructable()> fallback() const;
   };
@@ -56,24 +51,11 @@ public:
   private:
     friend class context;
 
-    struct frame {
-      explicit frame(T handler) : handler(std::move(handler)), copy(this->handler.install()), applier(this->copy) {}
-      frame(frame &&) = delete;
-      frame(const frame &) = delete;
-      frame &operator=(frame &&) = delete;
-      frame &operator=(const frame &) = delete;
-      ~frame() = default;
-
-      T handler;
-      std::array<entry, size> copy;
-      apply applier;
-    };
-
     std::function<lib::destructable()> operator()(clone_effect args) override {
       return std::bind(
           [](const std::function<lib::destructable()> &context, T copy) {
             auto first = context();
-            auto second = lib::make_destructable<frame>(std::move(copy));
+            auto second = handle(std::move(copy));
             return std::make_pair(std::move(first), std::move(second));
           },
           invoke(args),
@@ -92,49 +74,44 @@ public:
   template<typename T>
   static eff::result_t<T> invoke(T value) {
     auto &entry = (*current)[index<T>()];
-    apply _(*entry.state);
+    auto _ = lib::tmp_exchange(current, entry.state);
     if (entry.func)
       return (*reinterpret_cast<base<T> *>(entry.func))(std::move(value));
     else
       return std::move(value).fallback();
   }
 
+  template<typename T>
+  static lib::destructable handle(T handler) {
+    struct frame {
+      explicit frame(T handler)
+          : handler(std::move(handler)), copy(this->handler.install()),
+            applier(lib::tmp_exchange(current, &this->copy)) {}
+      frame(frame &&) = delete;
+      frame(const frame &) = delete;
+      frame &operator=(frame &&) = delete;
+      frame &operator=(const frame &) = delete;
+      ~frame() = default;
+
+      T handler;
+      std::array<entry, size> copy;
+      lib::finally_t<lib::exchange_finally_t<const std::array<entry, size> *>> applier;
+    };
+
+    return lib::make_destructable<frame>(std::move(handler));
+  }
+
   template<typename F, typename T>
   static lib::invoke_result_t<F> handle(F func, T &&handler) {
     auto copy = handler.install();
-    apply _(copy);
+    auto _ = lib::tmp_exchange(current, &copy);
     return lib::invoke(func);
   }
 
-  template<typename F>
-  class wrap_t {
-  public:
-    explicit wrap_t(F func) : apply(invoke(clone_effect())), func(std::move(func)) {}
+  static std::function<lib::destructable()> clone() { return invoke(clone_effect()); }
 
-    template<
-        typename... Args,
-        HALCHECK_REQUIRE(lib::is_invocable<F, Args...>()),
-        HALCHECK_REQUIRE(!lib::is_invocable<const F, Args...>())>
-    lib::invoke_result_t<F, Args...> operator()(Args &&...args) {
-      auto _ = apply();
-      return lib::invoke(func, std::forward<Args>(args)...);
-    }
-
-    template<typename... Args, HALCHECK_REQUIRE(lib::is_invocable<const F, Args...>())>
-    lib::invoke_result_t<const F, Args...> operator()(Args &&...args) const {
-      auto _ = apply();
-      return lib::invoke(func, std::forward<Args>(args)...);
-    }
-
-  private:
-    std::function<lib::destructable()> apply;
-    F func;
-  };
-
-  template<typename F, typename... Args>
-  static lib::invoke_result_t<F, Args...> reset(F func, Args &&...args) {
-    apply _(empty);
-    return lib::invoke(std::move(func), std::forward<Args>(args)...);
+  static lib::finally_t<lib::exchange_finally_t<const std::array<entry, size> *>> reset() {
+    return lib::tmp_exchange(current, &empty);
   }
 };
 

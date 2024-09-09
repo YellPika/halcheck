@@ -2,7 +2,9 @@
 #define HALCHECK_LIB_SCOPE_HPP
 
 #include <halcheck/lib/functional.hpp>
+#include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>
+#include <halcheck/lib/utility.hpp>
 #include <halcheck/lib/variant.hpp>
 
 #include <cstddef>
@@ -15,7 +17,7 @@ template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
 class finally_t {
 public:
   explicit finally_t(F func) noexcept : _func(std::move(func)) {}
-  finally_t(finally_t &&other) noexcept : _func(std::move(other._func)) { other._invoke = false; }
+  finally_t(finally_t &&other) noexcept : _func(std::move(other._func)) { other._func.reset(); }
   finally_t(const finally_t &) = delete;
   finally_t &operator=(const finally_t &) = delete;
   finally_t &operator=(finally_t &&) = delete;
@@ -23,13 +25,12 @@ public:
   void *operator new[](std::size_t) = delete;
 
   ~finally_t() noexcept {
-    if (_invoke)
-      lib::invoke(std::move(_func));
+    if (_func)
+      lib::invoke(std::move(*_func));
   }
 
 private:
-  F _func;
-  bool _invoke = true;
+  lib::optional<F> _func;
 };
 
 /// @brief Executes a function on scope exit.
@@ -83,6 +84,21 @@ private:
 template<typename T, typename... Args>
 lib::destructable make_destructable(Args &&...args) {
   return lib::destructable(lib::in_place_type_t<T>(), std::forward<Args>(args)...);
+}
+
+template<typename T>
+struct exchange_finally_t {
+public:
+  exchange_finally_t(T &target, T old) : target(&target), old(std::move(old)) {}
+  void operator()() const { *target = old; }
+
+private:
+  T *target, old;
+};
+
+template<typename T, typename U>
+lib::finally_t<lib::exchange_finally_t<T>> tmp_exchange(T &value, U &&next) {
+  return lib::finally(exchange_finally_t<T>(value, lib::exchange(value, next)));
 }
 
 }} // namespace halcheck::lib

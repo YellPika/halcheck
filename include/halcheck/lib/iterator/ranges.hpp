@@ -156,6 +156,11 @@ public:
     return _end - _begin;
   }
 
+  template<typename J = I, HALCHECK_REQUIRE(lib::is_input_iterator<J>())>
+  bool empty() const {
+    return _begin == _end;
+  }
+
   I begin() const { return _begin; }
   I end() const { return _end; }
 

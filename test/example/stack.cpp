@@ -67,7 +67,7 @@ HALCHECK_TEST(Stack, Model) {
 
   struct monitor {
     void push() {
-      auto value = gen::arbitrary<int>();
+      int value = gen::arbitrary();
       LOG(INFO) << "push(" << value << ")";
       object.push(value);
       model.push_back(value);
@@ -114,7 +114,7 @@ HALCHECK_TEST(Stack, Linearizability) {
   // The push command
   auto push = [&] {
     // Chooses a random value to push
-    auto value = gen::arbitrary<int>();
+    int value = gen::arbitrary();
 
     // Chooses random threads to run on
     // Initially this will just be one thread

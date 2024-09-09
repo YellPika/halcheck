@@ -1,5 +1,5 @@
-#ifndef HALCHECK_SHRINK_SHRINKS_HPP
-#define HALCHECK_SHRINK_SHRINKS_HPP
+#ifndef HALCHECK_GEN_SHRINKS_HPP
+#define HALCHECK_GEN_SHRINKS_HPP
 
 #include <halcheck/eff/api.hpp>
 #include <halcheck/gen/label.hpp>
@@ -95,13 +95,12 @@ struct shrink_handler : eff::handler<shrink_handler, gen::shrink_effect, gen::la
 } // namespace detail
 
 template<typename T>
-struct shrinks_t {
+struct shrinks {
 public:
-  explicit shrinks_t(
-      lib::trie<lib::atom, lib::optional<std::uintmax_t>> input,
-      lib::result_holder<T> value,
-      std::vector<detail::shrink_call> calls)
-      : _input(std::move(input)), _value(std::move(value)), _calls(std::move(calls)) {}
+  template<typename F, typename... Args, HALCHECK_REQUIRE(lib::is_invocable_r<T, F, Args...>())>
+  shrinks(lib::trie<lib::atom, lib::optional<std::uintmax_t>> input, F func, Args &&...args)
+      : shrinks(
+            std::make_shared<detail::shrink_calls>(), std::move(input), std::move(func), std::forward<Args>(args)...) {}
 
   typename std::add_lvalue_reference<const T>::type get() const { return _value.get(); }
   typename std::add_lvalue_reference<T>::type get() { return _value.get(); }
@@ -121,29 +120,46 @@ public:
   }
 
 private:
-  lib::trie<lib::atom, lib::optional<std::uintmax_t>> _input;
+  template<typename F, typename... Args>
+  shrinks(
+      std::shared_ptr<detail::shrink_calls> calls,
+      lib::trie<lib::atom, lib::optional<std::uintmax_t>> input,
+      F func,
+      Args &&...args)
+      : _value(eff::handle(
+            [&] { return lib::make_result_holder(func, std::forward<Args>(args)...); },
+            detail::shrink_handler(input, {}, calls))),
+        _calls([&] {
+          std::lock_guard<std::mutex> _(calls->mutex);
+          return calls->data;
+        }()),
+        _input(std::move(input)) {}
+
   lib::result_holder<T> _value;
   std::vector<detail::shrink_call> _calls;
+  lib::trie<lib::atom, lib::optional<std::uintmax_t>> _input;
 };
 
-static const struct {
+static const struct make_shrinks_t : gen::labelable<make_shrinks_t> {
+  using gen::labelable<make_shrinks_t>::operator();
+
   template<typename F, typename... Args, HALCHECK_REQUIRE(lib::is_invocable<F, Args...>())>
-  gen::shrinks_t<lib::invoke_result_t<F>>
+  gen::shrinks<lib::invoke_result_t<F, Args...>>
   operator()(lib::trie<lib::atom, lib::optional<std::uintmax_t>> input, F func, Args &&...args) const {
-    auto calls = std::make_shared<detail::shrink_calls>();
-    auto value = eff::handle(
-        [&] { return lib::make_result_holder(func, std::forward<Args>(args)...); },
-        detail::shrink_handler(input, {}, calls));
-
-    std::lock_guard<std::mutex> _(calls->mutex);
-    return gen::shrinks_t<lib::invoke_result_t<F>>(std::move(input), std::move(value), std::move(calls->data));
+    return gen::shrinks<lib::invoke_result_t<F, Args...>>(
+        std::move(input),
+        std::move(func),
+        std::forward<Args>(args)...);
   }
 
   template<typename F, typename... Args, HALCHECK_REQUIRE(lib::is_invocable<F, Args...>())>
-  gen::shrinks_t<lib::invoke_result_t<F>> operator()(F func, Args &&...args) const {
-    return (*this)(lib::trie<lib::atom, lib::optional<std::uintmax_t>>(), std::move(func), std::forward<Args>(args)...);
+  gen::shrinks<lib::invoke_result_t<F, Args...>> operator()(F func, Args &&...args) const {
+    return gen::shrinks<lib::invoke_result_t<F, Args...>>(
+        lib::trie<lib::atom, lib::optional<std::uintmax_t>>(),
+        std::move(func),
+        std::forward<Args>(args)...);
   }
-} shrinks;
+} make_shrinks;
 
 }} // namespace halcheck::gen
 

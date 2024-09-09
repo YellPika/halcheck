@@ -1,6 +1,7 @@
 #ifndef HALCHECK_TEST_SHRINK_HPP
 #define HALCHECK_TEST_SHRINK_HPP
 
+#include <halcheck/lib/string.hpp>
 #include <halcheck/lib/utility.hpp>
 #include <halcheck/test/strategy.hpp>
 

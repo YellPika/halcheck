@@ -20,12 +20,8 @@ thread_local const std::array<eff::context::entry, eff::context::size> eff::cont
 
 thread_local const std::array<eff::context::entry, eff::context::size> *eff::context::current = &empty;
 
-eff::context::apply::apply(const std::array<entry, size> &state) : state(lib::exchange(current, &state)) {}
-
-eff::context::apply::~apply() { current = state; }
-
 std::function<lib::destructable()> eff::context::clone_effect::fallback() const {
-  return [] { return lib::make_destructable<apply>(empty); };
+  return [] { return lib::tmp_exchange(current, &empty); };
 }
 
 std::size_t eff::context::next() {

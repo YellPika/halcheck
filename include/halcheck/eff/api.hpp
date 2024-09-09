@@ -46,8 +46,37 @@ lib::invoke_result_t<F> handle(F func, T &&handler) {
   return eff::context::handle(std::move(func), std::forward<T>(handler));
 }
 
+template<typename T, HALCHECK_REQUIRE(eff::is_handler<lib::decay_t<T>>())>
+lib::destructable handle(T handler) {
+  return eff::context::handle(std::forward<T>(handler));
+}
+
+inline std::function<lib::destructable()> clone() { return eff::context::clone(); }
+
 template<typename F>
-using wrap_t = eff::context::wrap_t<F>;
+class wrap_t {
+public:
+  explicit wrap_t(F func) : apply(eff::clone()), func(std::move(func)) {}
+
+  template<
+      typename... Args,
+      HALCHECK_REQUIRE(lib::is_invocable<F, Args...>()),
+      HALCHECK_REQUIRE(!lib::is_invocable<const F, Args...>())>
+  lib::invoke_result_t<F, Args...> operator()(Args &&...args) {
+    auto _ = apply();
+    return lib::invoke(func, std::forward<Args>(args)...);
+  }
+
+  template<typename... Args, HALCHECK_REQUIRE(lib::is_invocable<const F, Args...>())>
+  lib::invoke_result_t<const F, Args...> operator()(Args &&...args) const {
+    auto _ = apply();
+    return lib::invoke(func, std::forward<Args>(args)...);
+  }
+
+private:
+  std::function<lib::destructable()> apply;
+  F func;
+};
 
 static const struct {
   template<typename F>
@@ -56,10 +85,15 @@ static const struct {
   }
 } wrap;
 
-template<typename F, typename... Args>
-lib::invoke_result_t<F, Args...> reset(F func, Args &&...args) {
-  return eff::context::reset(std::move(func), std::forward<Args>(args)...);
-}
+static const struct {
+  decltype(eff::context::reset()) operator()() const { return eff::context::reset(); }
+
+  template<typename F, typename... Args>
+  lib::invoke_result_t<F, Args...> operator()(F func, Args &&...args) const {
+    auto _ = (*this)();
+    return lib::invoke(func, std::forward<Args>(args)...);
+  }
+} reset;
 
 }} // namespace halcheck::eff
 

@@ -2,7 +2,6 @@
 #define HALCHECK_LIB_UTILITY_HPP
 
 #include <halcheck/lib/functional.hpp>
-#include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/variant.hpp>
 
@@ -14,37 +13,9 @@
 
 namespace halcheck { namespace lib {
 
-/// @brief Converts a value to a std::string using operator<<.
-/// @tparam T The type of value to convert from.
-/// @param value The value to convert from.
-template<typename T>
-std::string to_string(const T &value) {
-  std::ostringstream os;
-  os << value;
-  return os.str();
-}
+struct in_place_t {};
 
-/// @brief Converts a std::string to a value using operator>>.
-/// @tparam T The type of value to convert to.
-/// @param value The string to convert from.
-template<typename T>
-lib::optional<T> of_string(const std::string &value) {
-  T output;
-  if (std::istringstream(value) >> output)
-    return output;
-  else
-    return lib::nullopt;
-}
-
-lib::optional<std::string> getenv(const std::string &name);
-
-template<typename T>
-lib::optional<T> getenv(const std::string &name) {
-  if (auto value = lib::getenv(name))
-    return lib::of_string<T>(*value);
-  else
-    return lib::nullopt;
-}
+static constexpr in_place_t in_place;
 
 template<class T, class U = T>
 T exchange(T &value, U &&next) {
@@ -98,6 +69,28 @@ public:
 
 private:
   lib::variant<T, std::exception_ptr> _value;
+};
+
+template<typename T>
+class result_holder<T &> {
+public:
+  explicit result_holder(T &value) : _value(&value) {}
+  explicit result_holder(std::exception_ptr value) : _value(std::move(value)) {}
+
+  T &get() & {
+    return lib::visit(
+        lib::overload(
+            [](T *value) -> T & { return *value; },
+            [](std::exception_ptr e) -> T & { std::rethrow_exception(std::move(e)); }),
+        _value);
+  }
+
+  const T &get() const & { return const_cast<result_holder *>(this)->get(); }
+
+  explicit operator bool() const { return lib::holds_alternative<std::exception_ptr>(_value); }
+
+private:
+  lib::variant<T *, std::exception_ptr> _value;
 };
 
 template<>

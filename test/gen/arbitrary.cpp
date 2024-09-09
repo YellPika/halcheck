@@ -6,8 +6,7 @@
 #include <tuple>
 #include <vector>
 
-namespace gen = halcheck::gen;
-namespace lib = halcheck::lib;
+using namespace halcheck;
 
 namespace example {
 
@@ -52,7 +51,7 @@ TYPED_TEST_SUITE(Arbitrary, Types, );
 
 HALCHECK_TYPED_TEST(Arbitrary, Arbitrary) {
   using namespace lib::literals;
-  auto value1 = gen::label("a"_s, gen::arbitrary<TypeParam>);
-  auto value2 = gen::label("b"_s, gen::arbitrary<TypeParam>);
+  TypeParam value1 = gen::arbitrary("a"_s);
+  TypeParam value2 = gen::arbitrary("b"_s);
   gen::guard(value1 != value2);
 }

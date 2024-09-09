@@ -3,6 +3,7 @@
 
 #include <halcheck/eff/api.hpp>
 #include <halcheck/lib/optional.hpp>
+#include <halcheck/lib/string.hpp>
 #include <halcheck/lib/utility.hpp>
 #include <halcheck/test/strategy.hpp>
 
