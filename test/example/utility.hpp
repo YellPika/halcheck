@@ -7,14 +7,14 @@
 #include <random>
 #include <thread>
 
-static void delay() {
+static inline void delay() {
   static thread_local std::random_device random;
   std::this_thread::sleep_for(std::chrono::microseconds(std::uniform_int_distribution<int>(0, 50)(random)));
 }
 
 static const std::size_t max_threads = 2;
 
-static std::vector<std::size_t> gen_threads() {
+static inline std::vector<std::size_t> gen_threads() {
   using namespace halcheck;
   using namespace lib::literals;
 

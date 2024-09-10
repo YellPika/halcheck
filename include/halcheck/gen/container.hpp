@@ -76,7 +76,7 @@ T container(std::size_t size, F gen) {
   T output;
   auto it = lib::end(output);
   while (size-- > 0)
-    gen::label(size, [&] { it = std::next(output.insert(it, lib::invoke(gen))); });
+    gen::label(lib::number(size), [&] { it = std::next(output.insert(it, lib::invoke(gen))); });
   return output;
 }
 
