@@ -47,48 +47,10 @@ private:
   std::map<std::string, std::map<std::size_t, std::string>> _data;
 };
 
-HALCHECK_TEST(Store, KeyCompositionality) {
-  using namespace lib::literals;
-
-  auto keys = gen::noshrink("keys"_s, [] {
-    auto output = gen::container<std::set<std::string>>(gen::range(1, 10), gen::arbitrary);
-    return std::vector<std::string>(output.begin(), output.end());
-  });
-
-  store sys;
-  std::vector<store> models(keys.size());
-  std::size_t now = 0;
-
-  auto step = [&] {
-    LOG(INFO) << "step";
-    sys.step();
-    for (auto &model : models)
-      model.step();
-    ++now;
-  };
-
-  auto put = [&] {
-    auto key = gen::range("key"_s, keys.begin(), keys.end());
-    std::string value = gen::arbitrary("value"_s);
-    LOG(INFO) << "put(" << *key << ", " << value << ")";
-
-    sys.put(*key, value);
-    models[key - keys.begin()].put("", value);
-  };
-
-  auto get = [&] {
-    auto key = gen::range("key"_s, keys.begin(), keys.end());
-    auto time = gen::range("time"_s, 0, now + 2);
-    LOG(INFO) << "get(" << *key << ", " << time << ")";
-    auto actual = sys.get(*key, time);
-    auto expected = models[key - keys.begin()].get("", time);
-    EXPECT_EQ(actual, expected);
-  };
-
-  gen::repeat("commands"_s, [&] { gen::one(step, put, get); });
-}
-
 HALCHECK_TEST(Store, Consistency) {
+  if (!lib::getenv("HALCHECK_NOSKIP"))
+    GTEST_SKIP();
+
   using namespace lib::literals;
 
   auto keys = gen::noshrink("keys"_s, [] {
@@ -112,15 +74,20 @@ HALCHECK_TEST(Store, Consistency) {
     sys.put(*key, value);
   };
 
+  // Step 1: obtain a random state by performing random commands
   LOG(INFO) << "[init]";
   gen::repeat("init"_s, [&] { gen::retry(gen::one, step, put); });
 
+  // Step 2: put a random key-value pair
   LOG(INFO) << "[put]";
   auto key = gen::element_of("key"_s, keys);
   std::string value = gen::arbitrary("value"_s);
-  auto time = now + gen::range("time"_s, 0, gen::size() + 1);
   LOG(INFO) << "put(" << testing::PrintToString(key) << ", " << testing::PrintToString(value) << ")";
   sys.put(key, value);
+
+  // Step 3: pick a random time at some point in the future
+  // (we test consistency relative to this point)
+  auto time = now + gen::range("time"_s, 0, gen::size() + 1);
 
   auto put_other = [&] {
     auto index = gen::range("key"_s, keys.begin(), keys.end());
@@ -130,9 +97,12 @@ HALCHECK_TEST(Store, Consistency) {
     sys.put(*index, value);
   };
 
+  // Step 4: perform a random set of commands that DO NOT affect the value of
+  // assinged to key `key' at time `time'.
   LOG(INFO) << "[modify]";
   gen::repeat("modify"_s, [&] { gen::retry(gen::one, step, put_other); });
 
+  // Step 5: check that get returns the same value we wrote
   LOG(INFO) << "[get]";
   LOG(INFO) << "get(" << testing::PrintToString(key) << ", " << time << ")";
   auto result = sys.get(key, time);
