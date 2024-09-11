@@ -69,7 +69,7 @@ HALCHECK_TEST(Counter, Model) {
     previous = current;
   };
 
-  gen::repeat([&] { gen::retry(gen::one, inc, get); });
+  gen::repeat([&] { gen::one(inc, get); });
 }
 
 HALCHECK_TEST(Counter, Linearizability) {
@@ -99,7 +99,7 @@ HALCHECK_TEST(Counter, Linearizability) {
     });
   };
 
-  gen::repeat([&] { gen::retry(gen::one, get, inc); });
+  gen::repeat([&] { gen::one(get, inc); });
 
   EXPECT_TRUE(monitor.check());
 }
