@@ -17,6 +17,7 @@
 #include <vector>
 
 using namespace halcheck;
+using namespace halcheck::lib::literals;
 
 class counter {
 public:
@@ -56,12 +57,12 @@ HALCHECK_TEST(Counter, Model) {
   counter object;
   int previous = -1;
 
-  auto inc = [&] {
+  auto inc = [&](lib::atom) {
     LOG(INFO) << "[system] inc()";
     object.inc();
   };
 
-  auto get = [&] {
+  auto get = [&](lib::atom) {
     LOG(INFO) << "[system] get()";
     auto current = object.get();
     LOG(INFO) << "  -> " << current;
@@ -69,20 +70,18 @@ HALCHECK_TEST(Counter, Model) {
     previous = current;
   };
 
-  gen::repeat([&] { gen::one(inc, get); });
+  gen::repeat("commands"_s, [&](lib::atom id) { gen::one(id, inc, get); });
 }
 
 HALCHECK_TEST(Counter, Linearizability) {
-  using namespace lib::literals;
-
   if (!lib::getenv("HALCHECK_NOSKIP"))
     GTEST_SKIP();
 
   counter object;
   lib::serializability_monitor<int, int> monitor{0};
 
-  auto get = [&] {
-    auto threads = gen_threads();
+  auto get = [&](lib::atom id) {
+    auto threads = gen_threads(id);
     monitor.invoke(threads, [=, &object] {
       auto actual = object.get();
       LOG(INFO) << "[system] get(): " << actual << " on threads " << testing::PrintToString(threads);
@@ -90,8 +89,8 @@ HALCHECK_TEST(Counter, Linearizability) {
     });
   };
 
-  auto inc = [&] {
-    auto threads = gen_threads();
+  auto inc = [&](lib::atom id) {
+    auto threads = gen_threads(id);
     monitor.invoke(threads, [=, &object] {
       LOG(INFO) << "[system] inc() on threads " << testing::PrintToString(threads);
       object.inc();
@@ -99,7 +98,7 @@ HALCHECK_TEST(Counter, Linearizability) {
     });
   };
 
-  gen::repeat([&] { gen::one(get, inc); });
+  gen::repeat("commands"_s, [&](lib::atom id) { gen::one(id, get, inc); });
 
   EXPECT_TRUE(monitor.check());
 }

@@ -26,8 +26,8 @@ TYPED_TEST_SUITE(Numeric, Types, );
 HALCHECK_TYPED_TEST(Numeric, Midpoint) {
   using namespace lib::literals;
 
-  TypeParam x = gen::arbitrary("x"_s);
-  TypeParam y = gen::arbitrary("y"_s);
+  auto x = gen::arbitrary<TypeParam>("x"_s);
+  auto y = gen::arbitrary<TypeParam>("y"_s);
   auto mid = lib::midpoint(x, y);
 
   auto min = std::min(x, y);

@@ -17,14 +17,13 @@ struct sample_effect {
   std::uintmax_t fallback() const { throw std::runtime_error("sample not handled"); }
 };
 
-static struct sample_t : gen::labelable<sample_t> {
-  using gen::labelable<sample_t>::operator();
-
-  std::uintmax_t operator()(std::uintmax_t max = std::numeric_limits<std::uintmax_t>::max()) const {
+static const struct {
+  std::uintmax_t operator()(lib::atom id, std::uintmax_t max = std::numeric_limits<std::uintmax_t>::max()) const {
+    auto _ = gen::label(id);
     return eff::invoke<sample_effect>(max);
   }
 
-  bool operator()(std::uintmax_t w0, std::uintmax_t w1) const { return eff::invoke<sample_effect>(w0 + w1 - 1) >= w0; }
+  bool operator()(lib::atom id, std::uintmax_t w0, std::uintmax_t w1) const { return (*this)(id, w0 + w1 - 1) >= w0; }
 } sample;
 
 }} // namespace halcheck::gen

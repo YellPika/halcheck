@@ -39,8 +39,8 @@ TEST(Test, Random_Concurrency) {
     using namespace lib::literals;
 
     auto func = [] {
-      auto x = gen::sample();
-      auto y = gen::sample("a"_s);
+      auto x = gen::sample("x"_s);
+      auto y = gen::sample("y"_s);
       return std::make_pair(x, y);
     };
     auto future = std::async(std::launch::async, eff::wrap(func));

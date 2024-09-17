@@ -100,9 +100,7 @@ private:
   std::uintmax_t _remaining;
 };
 
-static const struct make_forward_shrinks_t : gen::labelable<make_forward_shrinks_t> {
-  using gen::labelable<make_forward_shrinks_t>::operator();
-
+static const struct {
   template<typename F, typename... Args, HALCHECK_REQUIRE(lib::is_invocable<F, Args...>())>
   gen::forward_shrinks<lib::invoke_result_t<F, Args...>>
   operator()(std::vector<std::uintmax_t> input, F func, Args &&...args) const {

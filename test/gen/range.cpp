@@ -25,8 +25,8 @@ TYPED_TEST_SUITE(Range, Types, );
 HALCHECK_TYPED_TEST(Range, Range) {
   using namespace lib::literals;
 
-  TypeParam min = gen::arbitrary("min"_s);
-  TypeParam max = gen::arbitrary("max"_s);
+  auto min = gen::arbitrary<TypeParam>("min"_s);
+  auto max = gen::arbitrary<TypeParam>("max"_s);
   auto value = gen::range("value"_s, min, max);
   EXPECT_LE(min, value) << "max: " << max;
   EXPECT_LT(value, max) << "min: " << min;

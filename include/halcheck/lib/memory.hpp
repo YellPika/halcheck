@@ -91,12 +91,10 @@ public:
   using unique_box<T>::operator T &;
   using unique_box<T>::operator const T &;
 
+  box() = default;
   box(box &&) noexcept(false) = default;
   box &operator=(box &&) noexcept(false) = default;
   ~box() = default;
-
-  template<typename U = T, HALCHECK_REQUIRE(std::is_default_constructible<U>())>
-  box() {}
 
   box(const box &other) : unique_box<T>(*other) { static_assert(lib::is_copyable<T>(), "T must be copyable"); }
 

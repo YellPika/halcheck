@@ -50,7 +50,24 @@ private:
 using atom = lib::variant<lib::symbol, lib::number>;
 
 namespace literals {
+#if __cplusplus >= 201806L
+template<std::size_t N>
+struct char_array {
+  char data[N]; // NOLINT
+  [[nodiscard]] constexpr size_t size() const { return N - 1; }
+  constexpr char_array(const char (&init)[N]) { // NOLINT
+    std::copy_n(init, N, data);
+  }
+};
+
+template<literals::char_array Value>
+inline lib::symbol operator""_s() {
+  static lib::symbol output(std::string(Value.data, Value.size()));
+  return output;
+}
+#else
 inline lib::symbol operator""_s(const char *data, std::size_t size) { return lib::symbol(std::string(data, size)); }
+#endif
 inline lib::number operator""_n(unsigned long long int value) { return lib::number(value); }
 } // namespace literals
 

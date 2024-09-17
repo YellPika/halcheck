@@ -20,29 +20,33 @@
 
 namespace halcheck { namespace gen {
 
-static const struct repeat_t : gen::labelable<repeat_t> {
-  using gen::labelable<repeat_t>::operator();
+/// @brief Repeatedly calls a function. During shrinking, one or more calls
+///        may be omitted.
+/// @tparam F A nullary function type.
+/// @param func The function to call.
+template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F, lib::atom>())>
+void repeat(lib::atom id, F func) {
+  using namespace lib::literals;
 
-  /// @brief Repeatedly calls a function. During shrinking, one or more calls
-  ///        may be omitted.
-  /// @tparam F A nullary function type.
-  /// @param func The function to call.
-  template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
-  void operator()(F func) const {
-    using namespace lib::literals;
+  auto _ = gen::label(id);
 
-    auto size = gen::sample("size"_s, gen::size());
+  auto size = gen::sample("size"_s, gen::size());
 
-    std::vector<bool> skip;
+  std::vector<bool> skip;
+  {
+    auto _ = gen::label("shrink"_s);
     for (std::uintmax_t i = 0; i < size; i++)
-      skip.push_back(gen::shrink("shrink"_s, lib::number(i)).has_value());
+      skip.push_back(gen::shrink(lib::number(i)).has_value());
+  }
 
+  {
+    auto _ = gen::label("func"_s);
     for (std::uintmax_t i = 0; i < size; i++) {
       if (!skip[skip.size() - i - 1])
-        gen::label("func"_s, lib::number(i), func);
+        lib::invoke(func, lib::number(i));
     }
   }
-} repeat;
+}
 
 /// @brief Generates a random container value.
 /// @tparam T The type of container to generate.
@@ -53,11 +57,11 @@ template<
     typename T,
     typename F,
     HALCHECK_REQUIRE(lib::is_insertable<T>()),
-    HALCHECK_REQUIRE(lib::is_invocable_r<lib::range_value_t<T>, F>())>
-T container(F gen) {
+    HALCHECK_REQUIRE(lib::is_invocable_r<lib::range_value_t<T>, F, lib::atom>())>
+T container(lib::atom id, F gen) {
   T output;
   auto it = lib::end(output);
-  gen::repeat([&] { it = std::next(output.insert(it, lib::invoke(gen))); });
+  gen::repeat(id, [&](lib::atom id) { it = std::next(output.insert(it, lib::invoke(gen, id))); });
   return output;
 }
 
@@ -71,29 +75,28 @@ template<
     typename T,
     typename F,
     HALCHECK_REQUIRE(lib::is_insertable<T>()),
-    HALCHECK_REQUIRE(lib::is_invocable_r<lib::range_value_t<T>, F>())>
-T container(std::size_t size, F gen) {
+    HALCHECK_REQUIRE(lib::is_invocable_r<lib::range_value_t<T>, F, lib::atom>())>
+T container(lib::atom id, std::size_t size, F gen) {
+  auto _ = gen::label(id);
+
   T output;
   auto it = lib::end(output);
   while (size-- > 0)
-    gen::label(lib::number(size), [&] { it = std::next(output.insert(it, lib::invoke(gen))); });
+    it = std::next(output.insert(it, lib::invoke(gen, lib::number(size))));
   return output;
 }
 
-static const struct shuffle_t : gen::labelable<shuffle_t> {
-  using gen::labelable<shuffle_t>::operator();
+template<typename I, HALCHECK_REQUIRE(lib::is_forward_iterator<I>())>
+void shuffle(lib::atom id, I begin, I end) {
+  auto _ = gen::label(id);
+  for (auto it = begin; it != end; ++it)
+    std::iter_swap(it, gen::range(lib::number(it - begin), it, end));
+}
 
-  template<typename I, HALCHECK_REQUIRE(lib::is_forward_iterator<I>())>
-  void operator()(I begin, I end) const {
-    for (auto it = begin; it != end; ++it)
-      std::iter_swap(it, gen::range(lib::number(it - begin), it, end));
-  }
-
-  template<typename Range, HALCHECK_REQUIRE(lib::is_forward_range<lib::decay_t<Range>>())>
-  void operator()(Range &&range) const {
-    (*this)(lib::begin(range), lib::end(range));
-  }
-} shuffle;
+template<typename Range, HALCHECK_REQUIRE(lib::is_forward_range<lib::decay_t<Range>>())>
+void shuffle(lib::atom id, Range &&range) {
+  gen::shuffle(id, lib::begin(range), lib::end(range));
+}
 
 }} // namespace halcheck::gen
 

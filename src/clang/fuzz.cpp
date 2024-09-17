@@ -49,7 +49,8 @@ struct handler : eff::handler<handler, gen::sample_effect, gen::label_effect, ge
   lib::destructable operator()(gen::label_effect args) override {
     auto prev = current;
     current = &(*current)[args.value];
-    return lib::finally([=] { current = prev; });
+    auto self = this;
+    return lib::finally([=] { self->current = prev; });
   }
 
   std::uintmax_t operator()(gen::size_effect) override { return size; }

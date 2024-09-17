@@ -14,15 +14,19 @@ static inline void delay() {
 
 static const std::size_t max_threads = 2;
 
-static inline std::vector<std::size_t> gen_threads() {
+static inline std::vector<std::size_t> gen_threads(halcheck::lib::atom id) {
   using namespace halcheck;
   using namespace lib::literals;
+
+  auto _ = gen::label(id);
 
   std::vector<std::size_t> output(max_threads);
   std::iota(output.begin(), output.end(), 0);
 
-  if (!gen::shrink("seq"_s))
-    output = {gen::noshrink(gen::element_of, output)};
+  if (!gen::shrink("seq"_s)) {
+    auto _ = gen::noshrink();
+    output = {gen::element("output"_s, output)};
+  }
 
   return output;
 }

@@ -16,15 +16,16 @@ HALCHECK_TEST(Shrink, To) {
   using namespace lib::literals;
 
   using T = std::uint8_t;
-  T dst = gen::arbitrary("dst"_s);
-  T src = gen::arbitrary("src"_s);
 
-  auto func = [&] { return gen::shrink_to(dst, src); };
-  auto prev = gen::make_shrinks("eval"_s, std::ref(func));
+  auto dst = gen::arbitrary<T>("dst"_s);
+  auto src = gen::arbitrary<T>("src"_s);
+
+  auto func = [&] { return gen::shrink_to("eval"_s, dst, src); };
+  auto prev = gen::make_shrinks(std::ref(func));
   ASSERT_EQ(prev.get(), src);
   while (prev.children().begin() != prev.children().end()) {
     auto offset = gen::range("offset"_s, 0, prev.size());
-    auto next = gen::make_shrinks("eval"_s, *std::next(prev.children().begin(), long(offset)), std::ref(func));
+    auto next = gen::make_shrinks(*std::next(prev.children().begin(), long(offset)), std::ref(func));
     if (dst < src) {
       ASSERT_LE(dst, next.get());
       ASSERT_LT(next.get(), prev.get());
@@ -52,7 +53,7 @@ HALCHECK_TEST(Shrink, Example) {
   try {
     eff::reset([&] {
       (test::repeat(0, 0) | test::random() | test::sized(100) | test::shrink())([&] {
-        std::vector<T> xs = gen::arbitrary();
+        auto xs = gen::arbitrary<std::vector<T>>("xs"_s);
         if (xs.size() >= size && xs[index] >= threshold) {
           LOG(INFO) << "xs: " << testing::PrintToString(xs);
           throw xs; // NOLINT
@@ -87,7 +88,7 @@ HALCHECK_TEST(ForwardShrink, Example) {
   try {
     eff::reset([&] {
       (test::repeat(0, 0) | test::random() | test::sized(100) | test::forward_shrink())([&] {
-        std::vector<T> xs = gen::arbitrary();
+        auto xs = gen::arbitrary<std::vector<T>>("xs"_s);
         if (xs.size() >= size && xs[index] >= threshold) {
           LOG(INFO) << "xs: " << testing::PrintToString(xs);
           throw xs; // NOLINT
@@ -107,8 +108,8 @@ TEST(Test, Shrink_Concurrency) {
   eff::reset([&] {
     (test::repeat() | test::random() | test::shrink() | gtest::wrap())([&] {
       auto func = [] {
-        auto x = gen::shrink();
-        auto y = gen::shrink("a"_s);
+        auto x = gen::shrink("x"_s);
+        auto y = gen::shrink("y"_s);
         return std::make_pair(x, y);
       };
       auto future = std::async(std::launch::async, eff::wrap(func));

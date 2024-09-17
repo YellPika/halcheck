@@ -8,7 +8,7 @@ using namespace halcheck;
 
 static void check_reference() {
   using namespace lib::literals;
-  std::vector<char> xs = gen::arbitrary("xs"_s);
+  auto xs = gen::arbitrary<std::vector<char>>("xs"_s);
   auto &x = gen::element_of("x"_s, xs);
   EXPECT_EQ(std::count_if(xs.begin(), xs.end(), [&](char &y) { return &x == &y; }), 1)
       << "xs: " << ::testing::PrintToString(xs) << "\n"
@@ -28,7 +28,8 @@ HALCHECK_TEST(ElementOf, Reference_ForwardShrinks) {
 }
 
 HALCHECK_TEST(Element, Example) {
-  auto x = gen::element(1, 2, 3, 4, 5);
+  using namespace lib::literals;
+  auto x = gen::element("x"_s, 1, 2, 3, 4, 5);
   EXPECT_LE(1, x);
   EXPECT_LE(x, 5);
 }

@@ -140,9 +140,7 @@ private:
   lib::trie<lib::atom, lib::optional<std::uintmax_t>> _input;
 };
 
-static const struct make_shrinks_t : gen::labelable<make_shrinks_t> {
-  using gen::labelable<make_shrinks_t>::operator();
-
+static const struct {
   template<typename F, typename... Args, HALCHECK_REQUIRE(lib::is_invocable<F, Args...>())>
   gen::shrinks<lib::invoke_result_t<F, Args...>>
   operator()(lib::trie<lib::atom, lib::optional<std::uintmax_t>> input, F func, Args &&...args) const {

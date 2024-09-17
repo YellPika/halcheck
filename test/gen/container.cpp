@@ -12,10 +12,7 @@ using namespace halcheck;
 HALCHECK_TEST(Container, Shrinks) {
   using namespace lib::literals;
 
-  auto func = [] {
-    auto _ = gen::label("it"_s);
-    return gen::container<std::vector<bool>>(gen::arbitrary);
-  };
+  auto func = [] { return gen::arbitrary<std::vector<bool>>("it"_s); };
 
   auto prev = gen::make_shrinks(func);
   for (std::uintmax_t i = 0; !prev.get().empty(); i++) {
@@ -42,10 +39,7 @@ HALCHECK_TEST(Container, Shrinks) {
 HALCHECK_TEST(Container, ForwardShrinks) {
   using namespace lib::literals;
 
-  auto func = [] {
-    auto _ = gen::label("it"_s);
-    return gen::container<std::vector<bool>>(gen::arbitrary);
-  };
+  auto func = [] { return gen::arbitrary<std::vector<bool>>("it"_s); };
 
   auto prev = gen::make_forward_shrinks(func);
   for (std::uintmax_t i = 0; !prev.children().empty(); i++) {

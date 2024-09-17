@@ -476,8 +476,12 @@ public:
   }
 
 #if __cplusplus >= 201606L
-  constexpr operator std::optional<T>() const {
+  constexpr operator std::optional<T>() const & { // NOLINT
     return *this ? std::optional<T>(std::in_place, **this) : std::optional<T>();
+  }
+
+  constexpr operator std::optional<T>() && { // NOLINT
+    return *this ? std::optional<T>(std::in_place, std::move(**this)) : std::optional<T>();
   }
 #endif
 };

@@ -17,6 +17,7 @@
 #include <vector>
 
 using namespace halcheck;
+using namespace halcheck::lib::literals;
 
 class stack {
 public:
@@ -60,14 +61,12 @@ private:
 };
 
 HALCHECK_TEST(Stack, Model) {
-  using namespace lib::literals;
-
   if (!lib::getenv("HALCHECK_NOSKIP"))
     GTEST_SKIP();
 
   struct monitor {
     void push() {
-      int value = gen::arbitrary();
+      auto value = gen::arbitrary<int>("value"_s);
       LOG(INFO) << "push(" << value << ")";
       object.push(value);
       model.push_back(value);
@@ -88,9 +87,10 @@ HALCHECK_TEST(Stack, Model) {
     std::vector<int> model;
   } m;
 
-  gen::repeat([&] {
-    gen::retry([&] {
-      auto command = gen::noshrink(gen::element, "command"_s, &monitor::push, &monitor::pop);
+  gen::repeat("commands"_s, [&](lib::atom id) {
+    gen::retry(id, [&](lib::atom id) {
+      auto _ = gen::label(id);
+      auto command = gen::noshrink([] { return gen::element("command"_s, &monitor::push, &monitor::pop); });
       gen::label("exec"_s, command, m);
     });
   });
@@ -112,15 +112,17 @@ HALCHECK_TEST(Stack, Linearizability) {
   lib::serializability_monitor<std::size_t, std::vector<int>> monitor;
 
   // The push command
-  auto push = [&] {
+  auto push = [&](lib::atom id) {
+    auto _ = gen::label(id);
+
     // Chooses a random value to push
-    int value = gen::arbitrary();
+    auto value = gen::arbitrary<int>("value"_s);
 
     // Chooses random threads to run on
     // Initially this will just be one thread
     // During shrinking this may shrink to the set of "all threads",
     // which effectively serializes this command
-    auto threads = gen::label("threads"_s, gen_threads);
+    auto threads = gen_threads("threads"_s);
 
     // We also use an extra thread corresponding to a new value
     // This is used to ensure pop only runs on a non-empty stack
@@ -138,11 +140,13 @@ HALCHECK_TEST(Stack, Linearizability) {
     });
   };
 
-  auto pop = [&] {
-    auto threads = gen::label("threads"_s, gen_threads);
+  auto pop = [&](lib::atom id) {
+    auto _ = gen::label(id);
 
-    gen::retry("index"_s, [&] {
-      auto index = gen::range(0, set.size());
+    auto threads = gen_threads("threads"_s);
+
+    gen::retry("index"_s, [&](lib::atom id) {
+      auto index = gen::range(id, 0, set.size());
       gen::guard(set[index]);
       threads.push_back(index + max_threads);
       set[index] = false;
@@ -160,7 +164,9 @@ HALCHECK_TEST(Stack, Linearizability) {
     });
   };
 
-  gen::repeat([&] { gen::retry(gen::one, push, pop); });
+  gen::repeat("commands"_s, [&](lib::atom id) {
+    gen::retry(id, [&](lib::atom id) { return gen::one(id, push, pop); });
+  });
 
   EXPECT_TRUE(monitor.check());
 }

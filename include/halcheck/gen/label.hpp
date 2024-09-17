@@ -38,14 +38,6 @@ static struct label_t {
   }
 } label;
 
-template<typename F>
-struct labelable {
-  template<typename... Args, HALCHECK_REQUIRE(lib::is_invocable<const F &, Args...>())>
-  lib::invoke_result_t<F, Args...> operator()(lib::atom label, Args &&...args) const {
-    return gen::label(label, static_cast<const F &>(*this), std::forward<Args>(args)...);
-  }
-};
-
 }} // namespace halcheck::gen
 
 #endif

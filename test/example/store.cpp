@@ -53,35 +53,37 @@ HALCHECK_TEST(Store, Consistency) {
 
   using namespace lib::literals;
 
-  auto keys = gen::noshrink("keys"_s, [] {
-    auto output = gen::container<std::set<std::string>>(gen::range(1, 10), gen::arbitrary);
+  auto keys = gen::noshrink([] {
+    auto size = gen::range("size"_s, 1, 10);
+    auto output = gen::container<std::set<std::string>>("keys"_s, size, gen::arbitrary<std::string>);
     return std::vector<std::string>(output.begin(), output.end());
   });
 
   store sys;
   std::size_t now = 0;
 
-  auto step = [&] {
+  auto step = [&](lib::atom) {
     LOG(INFO) << "step";
     sys.step();
     ++now;
   };
 
-  auto put = [&] {
+  auto put = [&](lib::atom id) {
+    auto _ = gen::label(id);
     auto key = gen::range("key"_s, keys.begin(), keys.end());
-    std::string value = gen::arbitrary("value"_s);
+    auto value = gen::arbitrary<std::string>("value"_s);
     LOG(INFO) << "put(" << testing::PrintToString(*key) << ", " << testing::PrintToString(value) << ")";
     sys.put(*key, value);
   };
 
   // Step 1: obtain a random state by performing random commands
   LOG(INFO) << "[init]";
-  gen::repeat("init"_s, [&] { gen::retry(gen::one, step, put); });
+  gen::repeat("init"_s, [&](lib::atom id) { gen::retry(id, [&](lib::atom id) { return gen::one(id, step, put); }); });
 
   // Step 2: put a random key-value pair
   LOG(INFO) << "[put]";
   auto key = gen::element_of("key"_s, keys);
-  std::string value = gen::arbitrary("value"_s);
+  auto value = gen::arbitrary<std::string>("value"_s);
   LOG(INFO) << "put(" << testing::PrintToString(key) << ", " << testing::PrintToString(value) << ")";
   sys.put(key, value);
 
@@ -89,10 +91,11 @@ HALCHECK_TEST(Store, Consistency) {
   // (we test consistency relative to this point)
   auto time = now + gen::range("time"_s, 0, gen::size() + 1);
 
-  auto put_other = [&] {
+  auto put_other = [&](lib::atom id) {
+    auto _ = gen::label(id);
     auto index = gen::range("key"_s, keys.begin(), keys.end());
     gen::guard(*index != key || now > time);
-    std::string value = gen::arbitrary("value"_s);
+    auto value = gen::arbitrary<std::string>("value"_s);
     LOG(INFO) << "put(" << testing::PrintToString(*index) << ", " << testing::PrintToString(value) << ")";
     sys.put(*index, value);
   };
@@ -100,7 +103,9 @@ HALCHECK_TEST(Store, Consistency) {
   // Step 4: perform a random set of commands that DO NOT affect the value of
   // assinged to key `key' at time `time'.
   LOG(INFO) << "[modify]";
-  gen::repeat("modify"_s, [&] { gen::retry(gen::one, step, put_other); });
+  gen::repeat("modify"_s, [&](lib::atom id) {
+    gen::retry(id, [&](lib::atom id) { return gen::one(id, step, put_other); });
+  });
 
   // Step 5: check that get returns the same value we wrote
   LOG(INFO) << "[get]";

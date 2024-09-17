@@ -1,16 +1,18 @@
 #include "halcheck/gen/range.hpp" // IWYU pragma: keep
 
-template unsigned char halcheck::gen::range_t::operator()(unsigned char, unsigned char) const;
-template signed char halcheck::gen::range_t::operator()(signed char, signed char) const;
-template char halcheck::gen::range_t::operator()(char, char) const;
-template unsigned short halcheck::gen::range_t::operator()(unsigned short, unsigned short) const;
-template signed short halcheck::gen::range_t::operator()(signed short, signed short) const;
-template unsigned int halcheck::gen::range_t::operator()(unsigned int, unsigned int) const;
-template signed int halcheck::gen::range_t::operator()(signed int, signed int) const;
-template unsigned long halcheck::gen::range_t::operator()(unsigned long, unsigned long) const;
-template signed long halcheck::gen::range_t::operator()(signed long, signed long) const;
-template unsigned long long halcheck::gen::range_t::operator()(unsigned long long, unsigned long long) const;
-template signed long long halcheck::gen::range_t::operator()(signed long long, signed long long) const;
-template float halcheck::gen::range_t::operator()(float, float) const;
-template double halcheck::gen::range_t::operator()(double, double) const;
-template long double halcheck::gen::range_t::operator()(long double, double) const;
+using namespace halcheck;
+
+template unsigned char gen::range_t::operator()(lib::atom, unsigned char, unsigned char) const;
+template signed char gen::range_t::operator()(lib::atom, signed char, signed char) const;
+template char gen::range_t::operator()(lib::atom, char, char) const;
+template unsigned short gen::range_t::operator()(lib::atom, unsigned short, unsigned short) const;
+template signed short gen::range_t::operator()(lib::atom, signed short, signed short) const;
+template unsigned int gen::range_t::operator()(lib::atom, unsigned int, unsigned int) const;
+template signed int gen::range_t::operator()(lib::atom, signed int, signed int) const;
+template unsigned long gen::range_t::operator()(lib::atom, unsigned long, unsigned long) const;
+template signed long gen::range_t::operator()(lib::atom, signed long, signed long) const;
+template unsigned long long gen::range_t::operator()(lib::atom, unsigned long long, unsigned long long) const;
+template signed long long gen::range_t::operator()(lib::atom, signed long long, signed long long) const;
+template float gen::range_t::operator()(lib::atom, float, float) const;
+template double gen::range_t::operator()(lib::atom, double, double) const;
+template long double gen::range_t::operator()(lib::atom, long double, double) const;

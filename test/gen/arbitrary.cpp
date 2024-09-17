@@ -14,11 +14,11 @@ struct type : std::tuple<bool> {
   using tuple::tuple;
 };
 
-type arbitrary(gen::tag<type>) { return type{true}; }
+type arbitrary(gen::tag<type>, lib::atom) { return type{true}; }
 
 } // namespace example
 
-example::type arbitrary(gen::tag<example::type>) { return example::type{false}; }
+example::type arbitrary(gen::tag<example::type>, lib::atom) { return example::type{false}; }
 
 template<typename TypeParam>
 struct Arbitrary : public testing::Test {};
@@ -51,7 +51,7 @@ TYPED_TEST_SUITE(Arbitrary, Types, );
 
 HALCHECK_TYPED_TEST(Arbitrary, Arbitrary) {
   using namespace lib::literals;
-  TypeParam value1 = gen::arbitrary("a"_s);
-  TypeParam value2 = gen::arbitrary("b"_s);
+  auto value1 = gen::arbitrary<TypeParam>("a"_s);
+  auto value2 = gen::arbitrary<TypeParam>("b"_s);
   gen::guard(value1 != value2);
 }
