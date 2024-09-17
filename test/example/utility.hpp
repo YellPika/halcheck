@@ -2,6 +2,7 @@
 #define UTILITY_HPP
 
 #include <halcheck.hpp>
+#include <halcheck/gen/arbitrary.hpp>
 
 #include <chrono>
 #include <random>
@@ -20,12 +21,12 @@ static inline std::vector<std::size_t> gen_threads(halcheck::lib::atom id) {
 
   auto _ = gen::label(id);
 
-  std::vector<std::size_t> output(max_threads);
-  std::iota(output.begin(), output.end(), 0);
+  std::vector<std::size_t> output;
 
-  if (!gen::shrink("seq"_s)) {
-    auto _ = gen::noshrink();
-    output = {gen::element("output"_s, output)};
+  auto keep = gen::noshrink(gen::range, "keep"_s, 0, max_threads);
+  for (std::size_t i = 0; i < max_threads; i++) {
+    if (i == keep || !gen::arbitrary<bool>(lib::number(i)))
+      output.push_back(i);
   }
 
   return output;

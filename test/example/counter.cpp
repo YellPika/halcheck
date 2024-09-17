@@ -78,23 +78,25 @@ HALCHECK_TEST(Counter, Linearizability) {
     GTEST_SKIP();
 
   counter object;
-  lib::serializability_monitor<int, int> monitor{0};
+  lib::serializability_monitor<int, counter> monitor;
 
   auto get = [&](lib::atom id) {
     auto threads = gen_threads(id);
+    LOG(INFO) << "[monitor] get() on threads " << testing::PrintToString(threads);
     monitor.invoke(threads, [=, &object] {
       auto actual = object.get();
       LOG(INFO) << "[system] get(): " << actual << " on threads " << testing::PrintToString(threads);
-      return [=](int expected) { EXPECT_EQ(actual, expected); };
+      return [=](const counter &expected) { EXPECT_EQ(actual, expected.get()); };
     });
   };
 
   auto inc = [&](lib::atom id) {
     auto threads = gen_threads(id);
+    LOG(INFO) << "[monitor] inc() on threads " << testing::PrintToString(threads);
     monitor.invoke(threads, [=, &object] {
       LOG(INFO) << "[system] inc() on threads " << testing::PrintToString(threads);
       object.inc();
-      return [=](int &model) { ++model; };
+      return [=](counter &model) { model.inc(); };
     });
   };
 
