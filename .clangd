@@ -3,7 +3,7 @@ CompileFlags:
 InlayHints:
   Enabled: false
 Diagnostics:
-  UnusedIncludes: None
-  MissingIncludes: None
+  UnusedIncludes: Strict
+  MissingIncludes: Strict
 Hover:
   ShowAKA: true
