@@ -56,18 +56,34 @@ private:
 
 /// @brief A concept for types that can be printed.
 /// @note This class should be inherited virtually.
-class streamable : public virtual lib::concept_base {
+class printable : public virtual lib::concept_base {
 public:
-  streamable() = default;
+  printable() = default;
 
-  template<typename T, HALCHECK_REQUIRE(lib::is_streamable<T>())>
-  explicit streamable(lib::in_place_type_t<T>)
-      : _stream([](std::ostream &os, const streamable &value) -> std::ostream & { return os << value.as<T>(); }) {}
+  template<typename T, HALCHECK_REQUIRE(lib::is_printable<T>())>
+  explicit printable(lib::in_place_type_t<T>)
+      : _stream([](std::ostream &os, const printable &value) -> std::ostream & { return os << value.as<T>(); }) {}
 
 private:
-  friend std::ostream &operator<<(std::ostream &os, const streamable &value) { return value._stream(os, value); }
+  friend std::ostream &operator<<(std::ostream &os, const printable &value) { return value._stream(os, value); }
 
-  std::ostream &(*_stream)(std::ostream &, const streamable &) = nullptr;
+  std::ostream &(*_stream)(std::ostream &, const printable &) = nullptr;
+};
+
+/// @brief A concept for types that can be printed.
+/// @note This class should be inherited virtually.
+class parsable : public virtual lib::concept_base {
+public:
+  parsable() = default;
+
+  template<typename T, HALCHECK_REQUIRE(lib::is_parsable<T>())>
+  explicit parsable(lib::in_place_type_t<T>)
+      : _stream([](std::ostream &os, parsable &value) -> std::ostream & { return os >> value.as<T>(); }) {}
+
+private:
+  friend std::ostream &operator>>(std::ostream &os, parsable &value) { return value._stream(os, value); }
+
+  std::ostream &(*_stream)(std::ostream &, const parsable &) = nullptr;
 };
 
 /// @brief A concept for types with decidable equality.

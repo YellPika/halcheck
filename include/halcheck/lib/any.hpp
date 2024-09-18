@@ -9,13 +9,13 @@
 #include <halcheck/lib/typeinfo.hpp>
 #include <halcheck/lib/variant.hpp>
 
-#include <cstddef>
-#include <exception>
 #include <memory>
-#include <ostream>
 #include <type_traits>
+#include <typeinfo>
 
 namespace halcheck { namespace lib {
+
+class bad_poly_cast : public std::bad_cast {};
 
 template<typename... Concepts>
 class unique_poly : public virtual lib::concept_base, public Concepts... {

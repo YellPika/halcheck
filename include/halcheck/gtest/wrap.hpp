@@ -5,7 +5,7 @@
 
 namespace halcheck { namespace gtest {
 
-test::strategy wrap();
+test::strategy wrap(test::strategy);
 
 }} // namespace halcheck::gtest
 

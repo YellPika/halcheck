@@ -7,18 +7,26 @@
 #include <halcheck/lib/utility.hpp>
 #include <halcheck/test/strategy.hpp>
 
+#include <initializer_list>
 #include <string>
 
 namespace halcheck { namespace test {
 
 struct read_effect {
   std::string key;
-  lib::optional<std::string> fallback() const { return lib::nullopt; }
+  lib::optional<std::string> fallback() const { return lib::getenv("HALCHECK_" + key); }
 };
 
-static const auto read = [](std::string key) { return eff::invoke<read_effect>(std::move(key)); };
+inline lib::optional<std::string> read(std::string key) { return eff::invoke<read_effect>(std::move(key)); }
 
-test::strategy deserialize(std::string name, std::string folder = lib::getenv("HALCHECK_FOLDER").value_or(".halcheck"));
+template<typename T>
+inline lib::optional<T> read(std::string key) {
+  auto value = test::read(std::move(key));
+  return value ? lib::of_string<T>(std::move(*value)) : lib::nullopt;
+}
+
+test::strategy deserialize(std::string name);
+test::strategy override(const std::initializer_list<std::pair<std::string, std::string>> &);
 
 }} // namespace halcheck::test
 

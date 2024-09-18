@@ -10,10 +10,13 @@
 #include <ghc/filesystem.hpp>
 
 #include <chrono>
+#include <exception>
 #include <fstream>
 #include <functional>
 #include <ostream>
 #include <random>
+#include <string>
+#include <utility>
 
 using json = nlohmann::json;
 namespace fs = ghc::filesystem;
@@ -26,7 +29,7 @@ struct strategy {
         run_start(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch())
                       .count()) {}
 
-  void operator()(const std::function<void()> &func) {
+  void operator()(const std::function<void()> &func) const {
     json object;
     object["type"] = "test_case";
     object["status"] = "passed";
@@ -63,7 +66,7 @@ struct strategy {
   }
 
   std::string name;
-  std::ofstream os;
+  mutable std::ofstream os;
   long run_start;
 };
 } // namespace

@@ -7,7 +7,7 @@ using namespace halcheck;
 
 namespace {
 struct or_strategy {
-  void operator()(std::function<void()> func) {
+  void operator()(std::function<void()> func) const {
     lhs([&] { rhs(func); });
   }
 
@@ -16,7 +16,7 @@ struct or_strategy {
 };
 
 struct and_strategy {
-  void operator()(const std::function<void()> &func) {
+  void operator()(const std::function<void()> &func) const {
     lhs(func);
     rhs(func);
   }

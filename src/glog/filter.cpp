@@ -16,25 +16,26 @@
 
 using namespace halcheck;
 
-test::strategy glog::filter() {
-  struct sink : google::LogSink {
-    void send(
-        google::LogSeverity severity,
-        const char *,
-        const char *filename,
-        int line,
-        const google::LogMessageTime &time,
-        const char *message,
-        std::size_t size) override {
-      std::lock_guard<std::mutex> lock(mutex);
-      output += ToString(severity, filename, line, time, message, size) + "\n";
-    }
+namespace {
+struct sink : google::LogSink {
+  void send(
+      google::LogSeverity severity,
+      const char *,
+      const char *filename,
+      int line,
+      const google::LogMessageTime &time,
+      const char *message,
+      std::size_t size) override {
+    std::lock_guard<std::mutex> lock(mutex);
+    output += ToString(severity, filename, line, time, message, size) + "\n";
+  }
 
-    std::mutex mutex;
-    std::string output;
-  };
+  std::mutex mutex;
+  std::string output;
+};
 
-  struct filter { // NOLINT
+struct strategy {
+  void operator()(const std::function<void()> &func) const {
     std::string output;
     std::size_t iteration = 0;
     std::size_t succeeded = 0;
@@ -42,7 +43,7 @@ test::strategy glog::filter() {
     std::size_t shrinks = 0;
     bool failed = false;
 
-    ~filter() {
+    auto _ = lib::finally([&] {
       if (failed) {
         std::clog << "\nFailed after " << succeeded << " test(s), " << discarded << " discard(s), and " << shrinks
                   << " shrink(s)\n\n";
@@ -51,12 +52,10 @@ test::strategy glog::filter() {
       } else {
         std::clog << "\nSucceeded after " << succeeded << " test(s) and " << discarded << " discard(s)\n";
       }
-    }
+    });
 
-    void operator()(const std::function<void()> &func) {
+    inner([&] {
       auto i = iteration++;
-      LOG(INFO) << "Test Case (" << i << ")";
-
       sink sink;
       try {
         {
@@ -86,8 +85,11 @@ test::strategy glog::filter() {
         failed = true;
         throw;
       }
-    }
-  };
+    });
+  }
 
-  return test::strategy(lib::in_place_type_t<filter>());
-}
+  test::strategy inner;
+};
+} // namespace
+
+test::strategy glog::filter(test::strategy inner) { return strategy{std::move(inner)}; }

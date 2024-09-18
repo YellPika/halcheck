@@ -3,7 +3,9 @@
 
 #include <cstddef>
 #include <functional>
+#include <istream>
 #include <ostream>
+#include <string>
 #include <type_traits> // IWYU pragma: export
 #include <utility>
 
@@ -181,13 +183,22 @@ template<typename T>
 struct is_hashable : lib::is_detected<detail::is_hashable_helper, T> {};
 
 namespace detail {
-template<typename T>
-using is_streamable_helper = lib::enable_if_t<
-    std::is_same<decltype(std::declval<std::ostream &>() << std::declval<const T &>()), std::ostream &>{}>;
+template<typename T, typename Stream>
+using is_printable_helper =
+    lib::enable_if_t<std::is_same<decltype(std::declval<Stream &>() << std::declval<const T &>()), Stream &>{}>;
 } // namespace detail
 
-template<typename T>
-struct is_streamable : lib::is_detected<detail::is_streamable_helper, T> {};
+template<typename T, typename CharT = char, typename Traits = std::char_traits<CharT>>
+struct is_printable : lib::is_detected<detail::is_printable_helper, T, std::basic_ostream<CharT, Traits>> {};
+
+namespace detail {
+template<typename T, typename Stream>
+using is_parsable_helper =
+    lib::enable_if_t<std::is_same<decltype(std::declval<Stream &>() >> std::declval<T &>()), Stream &>{}>;
+} // namespace detail
+
+template<typename T, typename CharT = char, typename Traits = std::char_traits<CharT>>
+struct is_parsable : lib::is_detected<detail::is_parsable_helper, T, std::basic_istream<CharT, Traits>> {};
 
 template<typename, template<typename...> class>
 struct is_specialization_of : std::false_type {};

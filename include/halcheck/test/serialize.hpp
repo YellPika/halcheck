@@ -20,7 +20,7 @@ static const auto write = [](std::string key, std::string value) {
   eff::invoke<write_effect>(std::move(key), std::move(value));
 };
 
-test::strategy serialize(std::string name, std::string folder = lib::getenv("HALCHECK_FOLDER").value_or(".halcheck"));
+test::strategy serialize(std::string name);
 
 }} // namespace halcheck::test
 

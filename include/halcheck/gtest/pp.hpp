@@ -13,7 +13,7 @@ test::strategy __attribute__((weak)) default_strategy();
 
 #define HALCHECK_TEST_HELPER(anon, suite, test, strategy)                                                              \
   static void anon();                                                                                                  \
-  TEST(suite, test) { (::halcheck::gtest::wrap() | (strategy))(anon); }                                                \
+  TEST(suite, test) { ::halcheck::gtest::wrap(strategy)(anon); }                                                       \
   static void anon()
 
 #define HALCHECK_TEST(...)                                                                                             \
@@ -26,7 +26,7 @@ test::strategy __attribute__((weak)) default_strategy();
 #define HALCHECK_TYPED_TEST_HELPER(anon, suite, test, strategy)                                                        \
   template<typename>                                                                                                   \
   static void anon();                                                                                                  \
-  TYPED_TEST(suite, test) { (::halcheck::gtest::wrap() | (strategy))(anon<TypeParam>); /* NOLINT */ }                  \
+  TYPED_TEST(suite, test) { ::halcheck::gtest::wrap(strategy)(anon<TypeParam>); /* NOLINT */ }                         \
   template<typename TypeParam>                                                                                         \
   static void anon()
 
@@ -39,7 +39,7 @@ test::strategy __attribute__((weak)) default_strategy();
 
 #define HALCHECK_TEST_F_HELPER(anon, fixture, test, strategy)                                                          \
   static void anon();                                                                                                  \
-  TEST_F(fixture, test) { (::halcheck::gtest::wrap() | (strategy))(anon); }                                            \
+  TEST_F(fixture, test) { ::halcheck::gtest::wrap(strategy)(anon); }                                                   \
   static void anon()
 
 #define HALCHECK_TEST_F(...)                                                                                           \

@@ -3,6 +3,7 @@
 #include <halcheck/eff/api.hpp>
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/lib/scope.hpp>
+#include <halcheck/test/deserialize.hpp>
 #include <halcheck/test/strategy.hpp>
 
 #include <ghc/filesystem.hpp>
@@ -12,6 +13,7 @@
 #include <cstddef>
 #include <fstream>
 #include <functional>
+#include <ios>
 #include <iterator>
 #include <random>
 #include <string>
@@ -38,45 +40,32 @@ struct handler : eff::handler<handler, test::write_effect> {
 };
 
 struct strategy {
-  void operator()(std::function<void()> func) {
+  void operator()(std::function<void()> func) const {
+    static const std::string table = "0123456789ABCDEF";
+
+    auto folder = test::read("FOLDER").value_or(".halcheck");
+    auto directory = fs::path(std::move(folder)) / name;
+    fs::create_directories(directory);
+
+    std::string id;
+    std::random_device device;
+    std::uniform_int_distribution<std::size_t> dist(0, table.size() - 1);
+    std::generate_n(std::back_inserter(id), table.size(), [&] { return table[dist(device)]; });
+    std::string filename = directory / id;
+
     std::error_code code;
     fs::rename(filename, filename + ".bak", code);
 
-    bool success = false;
-    auto _ = lib::finally([&] {
-      if (!success)
-        return;
+    eff::handle(std::move(func), handler({}, filename));
 
-      if (code)
-        fs::remove(filename);
-      else
-        fs::rename(filename + ".bak", filename, code);
-    });
-
-    try {
-      eff::handle(std::move(func), handler({}, filename));
-      success = true;
-    } catch (const gen::result &) {
-      success = true;
-      throw;
-    }
+    if (code)
+      fs::remove(filename);
+    else
+      fs::rename(filename + ".bak", filename, code);
   }
 
-  std::string filename;
+  std::string name;
 };
 } // namespace
 
-test::strategy test::serialize(std::string name, std::string folder) {
-  static const std::string table = "0123456789ABCDEF";
-
-  auto directory = fs::path(std::move(folder)) / std::move(name);
-  fs::create_directories(directory);
-
-  std::string id;
-  std::random_device device;
-  std::uniform_int_distribution<std::size_t> dist(0, table.size() - 1);
-  std::generate_n(std::back_inserter(id), table.size(), [&] { return table[dist(device)]; });
-  auto filename = directory / id;
-
-  return ::strategy{std::move(filename)};
-}
+test::strategy test::serialize(std::string name) { return ::strategy{std::move(name)}; }

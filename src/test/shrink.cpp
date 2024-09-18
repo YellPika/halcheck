@@ -22,22 +22,20 @@
 
 #include <nlohmann/json.hpp>
 
-#include <algorithm>
-#include <cstddef>
 #include <cstdint>
-#include <exception>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 using namespace halcheck;
 using json = nlohmann::json;
 
-test::strategy test::shrink(std::uintmax_t repetitions) {
-  return [=](const std::function<void()> &func) {
+test::strategy test::shrink() {
+  return [](const std::function<void()> &func) {
+    auto repetitions = test::read<std::uintmax_t>("REPETITIONS").value_or(1);
+
     bool non_default = false;
     lib::trie<lib::atom, lib::optional<std::uintmax_t>> input;
-    if (auto input_str = test::read("input")) {
+    if (auto input_str = test::read("INPUT")) {
       if (auto input_json = lib::of_string<json>(*input_str)) {
         try {
           input = input_json->get<lib::trie<lib::atom, lib::optional<std::uintmax_t>>>();
@@ -48,7 +46,7 @@ test::strategy test::shrink(std::uintmax_t repetitions) {
     }
 
     auto result = gen::make_shrinks(input, func);
-    test::write("input", json(input).dump());
+    test::write("INPUT", json(input).dump());
     try {
       result.get();
       for (std::uintmax_t i = 1; i < (non_default ? repetitions : 1); i++) {
@@ -61,7 +59,7 @@ test::strategy test::shrink(std::uintmax_t repetitions) {
       auto it = result.children().begin();
       while (it != result.children().end()) {
         auto next = gen::make_shrinks(*it, func);
-        test::write("input", json(*it).dump());
+        test::write("INPUT", json(*it).dump());
         try {
           next.get();
           for (std::uintmax_t i = 1; i < (non_default ? repetitions : 1); i++) {
@@ -77,19 +75,21 @@ test::strategy test::shrink(std::uintmax_t repetitions) {
         }
 
         ++it;
-        test::write("input", json(input).dump());
       }
 
+      test::write("INPUT", json(input).dump());
       result.get();
     }
   };
 }
 
-test::strategy test::forward_shrink(std::uintmax_t repetitions) {
-  return [=](const std::function<void()> &func) {
+test::strategy test::forward_shrink() {
+  return [](const std::function<void()> &func) {
+    auto repetitions = test::read<std::uintmax_t>("REPETITIONS").value_or(1);
+
     bool non_default = false;
     std::vector<uintmax_t> input;
-    if (auto input_str = test::read("forward_input")) {
+    if (auto input_str = test::read("FORWARD_INPUT")) {
       if (auto input_json = lib::of_string<json>(*input_str)) {
         try {
           input = input_json->get<std::vector<std::uintmax_t>>();
@@ -100,7 +100,7 @@ test::strategy test::forward_shrink(std::uintmax_t repetitions) {
     }
 
     auto result = gen::make_forward_shrinks(input, func);
-    test::write("forward_input", json(input).dump());
+    test::write("FORWARD_INPUT", json(input).dump());
     try {
       result.get();
       for (std::uintmax_t i = 1; i < (non_default ? repetitions : 1); i++) {
@@ -113,7 +113,7 @@ test::strategy test::forward_shrink(std::uintmax_t repetitions) {
       auto it = result.children().begin();
       while (it != result.children().end()) {
         auto next = gen::make_forward_shrinks(*it, func);
-        test::write("forward_input", json(*it).dump());
+        test::write("FORWARD_INPUT", json(*it).dump());
         try {
           next.get();
           for (std::uintmax_t i = 1; i < (non_default ? repetitions : 1); i++) {
@@ -129,9 +129,9 @@ test::strategy test::forward_shrink(std::uintmax_t repetitions) {
         }
 
         ++it;
-        test::write("input", json(input).dump());
       }
 
+      test::write("FORWARD_INPUT", json(input).dump());
       result.get();
     }
   };

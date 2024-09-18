@@ -5,11 +5,15 @@
 #include <halcheck/lib/utility.hpp>
 #include <halcheck/test/strategy.hpp>
 
-#include <cstdint>
+#include <exception>
 
 namespace halcheck { namespace test {
 
-test::strategy random(std::int_fast32_t seed = lib::getenv<std::int_fast32_t>("HALCHECK_SEED").value_or(0));
+struct discard_limit_exception : std::exception {
+  const char *what() const noexcept override { return "discard limit reached"; /*GCOVR_EXCL_LINE*/ }
+};
+
+test::strategy random();
 
 }} // namespace halcheck::test
 

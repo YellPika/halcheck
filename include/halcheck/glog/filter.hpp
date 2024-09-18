@@ -9,7 +9,7 @@
 
 namespace halcheck { namespace glog {
 
-test::strategy filter();
+test::strategy filter(test::strategy);
 
 }} // namespace halcheck::glog
 

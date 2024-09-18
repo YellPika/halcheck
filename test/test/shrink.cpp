@@ -5,9 +5,10 @@
 #include <cstdint>
 #include <functional>
 #include <future>
+#include <iterator>
 #include <limits>
 #include <ostream>
-#include <string>
+#include <utility>
 #include <vector>
 
 using namespace halcheck;
@@ -52,7 +53,7 @@ HALCHECK_TEST(Shrink, Example) {
 
   try {
     eff::reset([&] {
-      (test::repeat(0, 0) | test::random() | test::sized(100) | test::shrink())([&] {
+      (test::random() | test::shrink())([&] {
         auto xs = gen::arbitrary<std::vector<T>>("xs"_s);
         if (xs.size() >= size && xs[index] >= threshold) {
           LOG(INFO) << "xs: " << testing::PrintToString(xs);
@@ -87,7 +88,7 @@ HALCHECK_TEST(ForwardShrink, Example) {
 
   try {
     eff::reset([&] {
-      (test::repeat(0, 0) | test::random() | test::sized(100) | test::forward_shrink())([&] {
+      (test::random() | test::forward_shrink())([&] {
         auto xs = gen::arbitrary<std::vector<T>>("xs"_s);
         if (xs.size() >= size && xs[index] >= threshold) {
           LOG(INFO) << "xs: " << testing::PrintToString(xs);
@@ -106,7 +107,7 @@ TEST(Test, Shrink_Concurrency) {
   using namespace lib::literals;
 
   eff::reset([&] {
-    (test::repeat() | test::random() | test::shrink() | gtest::wrap())([&] {
+    gtest::wrap(test::random() | test::shrink())([&] {
       auto func = [] {
         auto x = gen::shrink("x"_s);
         auto y = gen::shrink("y"_s);

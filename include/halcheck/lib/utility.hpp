@@ -7,8 +7,6 @@
 
 #include <cstddef>
 #include <exception>
-#include <sstream>
-#include <string>
 #include <utility> // IWYU pragma: export
 
 namespace halcheck { namespace lib {

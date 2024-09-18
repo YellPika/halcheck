@@ -39,6 +39,21 @@ protected:
   const void *get() const noexcept { return const_cast<concept_base *>(this)->get(); }
 };
 
+template<typename T, HALCHECK_REQUIRE(std::is_constructible<T, const lib::remove_cvref_t<T> &>())>
+T poly_cast(const concept_base &value) {
+  return value.as<lib::remove_cvref_t<T>>();
+}
+
+template<typename T, HALCHECK_REQUIRE(std::is_constructible<T, lib::remove_cvref_t<T> &>())>
+T poly_cast(concept_base &value) {
+  return value.as<lib::remove_cvref_t<T>>();
+}
+
+template<typename T, HALCHECK_REQUIRE(std::is_constructible<T, lib::remove_cvref_t<T>>())>
+T poly_cast(concept_base &&value) {
+  return value.as<lib::remove_cvref_t<T>>();
+}
+
 /// @brief Indicates whether a type satisfies a concept.
 /// @tparam Concept The concept to check.
 /// @tparam T The type to check against the concept.

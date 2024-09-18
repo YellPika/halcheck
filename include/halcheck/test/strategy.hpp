@@ -7,22 +7,20 @@
 #include <halcheck/lib/utility.hpp>
 #include <halcheck/lib/variant.hpp>
 
-#include <memory>
-
 namespace halcheck { namespace test {
 
 namespace concepts {
 
 class strategy : public lib::concept_base {
 public:
-  template<typename T, HALCHECK_REQUIRE(lib::is_invocable<T, std::function<void()>>())>
+  template<typename T, HALCHECK_REQUIRE(lib::is_invocable<const T &, std::function<void()>>())>
   explicit strategy(lib::in_place_type_t<T>)
-      : _invoke([](strategy &value, const std::function<void()> &func) { lib::invoke(value.as<T>(), func); }) {}
+      : _invoke([](const strategy &value, const std::function<void()> &func) { lib::invoke(value.as<T>(), func); }) {}
 
-  void operator()(const std::function<void()> &func) { _invoke(*this, func); }
+  void operator()(const std::function<void()> &func) const { _invoke(*this, func); }
 
 private:
-  void (*_invoke)(strategy &, const std::function<void()> &);
+  void (*_invoke)(const strategy &, const std::function<void()> &);
 };
 
 } // namespace concepts
@@ -35,7 +33,7 @@ template<
     typename T,
     typename... Args,
     HALCHECK_REQUIRE(std::is_constructible<T, Args...>()),
-    HALCHECK_REQUIRE(lib::is_invocable<T, std::function<void()>>())>
+    HALCHECK_REQUIRE(lib::is_invocable<const T &, std::function<void()>>())>
 test::strategy make_strategy(Args &&...args) {
   return test::strategy(lib::in_place_type_t<T>(), std::forward<Args>(args)...);
 }
