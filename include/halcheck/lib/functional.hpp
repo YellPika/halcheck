@@ -197,6 +197,9 @@ assignable<T> make_assignable(T value) {
   return assignable<T>(std::move(value));
 }
 
+/// @brief A function object that calls the constructor of a given type.
+///
+/// @tparam T The type of value to construct.
 template<typename T>
 struct constructor {
   template<typename... Args, HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
