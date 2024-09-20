@@ -54,23 +54,41 @@ lib::variant<lib::invoke_result_t<Fs, lib::atom>...> variant(lib::atom id, Fs...
   return lib::visit(detail::variant_visitor<Fs...>(std::move(gens)...), i);
 }
 
-template<
-    typename T,
-    typename... Args,
-    HALCHECK_REQUIRE(lib::conjunction<lib::is_invocable_r<T, Args, lib::atom>...>()),
-    HALCHECK_REQUIRE(!std::is_void<T>())>
-T one(lib::atom id, lib::in_place_type_t<T>, Args... args) {
-  return lib::visit([](T output) { return output; }, gen::variant(id, std::move(args)...));
+namespace detail {
+template<typename T, typename... Fs>
+struct one_visitor {
+  template<typename I>
+  T operator()(I i) const {
+    using namespace lib::literals;
+    static constexpr auto index = decltype(i)::value;
+    return lib::invoke(std::get<index>(tuple), "gen"_s);
+  }
+  explicit one_visitor(Fs... gens) : tuple(std::move(gens)...) {}
+  std::tuple<Fs...> tuple;
+};
+} // namespace detail
+
+/// @brief Generates a value according to a randomly selected generator.
+///
+/// @tparam T The type of value to generate.
+/// @tparam Fs The type of generators to use.
+/// @param id A unique identifier for the generated value.
+/// @param gens The generators to invoke.
+/// @return A value produced by one of gens.
+template<typename T, typename... Fs, HALCHECK_REQUIRE(lib::conjunction<lib::is_invocable_r<T, Fs, lib::atom>...>())>
+T one(lib::atom id, lib::in_place_type_t<T>, Fs... gens) {
+  using namespace lib::literals;
+  auto _ = gen::label(id);
+  auto i = gen::index("index"_s, lib::make_index_sequence<sizeof...(Fs)>{});
+  return lib::visit(detail::one_visitor<T, Fs...>(std::move(gens)...), i);
 }
 
-template<typename... Args, HALCHECK_REQUIRE(lib::conjunction<lib::is_invocable<Args, lib::atom>...>())>
-void one(lib::atom id, lib::in_place_type_t<void>, Args... args) {
-  gen::one(id, lib::in_place_type_t<int>(), [&](lib::atom id) {
-    lib::invoke(args, id);
-    return 0;
-  }...);
-}
-
+/// @brief Generates a value according to a randomly selected generator.
+///
+/// @tparam Fs The type of generators to use.
+/// @param id A unique identifier for the generated value.
+/// @param gens The generators to invoke.
+/// @return A value produced by one of gens.
 template<typename... Args, HALCHECK_REQUIRE(lib::conjunction<lib::is_invocable<Args, lib::atom>...>())>
 lib::common_type_t<lib::invoke_result_t<Args, lib::atom>...> one(lib::atom id, Args... args) {
   return gen::one(
