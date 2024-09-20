@@ -19,6 +19,7 @@
     {
       "name": "common-clang",
       "hidden": true,
+      "inherits": "common",
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "clang++"
       }
@@ -26,6 +27,7 @@
     {
       "name": "common-gcc-5",
       "hidden": true,
+      "inherits": "common",
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "g++-5",
         "CMAKE_LINKER_TYPE": "SYSTEM"
