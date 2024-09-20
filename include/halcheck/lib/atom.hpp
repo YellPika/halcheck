@@ -61,10 +61,19 @@ struct char_array {
 };
 
 template<literals::char_array Value>
-inline lib::symbol operator""_s() {
+lib::symbol operator""_s() {
   static lib::symbol output(std::string(Value.data, Value.size()));
   return output;
 }
+#elif (__cplusplus >= 201606L || defined(__clang__)) && defined(__GNUG__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-string-literal-operator-template"
+template<typename T, T... Data>
+lib::symbol operator""_s() {
+  static lib::symbol output(std::string{Data...});
+  return output;
+}
+#pragma clang diagnostic pop
 #else
 inline lib::symbol operator""_s(const char *data, std::size_t size) { return lib::symbol(std::string(data, size)); }
 #endif
