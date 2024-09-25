@@ -2,8 +2,10 @@
 #define HALCHECK_LIB_FUNCTIONAL_HPP
 
 #include <halcheck/lib/type_traits.hpp>
+#include <halcheck/lib/variant.hpp>
 
 #include <functional> // IWYU pragma: export
+#include <memory>
 #include <type_traits>
 
 namespace halcheck { namespace lib {
@@ -206,6 +208,62 @@ struct constructor {
   T operator()(Args... args) {
     return T(std::forward<Args>(args)...);
   }
+};
+
+template<typename>
+class function_view;
+
+template<typename R, typename... Args>
+class function_view<R(Args...)> {
+public:
+  template<
+      typename F,
+      HALCHECK_REQUIRE(!std::is_const<F>()),
+      HALCHECK_REQUIRE(!std::is_pointer<lib::decay_t<F>>()),
+      HALCHECK_REQUIRE(lib::is_invocable_r<R, F &, Args...>()),
+      HALCHECK_REQUIRE(!std::is_same<F, function_view>())>
+  function_view(F &&func) // NOLINT: implicit reference to functor
+      : _impl(closure{std::addressof(func), [](void *impl, Args... args) {
+                        return lib::invoke(*reinterpret_cast<lib::decay_t<F> *>(impl), std::forward<Args>(args)...);
+                      }}) {}
+
+  function_view(R (*func)(Args...)) // NOLINT: implicit copy of function pointer
+      : _impl(func) {}
+
+  R operator()(Args... args) const {
+    return lib::visit(
+        lib::overload(
+            [&](const closure &func) { return func.invoke(func.self, std::forward<Args>(args)...); },
+            [&](R (*func)(Args...)) { return func(std::forward<Args>(args)...); }),
+        _impl);
+  }
+
+private:
+  struct closure {
+    void *self;
+    R (*invoke)(void *, Args...);
+  };
+
+  lib::variant<R (*)(Args...), closure> _impl;
+};
+
+template<typename R, typename... Args>
+class function_view<R(Args...) const> {
+public:
+  template<
+      typename F,
+      HALCHECK_REQUIRE(lib::is_invocable_r<R, const F &, Args...>()),
+      HALCHECK_REQUIRE(!std::is_same<F, function_view>())>
+  function_view(const F &func) // NOLINT:
+      : _impl(std::addressof(func)), _invoke([](const void *impl, Args... args) {
+          return lib::invoke(*reinterpret_cast<const F *>(impl), std::forward<Args>(args)...);
+        }) {}
+
+  R operator()(Args... args) const { return _invoke(_impl, std::forward<Args>(args)...); }
+
+private:
+  const void *_impl;
+  R (*_invoke)(const void *, Args...);
 };
 
 }} // namespace halcheck::lib
