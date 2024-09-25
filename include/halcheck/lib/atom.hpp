@@ -3,6 +3,7 @@
 
 #include <halcheck/lib/variant.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
