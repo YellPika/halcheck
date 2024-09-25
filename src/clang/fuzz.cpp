@@ -7,6 +7,7 @@
 #include <halcheck/gen/sample.hpp>
 #include <halcheck/gen/size.hpp>
 #include <halcheck/lib/atom.hpp>
+#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/tree.hpp>
@@ -16,10 +17,8 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
-#include <functional>
 #include <limits>
 #include <string>
-#include <utility>
 #include <vector>
 
 using namespace halcheck;
@@ -73,9 +72,10 @@ struct handler : eff::handler<handler, gen::sample_effect, gen::label_effect, ge
 };
 } // namespace
 
+static void dummy() {}
 static std::uintmax_t max_size;
 static std::uintmax_t max_length;
-static std::function<void()> func;
+static lib::function_view<void()> func(dummy);
 
 static int entry(const std::uint8_t *data, std::size_t len) {
   ::handler handler(max_size, max_length, data, len);
@@ -100,7 +100,7 @@ test::strategy clang::fuzz(
     std::uintmax_t max_size, // NOLINT
     std::uintmax_t max_length,
     const std::vector<std::string> &args) {
-  return [=](std::function<void()> func) {
+  return [=](lib::function_view<void()> func) {
     std::vector<std::vector<char>> copy;
     std::vector<char *> pointers;
     copy.push_back(to_vector("./fuzzer"));
@@ -115,7 +115,7 @@ test::strategy clang::fuzz(
     int argc = int(copy.size());
     char **argv = pointers.data();
 
-    ::func = std::move(func);
+    ::func = func;
     ::max_size = max_size;
     ::max_length = max_length;
     try {
