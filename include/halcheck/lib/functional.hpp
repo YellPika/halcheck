@@ -220,8 +220,8 @@ public:
       typename F,
       HALCHECK_REQUIRE(!std::is_const<F>()),
       HALCHECK_REQUIRE(!std::is_pointer<lib::decay_t<F>>()),
-      HALCHECK_REQUIRE(lib::is_invocable_r<R, F &, Args...>()),
-      HALCHECK_REQUIRE(!std::is_same<F, function_view>())>
+      HALCHECK_REQUIRE(lib::is_invocable_r<R, lib::decay_t<F> &, Args...>()),
+      HALCHECK_REQUIRE(!std::is_same<lib::decay_t<F>, function_view>())>
   function_view(F &&func) // NOLINT: implicit reference to functor
       : _impl(closure{std::addressof(func), [](void *impl, Args... args) {
                         return lib::invoke(*reinterpret_cast<lib::decay_t<F> *>(impl), std::forward<Args>(args)...);
@@ -252,18 +252,33 @@ class function_view<R(Args...) const> {
 public:
   template<
       typename F,
-      HALCHECK_REQUIRE(lib::is_invocable_r<R, const F &, Args...>()),
-      HALCHECK_REQUIRE(!std::is_same<F, function_view>())>
-  function_view(const F &func) // NOLINT:
-      : _impl(std::addressof(func)), _invoke([](const void *impl, Args... args) {
-          return lib::invoke(*reinterpret_cast<const F *>(impl), std::forward<Args>(args)...);
-        }) {}
+      HALCHECK_REQUIRE(!std::is_pointer<lib::decay_t<F>>()),
+      HALCHECK_REQUIRE(lib::is_invocable_r<R, const lib::decay_t<F> &, Args...>()),
+      HALCHECK_REQUIRE(!std::is_same<lib::decay_t<F>, function_view>())>
+  function_view(F &&func) // NOLINT: implicit reference to functor
+      : _impl(closure{
+            std::addressof(func), [](const void *impl, Args... args) {
+              return lib::invoke(*reinterpret_cast<const lib::decay_t<F> *>(impl), std::forward<Args>(args)...);
+            }}) {}
 
-  R operator()(Args... args) const { return _invoke(_impl, std::forward<Args>(args)...); }
+  function_view(R (*func)(Args...)) // NOLINT: implicit copy of function pointer
+      : _impl(func) {}
+
+  R operator()(Args... args) const {
+    return lib::visit(
+        lib::overload(
+            [&](const closure &func) { return func.invoke(func.self, std::forward<Args>(args)...); },
+            [&](R (*func)(Args...)) { return func(std::forward<Args>(args)...); }),
+        _impl);
+  }
 
 private:
-  const void *_impl;
-  R (*_invoke)(const void *, Args...);
+  struct closure {
+    const void *self;
+    R (*invoke)(const void *, Args...);
+  };
+
+  lib::variant<R (*)(Args...), closure> _impl;
 };
 
 }} // namespace halcheck::lib
