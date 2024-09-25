@@ -1,9 +1,9 @@
 CPMAddPackage("gh:gulrak/filesystem@1.5.14")
 CPMAddPackage(
   NAME json
-  VERSION 3.2.0
+  VERSION 3.11.3
   GITHUB_REPOSITORY nlohmann/json
-  OPTIONS "JSON_BuildTests OFF"
+  OPTIONS "JSON_SystemInclude ON"
   EXCLUDE_FROM_ALL
   SYSTEM)
 
