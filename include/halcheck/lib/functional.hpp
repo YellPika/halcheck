@@ -222,12 +222,12 @@ public:
       HALCHECK_REQUIRE(!std::is_pointer<lib::decay_t<F>>()),
       HALCHECK_REQUIRE(lib::is_invocable_r<R, lib::decay_t<F> &, Args...>()),
       HALCHECK_REQUIRE(!std::is_same<lib::decay_t<F>, function_view>())>
-  function_view(F &&func) // NOLINT: implicit reference to functor
+  function_view(F &&func) noexcept // NOLINT: implicit reference to functor
       : _impl(closure{std::addressof(func), [](void *impl, Args... args) {
                         return lib::invoke(*reinterpret_cast<lib::decay_t<F> *>(impl), std::forward<Args>(args)...);
                       }}) {}
 
-  function_view(R (*func)(Args...)) // NOLINT: implicit copy of function pointer
+  function_view(R (*func)(Args...)) noexcept // NOLINT: implicit copy of function pointer
       : _impl(func) {}
 
   R operator()(Args... args) const {
@@ -255,13 +255,13 @@ public:
       HALCHECK_REQUIRE(!std::is_pointer<lib::decay_t<F>>()),
       HALCHECK_REQUIRE(lib::is_invocable_r<R, const lib::decay_t<F> &, Args...>()),
       HALCHECK_REQUIRE(!std::is_same<lib::decay_t<F>, function_view>())>
-  function_view(F &&func) // NOLINT: implicit reference to functor
+  function_view(F &&func) noexcept // NOLINT: implicit reference to functor
       : _impl(closure{
             std::addressof(func), [](const void *impl, Args... args) {
               return lib::invoke(*reinterpret_cast<const lib::decay_t<F> *>(impl), std::forward<Args>(args)...);
             }}) {}
 
-  function_view(R (*func)(Args...)) // NOLINT: implicit copy of function pointer
+  function_view(R (*func)(Args...)) noexcept // NOLINT: implicit copy of function pointer
       : _impl(func) {}
 
   R operator()(Args... args) const {
