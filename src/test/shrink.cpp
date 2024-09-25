@@ -1,6 +1,6 @@
 #include "halcheck/test/shrink.hpp"
 
-#include "json.hpp" // IWYU pragma: keep
+#include "json.hpp"
 
 #include <halcheck/eff/api.hpp>
 #include <halcheck/gen/discard.hpp>
@@ -19,8 +19,6 @@
 #include <halcheck/test/deserialize.hpp>
 #include <halcheck/test/serialize.hpp>
 #include <halcheck/test/strategy.hpp>
-
-#include <nlohmann/json.hpp>
 
 #include <cstdint>
 #include <string>
@@ -46,7 +44,7 @@ test::strategy test::shrink() {
     }
 
     auto result = gen::make_shrinks(input, func);
-    test::write("INPUT", json(input).dump());
+    test::write("INPUT", json(input));
     try {
       result.get();
       for (std::uintmax_t i = 1; i < (non_default ? repetitions : 1); i++) {
@@ -59,7 +57,7 @@ test::strategy test::shrink() {
       auto it = result.children().begin();
       while (it != result.children().end()) {
         auto next = gen::make_shrinks(*it, func);
-        test::write("INPUT", json(*it).dump());
+        test::write("INPUT", json(*it));
         try {
           next.get();
           for (std::uintmax_t i = 1; i < (non_default ? repetitions : 1); i++) {
@@ -77,7 +75,7 @@ test::strategy test::shrink() {
         ++it;
       }
 
-      test::write("INPUT", json(input).dump());
+      test::write("INPUT", json(input));
       result.get();
     }
   };
@@ -100,7 +98,7 @@ test::strategy test::forward_shrink() {
     }
 
     auto result = gen::make_forward_shrinks(input, func);
-    test::write("FORWARD_INPUT", json(input).dump());
+    test::write("FORWARD_INPUT", json(input));
     try {
       result.get();
       for (std::uintmax_t i = 1; i < (non_default ? repetitions : 1); i++) {
@@ -113,7 +111,7 @@ test::strategy test::forward_shrink() {
       auto it = result.children().begin();
       while (it != result.children().end()) {
         auto next = gen::make_forward_shrinks(*it, func);
-        test::write("FORWARD_INPUT", json(*it).dump());
+        test::write("FORWARD_INPUT", json(*it));
         try {
           next.get();
           for (std::uintmax_t i = 1; i < (non_default ? repetitions : 1); i++) {
@@ -131,7 +129,7 @@ test::strategy test::forward_shrink() {
         ++it;
       }
 
-      test::write("FORWARD_INPUT", json(input).dump());
+      test::write("FORWARD_INPUT", json(input));
       result.get();
     }
   };

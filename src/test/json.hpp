@@ -5,7 +5,8 @@
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/trie.hpp>
 
-#include <nlohmann/json.hpp>
+#define JSON_USE_IMPLICIT_CONVERSIONS 0
+#include <nlohmann/json.hpp> // IWYU pragma: export
 
 namespace halcheck { namespace lib {
 

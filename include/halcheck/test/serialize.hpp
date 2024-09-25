@@ -3,10 +3,12 @@
 
 #include <halcheck/eff/api.hpp>
 #include <halcheck/lib/string.hpp>
+#include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
 #include <halcheck/test/strategy.hpp>
 
 #include <string>
+#include <type_traits>
 
 namespace halcheck { namespace test {
 
@@ -16,9 +18,12 @@ struct write_effect {
   void fallback() const {}
 };
 
-static const auto write = [](std::string key, std::string value) {
-  eff::invoke<write_effect>(std::move(key), std::move(value));
-};
+template<typename T, HALCHECK_REQUIRE(!std::is_convertible<T, std::string>())>
+void write(std::string key, const T &value) {
+  eff::invoke<write_effect>(std::move(key), lib::to_string(value));
+}
+
+inline void write(std::string key, std::string value) { eff::invoke<write_effect>(std::move(key), std::move(value)); }
 
 test::strategy serialize(std::string name);
 

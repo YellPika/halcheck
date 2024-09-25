@@ -53,12 +53,12 @@ test::strategy test::random() {
     auto discard_ratio = test::read<std::uintmax_t>("DISCARD_RATIO").value_or(10);
     auto size = test::read<std::uintmax_t>("SIZE").value_or(0);
 
-    test::write("MAX_SUCCESS", "1");
+    test::write("MAX_SUCCESS", 1);
 
     std::uintmax_t successes = 0, discarded = 0;
     while (max_success == 0 || successes < max_success) {
-      test::write("SEED", lib::to_string(engine));
-      test::write("SIZE", lib::to_string(size));
+      test::write("SEED", engine);
+      test::write("SIZE", size);
 
       try {
         eff::handle(func, handler(engine, size));
