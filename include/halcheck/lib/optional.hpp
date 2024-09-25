@@ -322,7 +322,7 @@ public:
       : base(lib::in_place, ilist, std::forward<Args>(args)...) {}
 
   template<
-      typename U = T,
+      typename U = lib::remove_cvref_t<T>,
       HALCHECK_REQUIRE(std::is_constructible<T, U &&>()),
       HALCHECK_REQUIRE(!std::is_same<lib::remove_cvref_t<U>, lib::in_place_t>()),
       HALCHECK_REQUIRE(!std::is_same<lib::remove_cvref_t<U>, optional>()),
@@ -332,7 +332,7 @@ public:
       : optional(lib::in_place, std::forward<U>(value)) {}
 
   template<
-      typename U = T,
+      typename U = lib::remove_cvref_t<T>,
       HALCHECK_REQUIRE(std::is_constructible<T, U &&>()),
       HALCHECK_REQUIRE(!std::is_same<lib::remove_cvref_t<U>, lib::in_place_t>()),
       HALCHECK_REQUIRE(!std::is_same<lib::remove_cvref_t<U>, optional>()),
@@ -346,7 +346,7 @@ public:
   }
 
   template<
-      typename U = T,
+      typename U = lib::remove_cv_t<T>,
       HALCHECK_REQUIRE(!std::is_same<lib::remove_cvref_t<U>(), optional>()),
       HALCHECK_REQUIRE(std::is_constructible<T, U>()),
       HALCHECK_REQUIRE(std::is_assignable<T &, U>()),
@@ -450,12 +450,12 @@ public:
     return **this;
   }
 
-  template<typename U, HALCHECK_REQUIRE(std::is_convertible<U &&, T>() && std::is_copy_constructible<T>())>
+  template<typename U = lib::remove_cv_t<T>, HALCHECK_REQUIRE(std::is_convertible<U &&, T>() && std::is_copy_constructible<T>())>
   constexpr T value_or(U &&default_value) const & {
     return *this ? **this : static_cast<T>(std::forward<U>(default_value));
   }
 
-  template<typename U, HALCHECK_REQUIRE(std::is_convertible<U &&, T>() && std::is_move_constructible<T>())>
+  template<typename U = lib::remove_cv_t<T>, HALCHECK_REQUIRE(std::is_convertible<U &&, T>() && std::is_move_constructible<T>())>
   T value_or(U &&default_value) && {
     return *this ? std::move(**this) : static_cast<T>(std::forward<U>(default_value));
   }
