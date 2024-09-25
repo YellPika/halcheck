@@ -450,12 +450,16 @@ public:
     return **this;
   }
 
-  template<typename U = lib::remove_cv_t<T>, HALCHECK_REQUIRE(std::is_convertible<U &&, T>() && std::is_copy_constructible<T>())>
+  template<
+      typename U = lib::remove_cv_t<T>,
+      HALCHECK_REQUIRE(std::is_convertible<U &&, T>() && std::is_copy_constructible<T>())>
   constexpr T value_or(U &&default_value) const & {
     return *this ? **this : static_cast<T>(std::forward<U>(default_value));
   }
 
-  template<typename U = lib::remove_cv_t<T>, HALCHECK_REQUIRE(std::is_convertible<U &&, T>() && std::is_move_constructible<T>())>
+  template<
+      typename U = lib::remove_cv_t<T>,
+      HALCHECK_REQUIRE(std::is_convertible<U &&, T>() && std::is_move_constructible<T>())>
   T value_or(U &&default_value) && {
     return *this ? std::move(**this) : static_cast<T>(std::forward<U>(default_value));
   }
