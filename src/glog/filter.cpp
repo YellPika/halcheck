@@ -1,6 +1,7 @@
 #include "halcheck/glog/filter.hpp"
 
 #include <halcheck/gen/discard.hpp>
+#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/test/strategy.hpp>
 
@@ -35,7 +36,7 @@ struct sink : google::LogSink {
 };
 
 struct strategy {
-  void operator()(const std::function<void()> &func) const {
+  void operator()(lib::function_view<void()> func) const {
     std::string output;
     std::size_t iteration = 0;
     std::size_t succeeded = 0;

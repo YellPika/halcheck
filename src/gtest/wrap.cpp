@@ -23,7 +23,7 @@ struct error : std::exception {
 };
 
 struct strategy {
-  void operator()(const std::function<void()> &func) const {
+  void operator()(lib::function_view<void()> func) const {
     try {
       inner([&] {
         TestPartResultArray results;

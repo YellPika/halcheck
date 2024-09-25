@@ -30,7 +30,7 @@ using namespace halcheck;
 using json = nlohmann::json;
 
 test::strategy test::shrink() {
-  return [](const std::function<void()> &func) {
+  return [](lib::function_view<void()> func) {
     auto repetitions = test::read<std::uintmax_t>("REPETITIONS").value_or(1);
 
     bool non_default = false;
@@ -84,7 +84,7 @@ test::strategy test::shrink() {
 }
 
 test::strategy test::forward_shrink() {
-  return [](const std::function<void()> &func) {
+  return [](lib::function_view<void()> func) {
     auto repetitions = test::read<std::uintmax_t>("REPETITIONS").value_or(1);
 
     bool non_default = false;

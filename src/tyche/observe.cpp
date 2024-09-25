@@ -4,6 +4,7 @@
 
 #include <halcheck/eff/api.hpp>
 #include <halcheck/gen/discard.hpp>
+#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/test/strategy.hpp>
 
@@ -29,7 +30,7 @@ struct strategy {
         run_start(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch())
                       .count()) {}
 
-  void operator()(const std::function<void()> &func) const {
+  void operator()(lib::function_view<void()> func) const {
     json object;
     object["type"] = "test_case";
     object["status"] = "passed";

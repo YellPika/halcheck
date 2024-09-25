@@ -2,6 +2,7 @@
 
 #include <halcheck/eff/api.hpp>
 #include <halcheck/gen/discard.hpp>
+#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/test/deserialize.hpp>
 #include <halcheck/test/strategy.hpp>
@@ -40,7 +41,7 @@ struct handler : eff::handler<handler, test::write_effect> {
 };
 
 struct strategy {
-  void operator()(std::function<void()> func) const {
+  void operator()(lib::function_view<void()> func) const {
     static const std::string table = "0123456789ABCDEF";
 
     auto folder = test::read("FOLDER").value_or(".halcheck");
