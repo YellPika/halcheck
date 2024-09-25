@@ -38,10 +38,7 @@ HALCHECK_TEST(Test, Random_Discard) {
   // If we always discard, we should eventually hit the limit.
   auto max_success = gen::range("max_success"_s, 1, 200);
   auto discard_ratio = gen::range("discard_ratio"_s, 1, 20);
-  auto config = test::override({
-      {"MAX_SUCCESS",   lib::to_string(max_success)  },
-      {"DISCARD_RATIO", lib::to_string(discard_ratio)}
-  });
+  auto config = test::config(test::set("MAX_SUCCESS", max_success), test::set("DISCARD_RATIO", discard_ratio));
 
   auto _ = eff::reset();
   ASSERT_THROW((std::move(config) | test::random())([] { throw gen::discard(); }), test::discard_limit_exception);
@@ -53,10 +50,7 @@ HALCHECK_TEST(Test, Random_OK) {
   // If we never discard, we should eventually succeed.
   auto max_success = gen::range("max_success"_s, 1, 200);
   auto discard_ratio = gen::range("discard_ratio"_s, 0, 20);
-  auto config = test::override({
-      {"MAX_SUCCESS",   lib::to_string(max_success)  },
-      {"DISCARD_RATIO", lib::to_string(discard_ratio)}
-  });
+  auto config = test::config(test::set("MAX_SUCCESS", max_success), test::set("DISCARD_RATIO", discard_ratio));
   LOG(INFO) << "max_success: " << max_success;
   LOG(INFO) << "discard_ratio: " << discard_ratio;
 
@@ -72,10 +66,8 @@ HALCHECK_TEST(Test, Random_Infinite) {
   using namespace lib::literals;
 
   // If we set no discard limit, then we should be able to iterate an arbitrary number of times.
-  auto config = test::override({
-      {"MAX_SUCCESS", lib::to_string(gen::range("max_success"_s, 0, 200))},
-      {"DISCARD_RATIO", "0"}
-  });
+  auto config =
+      test::config(test::set("MAX_SUCCESS", gen::range("max_success"_s, 0, 200)), test::set("DISCARD_RATIO", 0));
   auto count = gen::range("count"_s, 0, 2000);
 
   auto _ = eff::reset();

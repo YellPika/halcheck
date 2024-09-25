@@ -7,7 +7,6 @@
 #include <halcheck/lib/utility.hpp>
 #include <halcheck/test/strategy.hpp>
 
-#include <initializer_list>
 #include <string>
 
 namespace halcheck { namespace test {
@@ -26,7 +25,6 @@ inline lib::optional<T> read(std::string key) {
 }
 
 test::strategy deserialize(std::string name);
-test::strategy override(const std::initializer_list<std::pair<std::string, std::string>> &);
 
 }} // namespace halcheck::test
 

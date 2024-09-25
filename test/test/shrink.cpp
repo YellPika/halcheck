@@ -53,7 +53,7 @@ HALCHECK_TEST(Shrink, Example) {
 
   try {
     eff::reset([&] {
-      (test::override({{"MAX_SUCCESS", "0"}}) | test::random() | test::shrink())([&] {
+      (test::config(test::set("MAX_SUCCESS", 0)) | test::random() | test::shrink())([&] {
         auto xs = gen::arbitrary<std::vector<T>>("xs"_s);
         if (xs.size() >= size && xs[index] >= threshold) {
           LOG(INFO) << "xs: " << testing::PrintToString(xs);
@@ -88,7 +88,7 @@ HALCHECK_TEST(ForwardShrink, Example) {
 
   try {
     eff::reset([&] {
-      (test::override({{"MAX_SUCCESS", "0"}}) | test::random() | test::forward_shrink())([&] {
+      (test::config(test::set("MAX_SUCCESS", 0)) | test::random() | test::forward_shrink())([&] {
         auto xs = gen::arbitrary<std::vector<T>>("xs"_s);
         if (xs.size() >= size && xs[index] >= threshold) {
           LOG(INFO) << "xs: " << testing::PrintToString(xs);

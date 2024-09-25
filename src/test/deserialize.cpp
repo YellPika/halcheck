@@ -12,7 +12,6 @@
 
 #include <algorithm>
 #include <fstream>
-#include <initializer_list>
 #include <ios>
 #include <iostream>
 #include <string>
@@ -92,28 +91,4 @@ test::strategy test::deserialize(std::string name) {
   };
 
   return strategy{std::move(name)};
-}
-
-test::strategy test::override(const std::initializer_list<std::pair<std::string, std::string>> &config) {
-  struct strategy {
-    struct handler : eff::handler<handler, test::read_effect> {
-      explicit handler(std::unordered_map<std::string, std::string> config) : config(std::move(config)) {}
-
-      lib::optional<std::string> operator()(test::read_effect args) override {
-        auto it = config.find(args.key);
-        if (it != config.end())
-          return it->second;
-        else
-          return test::read(std::move(args.key));
-      }
-
-      std::unordered_map<std::string, std::string> config;
-    };
-
-    void operator()(lib::function_view<void()> func) const { eff::handle(func, handler(config)); }
-
-    std::unordered_map<std::string, std::string> config;
-  };
-
-  return strategy{std::unordered_map<std::string, std::string>(config.begin(), config.end())};
 }

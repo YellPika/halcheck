@@ -2,11 +2,17 @@
 #define JSON_HPP
 
 #include <halcheck/lib/atom.hpp>
+#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/trie.hpp>
+#include <halcheck/lib/variant.hpp>
 
 #define JSON_USE_IMPLICIT_CONVERSIONS 0
 #include <nlohmann/json.hpp> // IWYU pragma: export
+
+#include <cstdint>
+#include <string>
+#include <unordered_map>
 
 namespace halcheck { namespace lib {
 
