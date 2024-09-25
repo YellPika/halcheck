@@ -2,6 +2,7 @@
 
 #include <halcheck/eff/api.hpp>
 #include <halcheck/gen/discard.hpp>
+#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/test/serialize.hpp>
 #include <halcheck/test/strategy.hpp>
@@ -54,7 +55,7 @@ test::strategy test::deserialize(std::string name) {
       entry config;
     };
 
-    void operator()(const std::function<void()> &func) const {
+    void operator()(lib::function_view<void()> func) const {
       auto folder = test::read("FOLDER").value_or(".halcheck");
       auto directory = fs::path(std::move(folder)) / name;
       fs::create_directories(directory);
@@ -111,7 +112,7 @@ test::strategy test::override(const std::initializer_list<std::pair<std::string,
       std::unordered_map<std::string, std::string> config;
     };
 
-    void operator()(const std::function<void()> &func) const { eff::handle(func, handler(config)); }
+    void operator()(lib::function_view<void()> func) const { eff::handle(func, handler(config)); }
 
     std::unordered_map<std::string, std::string> config;
   };

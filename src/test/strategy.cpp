@@ -1,13 +1,14 @@
 #include "halcheck/test/strategy.hpp"
 
-#include <functional>
+#include <halcheck/lib/functional.hpp>
+
 #include <utility>
 
 using namespace halcheck;
 
 namespace {
 struct or_strategy {
-  void operator()(std::function<void()> func) const {
+  void operator()(lib::function_view<void()> func) const {
     lhs([&] { rhs(func); });
   }
 
@@ -16,7 +17,7 @@ struct or_strategy {
 };
 
 struct and_strategy {
-  void operator()(const std::function<void()> &func) const {
+  void operator()(lib::function_view<void()> func) const {
     lhs(func);
     rhs(func);
   }
