@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <fstream>
-#include <functional>
 #include <ios>
 #include <iterator>
 #include <random>
@@ -57,7 +56,7 @@ struct strategy {
     std::error_code code;
     fs::rename(filename, filename + ".bak", code);
 
-    eff::handle(std::move(func), handler({}, filename));
+    eff::handle(func, handler({}, filename));
 
     if (code)
       fs::remove(filename);

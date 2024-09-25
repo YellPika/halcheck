@@ -1,6 +1,6 @@
 #include "halcheck/test/shrink.hpp"
 
-#include "json.hpp"
+#include "json.hpp" // IWYU pragma: keep
 
 #include <halcheck/eff/api.hpp>
 #include <halcheck/gen/discard.hpp>

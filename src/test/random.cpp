@@ -18,7 +18,6 @@
 
 #include <cstdint>
 #include <functional>
-#include <iostream>
 #include <random>
 #include <string>
 
@@ -48,7 +47,7 @@ struct handler : eff::handler<handler, gen::label_effect, gen::sample_effect, ge
 
 test::strategy test::random() {
   return [](lib::function_view<void()> func) {
-    auto engine = test::read<std::mt19937_64>("SEED").value_or(std::mt19937_64());
+    auto engine = test::read<std::mt19937_64>("SEED").value_or({}); // NOLINT: need predictable value
     auto max_success = test::read<std::uintmax_t>("MAX_SUCCESS").value_or(100);
     auto max_size = test::read<std::uintmax_t>("MAX_SIZE").value_or(100);
     auto discard_ratio = test::read<std::uintmax_t>("DISCARD_RATIO").value_or(10);
