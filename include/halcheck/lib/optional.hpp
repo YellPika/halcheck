@@ -5,7 +5,6 @@
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
 
-#include <array>
 #include <memory>
 #include <type_traits>
 #if __cplusplus >= 201606L
