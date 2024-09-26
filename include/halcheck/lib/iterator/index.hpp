@@ -28,8 +28,7 @@ public:
       HALCHECK_REQUIRE_(lib::is_random_access_iterator<lib::iterator_t<U>>())>
   friend class index_iterator;
 
-  using difference_type =
-      typename std::common_type<std::ptrdiff_t, typename std::make_signed<lib::range_size_t<T>>::type>::type;
+  using difference_type = lib::common_type_t<std::ptrdiff_t, lib::make_signed_t<lib::range_size_t<T>>>;
   using reference = decltype(std::declval<T &>()[std::declval<lib::range_size_t<T>>()]);
   using value_type = lib::remove_cv_t<lib::remove_reference_t<reference>>;
   using pointer = lib::remove_reference_t<reference> *;

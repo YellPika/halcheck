@@ -43,8 +43,8 @@ using is_input_iterator_helper = lib::to_void<
     lib::enable_if_t<std::is_signed<lib::iter_difference_t<I>>{}>,
     lib::enable_if_t<std::is_same<decltype(++std::declval<I &>()), I &>{}>,
     lib::enable_if_t<std::is_same<decltype(*std::declval<I>()), lib::iter_reference_t<I>>{}>,
-    typename std::common_type<decltype(*std::declval<I>()) &&, lib::iter_value_t<I> &>::type,
-    typename std::common_type<decltype(*std::declval<I &>()++) &&, lib::iter_value_t<I> &>::type>;
+    lib::common_type_t<decltype(*std::declval<I>()) &&, lib::iter_value_t<I> &>,
+    lib::common_type_t<decltype(*std::declval<I &>()++) &&, lib::iter_value_t<I> &>>;
 } // namespace detail
 
 template<typename I>

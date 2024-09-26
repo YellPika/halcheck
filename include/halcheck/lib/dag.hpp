@@ -65,7 +65,7 @@ public:
       typename I,
       typename... Args,
       HALCHECK_REQUIRE(lib::is_iterator<I>()),
-      HALCHECK_REQUIRE(std::is_convertible<typename std::iterator_traits<I>::reference, const_iterator>()),
+      HALCHECK_REQUIRE(std::is_convertible<lib::iter_reference_t<I>, const_iterator>()),
       HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
   iterator emplace(I begin, I end, Args &&...args) {
     auto index = _nodes.size();

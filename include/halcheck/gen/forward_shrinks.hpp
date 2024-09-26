@@ -78,8 +78,8 @@ public:
   forward_shrinks(std::vector<std::uintmax_t> input, F func, Args &&...args)
       : forward_shrinks(detail::forward_shrink_handler(input), input, std::move(func), std::forward<Args>(args)...) {}
 
-  typename std::add_lvalue_reference<const T>::type get() const { return _value.get(); }
-  typename std::add_lvalue_reference<T>::type get() { return _value.get(); }
+  lib::add_lvalue_reference_t<const T> get() const { return _value.get(); }
+  lib::add_lvalue_reference_t<T> get() { return _value.get(); }
 
   using children_view = lib::transform_view<lib::integral_view<std::uintmax_t>, detail::forward_shrink_append>;
 

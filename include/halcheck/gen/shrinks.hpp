@@ -102,8 +102,8 @@ public:
       : shrinks(
             std::make_shared<detail::shrink_calls>(), std::move(input), std::move(func), std::forward<Args>(args)...) {}
 
-  typename std::add_lvalue_reference<const T>::type get() const { return _value.get(); }
-  typename std::add_lvalue_reference<T>::type get() { return _value.get(); }
+  lib::add_lvalue_reference_t<const T> get() const { return _value.get(); }
+  lib::add_lvalue_reference_t<T> get() { return _value.get(); }
 
   std::size_t size() const {
     std::size_t output = 0;

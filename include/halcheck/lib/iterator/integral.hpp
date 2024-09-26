@@ -12,7 +12,7 @@ namespace halcheck { namespace lib {
 
 template<typename T, HALCHECK_REQUIRE(std::is_integral<T>())>
 struct integral_iterator {
-  using difference_type = typename std::make_signed<T>::type;
+  using difference_type = lib::make_signed_t<T>;
   using reference = const T &;
   using value_type = T;
   using pointer = const T *;

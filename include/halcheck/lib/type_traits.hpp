@@ -206,6 +206,12 @@ struct is_specialization_of : std::false_type {};
 template<typename... Args, template<typename...> class F>
 struct is_specialization_of<F<Args...>, F> : std::true_type {};
 
+template<typename T>
+using make_signed_t = typename std::make_signed<T>::type;
+
+template<typename T>
+using add_lvalue_reference_t = typename std::add_lvalue_reference<T>::type;
+
 }} // namespace halcheck::lib
 
 #endif
