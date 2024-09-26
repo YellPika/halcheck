@@ -65,7 +65,7 @@ public:
     std::array<entry, size> install() {
       static_assert(std::is_base_of<handler, T>(), "T must be derived from handler<T, ...>");
       auto output = *current;
-      lib::ignore{(output[index<Args>()] = {static_cast<base<Args> *>(this), current})...};
+      lib::ignore = {(output[index<Args>()] = {static_cast<base<Args> *>(this), current})...};
       output[index<clone_effect>()] = {static_cast<base<clone_effect> *>(this), current};
       return output;
     }
