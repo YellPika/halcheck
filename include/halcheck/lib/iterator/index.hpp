@@ -1,7 +1,7 @@
 #ifndef HALCHECK_LIB_ITERATOR_INDEX_HPP
 #define HALCHECK_LIB_ITERATOR_INDEX_HPP
 
-// IWYU pragma: private, include "../iterator.hpp"
+// IWYU pragma: private, include <halcheck/lib/iterator.hpp>
 
 #include <halcheck/lib/iterator/ranges.hpp>
 #include <halcheck/lib/iterator/type_traits.hpp>
@@ -116,9 +116,12 @@ private:
   lib::range_size_t<T> _index;
 };
 
-template<typename T>
-index_iterator<T> make_index_iterator(T &value, lib::range_size_t<T> index) {
-  return index_iterator<T>(value, index);
+template<
+    typename T,
+    HALCHECK_REQUIRE(lib::is_range<T>()),
+    HALCHECK_REQUIRE(lib::is_random_access_iterator<lib::iterator_t<T>>())>
+lib::index_iterator<T> make_index_iterator(T &value, lib::range_size_t<T> index) {
+  return lib::index_iterator<T>(value, index);
 }
 
 }} // namespace halcheck::lib
