@@ -5,6 +5,10 @@
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
 
+#include <cstddef>
+#include <exception>
+#include <functional>
+#include <initializer_list>
 #include <memory>
 #include <type_traits>
 #if __cplusplus >= 201606L
@@ -83,6 +87,13 @@ struct optional_ops : private optional_base<T> {
   using optional_base<T>::optional_base;
 
   using value_type = T;
+  using iterator = T *;
+  using const_iterator = const T *;
+
+  iterator begin() { return std::addressof(this->_value); }
+  const_iterator begin() const { return std::addressof(this->_value); }
+  iterator end() { return begin() + (this->_has_value ? 1 : 0); }
+  const_iterator end() const { return begin() + (this->_has_value ? 1 : 0); }
 
   explicit operator bool() const noexcept { return this->_has_value; }
 
@@ -112,6 +123,13 @@ struct optional_ops<T &> : private optional_base<T &> {
   using optional_base<T &>::optional_base;
 
   using value_type = T;
+  using iterator = T *;
+  using const_iterator = const T *;
+
+  iterator begin() { return this->_value; }
+  const_iterator begin() const { return this->_value; }
+  iterator end() { return begin() + (this->_value ? 1 : 0); }
+  const_iterator end() const { return begin() + (this->_value ? 1 : 0); }
 
   optional_ops() = default;
 
@@ -492,6 +510,8 @@ public:
 namespace detail {
 template<typename T>
 struct optional_void_base {
+  using value_type = T;
+
   constexpr optional_void_base() noexcept : _has_value(false) {}
   explicit constexpr optional_void_base(lib::nullopt_t) noexcept : _has_value(false) {}
   explicit constexpr optional_void_base(lib::in_place_t) noexcept : _has_value(true) {}
@@ -520,25 +540,21 @@ private:
 
 template<>
 struct optional<void> : public detail::optional_void_base<void> {
-  using value_type = void;
   using detail::optional_void_base<void>::optional_void_base;
 };
 
 template<>
 struct optional<const void> : public detail::optional_void_base<const void> {
-  using value_type = const void;
   using detail::optional_void_base<const void>::optional_void_base;
 };
 
 template<>
 struct optional<volatile void> : public detail::optional_void_base<volatile void> {
-  using value_type = volatile void;
   using detail::optional_void_base<volatile void>::optional_void_base;
 };
 
 template<>
 struct optional<const volatile void> : public detail::optional_void_base<const volatile void> {
-  using value_type = const volatile void;
   using detail::optional_void_base<const volatile void>::optional_void_base;
 };
 
@@ -776,28 +792,9 @@ struct hash<halcheck::lib::optional<T>> { // NOLINT
   std::size_t operator()(const halcheck::lib::optional<T> &value) const noexcept {
     return value ? std::hash<halcheck::lib::remove_const_t<T>>()(*value) : 0;
   }
-};
-template<>
-struct hash<halcheck::lib::optional<void>> { // NOLINT
-  std::size_t operator()(const halcheck::lib::optional<void> &value) const noexcept {
-    return std::hash<bool>()(bool(value));
-  }
-};
-template<>
-struct hash<halcheck::lib::optional<const void>> { // NOLINT
-  std::size_t operator()(const halcheck::lib::optional<const void> &value) const noexcept {
-    return std::hash<bool>()(bool(value));
-  }
-};
-template<>
-struct hash<halcheck::lib::optional<volatile void>> { // NOLINT
-  std::size_t operator()(const halcheck::lib::optional<volatile void> &value) const noexcept {
-    return std::hash<bool>()(bool(value));
-  }
-};
-template<>
-struct hash<halcheck::lib::optional<const volatile void>> { // NOLINT
-  std::size_t operator()(const halcheck::lib::optional<const volatile void> &value) const noexcept {
+
+  template<typename U = T, HALCHECK_REQUIRE(std::is_void<U>())>
+  std::size_t operator()(const halcheck::lib::optional<T> &value) const noexcept {
     return std::hash<bool>()(bool(value));
   }
 };
