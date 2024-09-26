@@ -4,6 +4,7 @@ project(halcheck VERSION 1.0 LANGUAGES CXX)
 #[[ Configuration ]]
 
 include(cmake/CPM.cmake)
+include(CMakeDependentOption)
 
 if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
   set(HALCHECK_DEVELOPMENT ON  CACHE BOOL "enable development mode")
@@ -13,8 +14,11 @@ endif()
 
 set(HALCHECK_SANITIZE OFF CACHE STRING "enable sanitizers")
 set(HALCHECK_COVERAGE OFF CACHE BOOL   "enable code coverage")
-set(HALCHECK_GTEST    ON  CACHE BOOL   "enable gtest support")
-set(HALCHECK_GLOG     ON  CACHE BOOL   "enable glog support")
+set(HALCHECK_TYCHE    ON  CACHE BOOL   "enable tyche support")
+
+cmake_dependent_option(HALCHECK_GTEST     "enable gtest support"      ON "HALCHECK_DEVELOPMENT" ON)
+cmake_dependent_option(HALCHECK_GLOG      "enable glog support"       ON "HALCHECK_DEVELOPMENT" ON)
+cmake_dependent_option(HALCHECK_LIBFUZZER "enable libfuzzer support"  ON "HALCHECK_DEVELOPMENT" ON)
 
 if(HALCHECK_DEVELOPMENT)
   set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
@@ -25,7 +29,6 @@ if(HALCHECK_DEVELOPMENT)
       GITHUB_REPOSITORY TheLartians/Ccache.cmake
       VERSION 1.2.5)
   endif()
-
 endif()
 
 if(HALCHECK_SANITIZE)
@@ -60,10 +63,22 @@ add_subdirectory(src/lib)
 add_subdirectory(src/eff)
 add_subdirectory(src/gen)
 add_subdirectory(src/test)
-add_subdirectory(src/glog)
-add_subdirectory(src/gtest)
-add_subdirectory(src/clang)
-add_subdirectory(src/tyche)
+
+if(HALCHECK_GLOG)
+  add_subdirectory(src/glog)
+endif()
+
+if(HALCHECK_GTEST)
+  add_subdirectory(src/gtest)
+endif()
+
+if(HALCHECK_TYCHE)
+  add_subdirectory(src/tyche)
+endif()
+
+if(HALCHECK_LIBFUZZER)
+  add_subdirectory(src/clang)
+endif()
 
 #[[ Tests ]]
 
