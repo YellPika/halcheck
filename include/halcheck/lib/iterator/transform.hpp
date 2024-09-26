@@ -9,6 +9,7 @@
 #include <halcheck/lib/type_traits.hpp>
 
 #include <iterator>
+#include <type_traits>
 
 namespace halcheck { namespace lib {
 
@@ -47,6 +48,15 @@ public:
       HALCHECK_REQUIRE(std::is_convertible<J, I>()),
       HALCHECK_REQUIRE(std::is_convertible<G, F>())>
   transform_iterator(transform_iterator<J, G> other) // NOLINT: implicit conversion
+      : _impl(std::move(other._impl)), _func(std::move(other._func)) {}
+
+  template<
+      typename J,
+      typename G,
+      HALCHECK_REQUIRE(std::is_constructible<I, J>()),
+      HALCHECK_REQUIRE(std::is_constructible<F, G>()),
+      HALCHECK_REQUIRE(!std::is_convertible<J, I>() || !std::is_convertible<G, F>())>
+  explicit transform_iterator(transform_iterator<J, G> other)
       : _impl(std::move(other._impl)), _func(std::move(other._func)) {}
 
   template<typename J = I, HALCHECK_REQUIRE(lib::is_input_iterator<J>())>
