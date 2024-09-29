@@ -212,6 +212,9 @@ using make_signed_t = typename std::make_signed<T>::type;
 template<typename T>
 using add_lvalue_reference_t = typename std::add_lvalue_reference<T>::type;
 
+template<typename T>
+using add_pointer_t = typename std::add_pointer<T>::type;
+
 }} // namespace halcheck::lib
 
 #endif

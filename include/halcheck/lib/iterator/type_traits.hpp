@@ -3,6 +3,7 @@
 
 // IWYU pragma: private, include <halcheck/lib/iterator.hpp>
 
+#include <halcheck/lib/memory.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <iterator>
@@ -94,6 +95,21 @@ using is_random_access_iterator_helper = lib::to_void<
 
 template<typename I>
 struct is_random_access_iterator : lib::is_detected<detail::is_random_access_iterator_helper, I> {};
+
+namespace detail {
+template<typename I>
+using is_contiguous_iterator_helper = lib::to_void<
+    lib::enable_if_t<lib::is_random_access_iterator<I>{}>,
+    lib::enable_if_t<std::is_lvalue_reference<lib::iter_reference_t<I>>{}>,
+    lib::enable_if_t<
+        std::is_same<lib::iter_value_t<I>, lib::remove_cvref_t<lib::iter_reference_t<I>>>{},
+        lib::enable_if_t<std::is_same<
+            decltype(lib::to_address(std::declval<const I &>())),
+            lib::add_pointer_t<lib::iter_reference_t<I>>>{}>>>;
+} // namespace detail
+
+template<typename I>
+struct is_contiguous_iterator : lib::is_detected<detail::is_contiguous_iterator_helper, I> {};
 
 }} // namespace halcheck::lib
 

@@ -1,7 +1,9 @@
 #include "halcheck/lib/iterator.hpp"
+#include <halcheck/lib/iterator.hpp>
 
 #include <forward_list>
 #include <set>
+#include <type_traits>
 #include <vector>
 
 using namespace halcheck;
@@ -13,6 +15,7 @@ static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(lib::is_bidirectional_iterator<iterator>(), "");
 static_assert(lib::is_random_access_iterator<iterator>(), "");
+static_assert(lib::is_contiguous_iterator<iterator>(), "");
 } // namespace test1
 
 namespace test2 {
@@ -22,6 +25,7 @@ static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(lib::is_bidirectional_iterator<iterator>(), "");
 static_assert(lib::is_random_access_iterator<iterator>(), "");
+static_assert(lib::is_contiguous_iterator<iterator>(), "");
 } // namespace test2
 
 namespace test3 {
@@ -31,6 +35,7 @@ static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(lib::is_bidirectional_iterator<iterator>(), "");
 static_assert(!lib::is_random_access_iterator<iterator>(), "");
+static_assert(!lib::is_contiguous_iterator<iterator>(), "");
 } // namespace test3
 
 namespace test4 {
@@ -40,6 +45,7 @@ static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(lib::is_bidirectional_iterator<iterator>(), "");
 static_assert(!lib::is_random_access_iterator<iterator>(), "");
+static_assert(!lib::is_contiguous_iterator<iterator>(), "");
 } // namespace test4
 
 namespace test5 {
@@ -49,6 +55,7 @@ static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(!lib::is_bidirectional_iterator<iterator>(), "");
 static_assert(!lib::is_random_access_iterator<iterator>(), "");
+static_assert(!lib::is_contiguous_iterator<iterator>(), "");
 } // namespace test5
 
 namespace test6 {
@@ -58,6 +65,7 @@ static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(!lib::is_bidirectional_iterator<iterator>(), "");
 static_assert(!lib::is_random_access_iterator<iterator>(), "");
+static_assert(!lib::is_contiguous_iterator<iterator>(), "");
 } // namespace test6
 
 namespace test7 {
@@ -67,6 +75,7 @@ static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(lib::is_bidirectional_iterator<iterator>(), "");
 static_assert(lib::is_random_access_iterator<iterator>(), "");
+static_assert(lib::is_contiguous_iterator<iterator>(), "");
 } // namespace test7
 
 namespace test8 {
@@ -76,6 +85,7 @@ static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(lib::is_bidirectional_iterator<iterator>(), "");
 static_assert(lib::is_random_access_iterator<iterator>(), "");
+static_assert(lib::is_contiguous_iterator<iterator>(), "");
 } // namespace test8
 
 namespace test9 {
@@ -86,4 +96,5 @@ static_assert(std::is_default_constructible<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(!lib::is_bidirectional_iterator<iterator>(), "");
 static_assert(!lib::is_random_access_iterator<iterator>(), "");
+static_assert(!lib::is_contiguous_iterator<iterator>(), "");
 } // namespace test9
