@@ -1,5 +1,4 @@
 #include "halcheck/lib/iterator.hpp"
-#include <halcheck/lib/iterator.hpp>
 
 #include <forward_list>
 #include <set>
