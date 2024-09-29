@@ -12,14 +12,36 @@ namespace halcheck { namespace lib {
 
 template<typename T, HALCHECK_REQUIRE(std::is_integral<T>())>
 struct integral_iterator {
+  template<typename U, HALCHECK_REQUIRE_(std::is_integral<U>())>
+  friend struct integral_iterator;
+
   using difference_type = lib::make_signed_t<T>;
   using reference = const T &;
   using value_type = T;
   using pointer = const T *;
   using iterator_category = std::random_access_iterator_tag;
 
-  integral_iterator(T value = 0) // NOLINT: implicit conversion
+  template<typename U = T, HALCHECK_REQUIRE(std::is_convertible<U, T>())>
+  integral_iterator(U value = T(0)) // NOLINT: implicit conversion
       : _value(value) {}
+
+  template<
+      typename U = T,
+      HALCHECK_REQUIRE(!std::is_convertible<U, T>()),
+      HALCHECK_REQUIRE(std::is_constructible<T, U>())>
+  explicit integral_iterator(U value) // NOLINT: implicit conversion
+      : _value(value) {}
+
+  template<typename U, HALCHECK_REQUIRE(std::is_convertible<U, T>())>
+  integral_iterator(lib::integral_iterator<U> other) // NOLINT: implicit conversion
+      : _value(other._value) {}
+
+  template<
+      typename U = T,
+      HALCHECK_REQUIRE(!std::is_convertible<U, T>()),
+      HALCHECK_REQUIRE(std::is_constructible<T, U>())>
+  explicit integral_iterator(lib::integral_iterator<U> other) // NOLINT: implicit conversion
+      : _value(other._value) {}
 
   reference operator*() const { return _value; }
 
@@ -96,6 +118,11 @@ using integral_view = lib::view<lib::integral_iterator<T>>;
 template<typename T, HALCHECK_REQUIRE(std::is_integral<T>())>
 lib::integral_view<T> make_integral_view(T begin, T end) {
   return lib::integral_view<T>(begin, end);
+}
+
+template<typename T, HALCHECK_REQUIRE(std::is_integral<T>())>
+lib::integral_view<T> make_integral_view(T end) {
+  return lib::integral_view<T>(T(0), end);
 }
 
 }} // namespace halcheck::lib
