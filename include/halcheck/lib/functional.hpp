@@ -10,12 +10,6 @@
 
 namespace halcheck { namespace lib {
 
-#if __cplusplus >= 201703L
-using std::invoke;
-using std::invoke_result_t;
-using std::is_invocable;
-using std::is_invocable_r;
-#else
 template<typename F, typename... Args, HALCHECK_REQUIRE(std::is_member_pointer<lib::decay_t<F>>())>
 auto invoke(F &&f, Args &&...args) noexcept(
     noexcept(std::mem_fn(f)(std::forward<Args>(args)...))) -> decltype(std::mem_fn(f)(std::forward<Args>(args)...)) {
@@ -31,22 +25,21 @@ auto invoke(F &&f, Args &&...args) noexcept(noexcept(
 template<typename F, typename... Args>
 using invoke_result_t = decltype(lib::invoke(std::declval<F>(), std::declval<Args>()...));
 
-namespace detail {
+namespace concepts {
 
 template<typename R, typename F, typename... Args>
-using is_invocable_r_helper = lib::enable_if_t<std::is_convertible<lib::invoke_result_t<F, Args...>, R>{}>;
+using invocable_r = lib::enable_if_t<std::is_convertible<lib::invoke_result_t<F, Args...>, R>{}>;
 
 template<typename F, typename... Args>
-using is_invocable_helper = lib::invoke_result_t<F, Args...>;
+using invocable = lib::invoke_result_t<F, Args...>;
 
-} // namespace detail
+} // namespace concepts
 
 template<typename R, typename F, typename... Args>
-struct is_invocable_r : lib::is_detected<detail::is_invocable_r_helper, R, F, Args...> {};
+struct is_invocable_r : lib::is_detected<concepts::invocable_r, R, F, Args...> {};
 
 template<typename F, typename... Args>
-struct is_invocable : lib::is_detected<detail::is_invocable_helper, F, Args...> {};
-#endif
+struct is_invocable : lib::is_detected<concepts::invocable, F, Args...> {};
 
 template<typename...>
 class overload_t {};
