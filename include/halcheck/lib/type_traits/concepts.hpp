@@ -29,6 +29,12 @@ struct is_detected_helper<lib::to_void<Op<Args...>>, Op, Args...> : std::true_ty
 template<template<typename...> class Op, typename... Args>
 struct is_detected : detail::is_detected_helper<void, Op, Args...> {};
 
+template<typename T>
+using require = int;
+
+template<template<typename...> class Op, typename... Args>
+using negate = lib::enable_if_t<!lib::is_detected<Op, Args...>()>;
+
 template<typename T, typename U, template<typename> class QT, template<typename> class QU>
 struct basic_common_reference {};
 
@@ -199,51 +205,40 @@ struct common_reference_helper<
 using detail::common_reference;
 using detail::common_reference_t;
 
-namespace concepts {
 template<typename From, typename To>
 using convertible_to =
     lib::to_void<lib::enable_if_t<std::is_convertible<From, To>{}>, decltype(static_cast<To>(std::declval<From>()))>;
-} // namespace concepts
 
 template<typename From, typename To>
-struct is_convertible_to : lib::is_detected<lib::concepts::convertible_to, From, To> {};
+struct is_convertible_to : lib::is_detected<lib::convertible_to, From, To> {};
 
-namespace concepts {
 template<typename T, typename U>
 using same_as = lib::enable_if_t<std::is_same<T, U>{}>;
-} // namespace concepts
 
 template<typename From, typename To>
-struct is_same_as : lib::is_detected<lib::concepts::same_as, From, To> {};
+struct is_same_as : lib::is_detected<lib::same_as, From, To> {};
 
-namespace concepts {
 template<typename T, typename U>
 using common_reference_with = lib::to_void<
-    concepts::same_as<lib::common_reference_t<T, U>, lib::common_reference_t<U, T>>,
-    concepts::convertible_to<T, lib::common_reference_t<T, U>>,
-    concepts::convertible_to<U, lib::common_reference_t<T, U>>>;
-} // namespace concepts
+    lib::same_as<lib::common_reference_t<T, U>, lib::common_reference_t<U, T>>,
+    lib::convertible_to<T, lib::common_reference_t<T, U>>,
+    lib::convertible_to<U, lib::common_reference_t<T, U>>>;
 
 template<typename T, typename U>
-struct is_common_reference_with : lib::is_detected<concepts::common_reference_with, T, U> {};
+struct is_common_reference_with : lib::is_detected<lib::common_reference_with, T, U> {};
 
-namespace concepts {
 template<typename T>
 using tuple_like = decltype(std::tuple_size<T>::value);
-} // namespace concepts
 
 template<typename T>
-struct is_tuple_like : lib::is_detected<concepts::tuple_like, T> {};
+struct is_tuple_like : lib::is_detected<lib::tuple_like, T> {};
 
-namespace concepts {
 template<class T, typename... Args>
 using brace_constructible = decltype(T{std::declval<Args>()...});
-} // namespace concepts
 
 template<class T, typename... Args>
-struct is_brace_constructible : lib::is_detected<concepts::brace_constructible, T, Args...> {};
+struct is_brace_constructible : lib::is_detected<lib::brace_constructible, T, Args...> {};
 
-namespace concepts {
 using std::swap;
 
 template<typename T>
@@ -251,87 +246,71 @@ using swappable = decltype(swap(std::declval<T &>(), std::declval<T &>()));
 
 template<typename T>
 using nothrow_swappable = lib::enable_if_t<noexcept(swap(std::declval<T &>(), std::declval<T &>()))>;
-} // namespace concepts
 
 template<typename T>
-struct is_swappable : lib::is_detected<concepts::swappable, T> {};
+struct is_swappable : lib::is_detected<lib::swappable, T> {};
 
 template<typename T>
-struct is_nothrow_swappable : lib::is_detected<concepts::nothrow_swappable, T> {};
+struct is_nothrow_swappable : lib::is_detected<lib::nothrow_swappable, T> {};
 
-namespace concepts {
 template<typename T>
 using destructible = lib::enable_if_t<std::is_nothrow_destructible<T>{}>;
-} // namespace concepts
 
 template<typename T>
-struct is_destructible : lib::is_detected<concepts::destructible, T> {};
-
-namespace concepts {
-template<typename T, typename... Args>
-using constructible_from =
-    lib::to_void<concepts::destructible<T>, lib::enable_if_t<std::is_constructible<T, Args...>{}>>;
-} // namespace concepts
+struct is_destructible : lib::is_detected<lib::destructible, T> {};
 
 template<typename T, typename... Args>
-struct is_constructible_from : lib::is_detected<concepts::constructible_from, T, Args...> {};
+using constructible_from = lib::to_void<lib::destructible<T>, lib::enable_if_t<std::is_constructible<T, Args...>{}>>;
 
-namespace concepts {
-template<typename T>
-using move_constructible = lib::to_void<concepts::constructible_from<T, T>, concepts::convertible_to<T, T>>;
-} // namespace concepts
+template<typename T, typename... Args>
+struct is_constructible_from : lib::is_detected<lib::constructible_from, T, Args...> {};
 
 template<typename T>
-struct is_move_constructible : lib::is_detected<concepts::move_constructible, T> {};
+using move_constructible = lib::to_void<lib::constructible_from<T, T>, lib::convertible_to<T, T>>;
 
-namespace concepts {
+template<typename T>
+struct is_move_constructible : lib::is_detected<lib::move_constructible, T> {};
+
 template<typename T, typename U>
 using assignable_from = lib::to_void<
     lib::enable_if_t<std::is_lvalue_reference<T>{}>,
-    concepts::common_reference_with<const lib::remove_reference_t<T> &, const lib::remove_reference_t<U> &>,
-    concepts::same_as<T, decltype(std::declval<T &>() = std::forward<U>(std::declval<U &>()))>>;
-} // namespace concepts
+    lib::common_reference_with<const lib::remove_reference_t<T> &, const lib::remove_reference_t<U> &>,
+    lib::same_as<T, decltype(std::declval<T &>() = std::forward<U>(std::declval<U &>()))>>;
 
 template<typename T, typename U>
-struct is_assignable_from : lib::is_detected<concepts::assignable_from, T, U> {};
+struct is_assignable_from : lib::is_detected<lib::assignable_from, T, U> {};
 
-namespace concepts {
 template<typename T>
 using movable = lib::to_void<
     lib::enable_if_t<std::is_object<T>{}>,
-    concepts::move_constructible<T>,
-    concepts::assignable_from<T &, T>,
-    concepts::swappable<T>>;
-} // namespace concepts
+    lib::move_constructible<T>,
+    lib::assignable_from<T &, T>,
+    lib::swappable<T>>;
 
 template<typename T>
 using is_movable = lib::
     conjunction<std::is_object<T>, std::is_move_constructible<T>, std::is_assignable<T &, T>, lib::is_swappable<T>>;
 
-namespace concepts {
 template<typename T>
 using copy_constructible = lib::to_void<
-    concepts::move_constructible<T>,
-    concepts::constructible_from<T, T &>,
-    concepts::convertible_to<T &, T>,
-    concepts::constructible_from<T, const T &>,
-    concepts::convertible_to<const T &, T>,
-    concepts::constructible_from<T, const T>,
-    concepts::convertible_to<const T, T>>;
-} // namespace concepts
+    lib::move_constructible<T>,
+    lib::constructible_from<T, T &>,
+    lib::convertible_to<T &, T>,
+    lib::constructible_from<T, const T &>,
+    lib::convertible_to<const T &, T>,
+    lib::constructible_from<T, const T>,
+    lib::convertible_to<const T, T>>;
 
 template<typename T>
-struct is_copy_constructible : lib::is_detected<concepts::copy_constructible, T> {};
+struct is_copy_constructible : lib::is_detected<lib::copy_constructible, T> {};
 
-namespace concepts {
 template<typename T>
 using copyable = lib::to_void<
-    concepts::copy_constructible<T>,
-    concepts::movable<T>,
-    concepts::assignable_from<T &, T &>,
-    concepts::assignable_from<T &, const T &>,
-    concepts::assignable_from<T &, const T>>;
-} // namespace concepts
+    lib::copy_constructible<T>,
+    lib::movable<T>,
+    lib::assignable_from<T &, T &>,
+    lib::assignable_from<T &, const T &>,
+    lib::assignable_from<T &, const T>>;
 
 template<typename T>
 using is_copyable = lib::conjunction<
@@ -341,123 +320,101 @@ using is_copyable = lib::conjunction<
     std::is_assignable<T &, const T &>,
     std::is_assignable<T &, const T>>;
 
-namespace concepts {
-
 template<typename B>
-using boolean_testable = lib::to_void<
-    concepts::convertible_to<B, bool>,
-    concepts::convertible_to<decltype(!std::forward<B>(std::declval<B &>())), bool>>;
-} // namespace concepts
+using boolean_testable = lib::
+    to_void<lib::convertible_to<B, bool>, lib::convertible_to<decltype(!std::forward<B>(std::declval<B &>())), bool>>;
 
 template<typename T>
-struct is_boolean_testable : lib::is_detected<concepts::boolean_testable, T> {};
+struct is_boolean_testable : lib::is_detected<lib::boolean_testable, T> {};
 
-namespace concepts {
 template<typename T, typename U>
 using weakly_equality_comparable_with = lib::to_void<
-    concepts::boolean_testable<
+    lib::boolean_testable<
         decltype(std::declval<const lib::remove_reference_t<T> &>() == std::declval<const lib::remove_reference_t<U> &>())>,
-    concepts::boolean_testable<
+    lib::boolean_testable<
         decltype(std::declval<const lib::remove_reference_t<U> &>() == std::declval<const lib::remove_reference_t<T> &>())>,
-    concepts::boolean_testable<
+    lib::boolean_testable<
         decltype(std::declval<const lib::remove_reference_t<T> &>() != std::declval<const lib::remove_reference_t<U> &>())>,
-    concepts::boolean_testable<
+    lib::boolean_testable<
         decltype(std::declval<const lib::remove_reference_t<U> &>() != std::declval<const lib::remove_reference_t<T> &>())>>;
-} // namespace concepts
 
 template<typename T, typename U>
-struct is_weakly_equality_comparable_with : lib::is_detected<concepts::weakly_equality_comparable_with, T, U> {};
-
-namespace concepts {
-template<typename T>
-using equality_comparable = concepts::weakly_equality_comparable_with<T, T>;
-} // namespace concepts
+struct is_weakly_equality_comparable_with : lib::is_detected<lib::weakly_equality_comparable_with, T, U> {};
 
 template<typename T>
-struct is_equality_comparable : lib::is_detected<concepts::equality_comparable, T> {};
+using equality_comparable = lib::weakly_equality_comparable_with<T, T>;
 
-namespace concepts {
+template<typename T>
+struct is_equality_comparable : lib::is_detected<lib::equality_comparable, T> {};
+
 template<typename T, typename U>
 using equality_comparable_with = lib::to_void<
-    concepts::equality_comparable<T>,
-    concepts::equality_comparable<U>,
-    concepts::equality_comparable<
+    lib::equality_comparable<T>,
+    lib::equality_comparable<U>,
+    lib::equality_comparable<
         lib::common_reference_t<const lib::remove_reference_t<T> &, const lib::remove_reference_t<U> &>>,
-    concepts::weakly_equality_comparable_with<T, U>>;
-} // namespace concepts
+    lib::weakly_equality_comparable_with<T, U>>;
 
 template<typename T, typename U>
-struct is_equality_comparable_with : lib::is_detected<concepts::equality_comparable_with, T, U> {};
+struct is_equality_comparable_with : lib::is_detected<lib::equality_comparable_with, T, U> {};
 
-namespace concepts {
 template<typename T, typename U>
 using partially_ordered_with = lib::to_void<
-    concepts::boolean_testable<
+    lib::boolean_testable<
         decltype(std::declval<const lib::remove_reference_t<T> &>() < std::declval<const lib::remove_reference_t<U> &>())>,
-    concepts::boolean_testable<
+    lib::boolean_testable<
         decltype(std::declval<const lib::remove_reference_t<T> &>() > std::declval<const lib::remove_reference_t<U> &>())>,
-    concepts::boolean_testable<
+    lib::boolean_testable<
         decltype(std::declval<const lib::remove_reference_t<T> &>() <= std::declval<const lib::remove_reference_t<U> &>())>,
-    concepts::boolean_testable<
+    lib::boolean_testable<
         decltype(std::declval<const lib::remove_reference_t<T> &>() >= std::declval<const lib::remove_reference_t<U> &>())>,
-    concepts::boolean_testable<
+    lib::boolean_testable<
         decltype(std::declval<const lib::remove_reference_t<U> &>() < std::declval<const lib::remove_reference_t<T> &>())>,
-    concepts::boolean_testable<
+    lib::boolean_testable<
         decltype(std::declval<const lib::remove_reference_t<U> &>() > std::declval<const lib::remove_reference_t<T> &>())>,
-    concepts::boolean_testable<
+    lib::boolean_testable<
         decltype(std::declval<const lib::remove_reference_t<U> &>() <= std::declval<const lib::remove_reference_t<T> &>())>,
-    concepts::boolean_testable<
+    lib::boolean_testable<
         decltype(std::declval<const lib::remove_reference_t<U> &>() >= std::declval<const lib::remove_reference_t<T> &>())>>;
-} // namespace concepts
 
 template<typename T, typename U>
-struct is_partially_ordered_with : lib::is_detected<concepts::partially_ordered_with, T, U> {};
-
-namespace concepts {
-template<typename T>
-using totally_ordered = lib::to_void<concepts::equality_comparable<T>, concepts::partially_ordered_with<T, T>>;
-} // namespace concepts
+struct is_partially_ordered_with : lib::is_detected<lib::partially_ordered_with, T, U> {};
 
 template<typename T>
-struct is_totally_ordered : lib::is_detected<concepts::totally_ordered, T> {};
+using totally_ordered = lib::to_void<lib::equality_comparable<T>, lib::partially_ordered_with<T, T>>;
 
-namespace concepts {
+template<typename T>
+struct is_totally_ordered : lib::is_detected<lib::totally_ordered, T> {};
+
 template<typename T, typename U>
 using totally_ordered_with = lib::to_void<
-    concepts::totally_ordered<T>,
-    concepts::totally_ordered<U>,
-    concepts::equality_comparable_with<T, U>,
-    concepts::totally_ordered<
+    lib::totally_ordered<T>,
+    lib::totally_ordered<U>,
+    lib::equality_comparable_with<T, U>,
+    lib::totally_ordered<
         lib::common_reference_t<const lib::remove_reference_t<T> &, const lib::remove_reference_t<U> &>>,
-    concepts::partially_ordered_with<T, U>>;
-} // namespace concepts
+    lib::partially_ordered_with<T, U>>;
 
 template<typename T, typename U>
-struct is_totally_ordered_with : lib::is_detected<concepts::totally_ordered_with, T, U> {};
-
-namespace concepts {
-template<typename T>
-using hashable = concepts::same_as<decltype(std::declval<std::hash<T>>()(std::declval<T &>())), std::size_t>;
-} // namespace concepts
+struct is_totally_ordered_with : lib::is_detected<lib::totally_ordered_with, T, U> {};
 
 template<typename T>
-struct is_hashable : lib::is_detected<concepts::hashable, T> {};
+using hashable = lib::same_as<decltype(std::declval<std::hash<T>>()(std::declval<T &>())), std::size_t>;
 
-namespace concepts {
+template<typename T>
+struct is_hashable : lib::is_detected<lib::hashable, T> {};
+
 template<typename T, typename Stream>
-using printable = concepts::same_as<decltype(std::declval<Stream &>() << std::declval<const T &>()), Stream &>;
-} // namespace concepts
+using printable = lib::same_as<decltype(std::declval<Stream &>() << std::declval<const T &>()), Stream &>;
 
 template<typename T, typename CharT = char, typename Traits = std::char_traits<CharT>>
-struct is_printable : lib::is_detected<concepts::printable, T, std::basic_ostream<CharT, Traits>> {};
+struct is_printable : lib::is_detected<lib::printable, T, std::basic_ostream<CharT, Traits>> {};
 
-namespace concepts {
 template<typename T, typename Stream>
-using parsable = concepts::same_as<decltype(std::declval<Stream &>() >> std::declval<T &>()), Stream &>;
-} // namespace concepts
+using parsable = lib::same_as<decltype(std::declval<Stream &>() >> std::declval<T &>()), Stream &>;
 
 template<typename T, typename CharT = char, typename Traits = std::char_traits<CharT>>
-struct is_parsable : lib::is_detected<concepts::parsable, T, std::basic_istream<CharT, Traits>> {};
+struct is_parsable : lib::is_detected<lib::parsable, T, std::basic_istream<CharT, Traits>> {};
 
 template<typename, template<typename...> class>
 struct is_specialization_of : std::false_type {};
@@ -465,35 +422,27 @@ struct is_specialization_of : std::false_type {};
 template<typename... Args, template<typename...> class F>
 struct is_specialization_of<F<Args...>, F> : std::true_type {};
 
-namespace concepts {
 template<typename T, template<typename...> class F>
 using specialization_of = lib::enable_if_t<lib::is_specialization_of<T, F>{}>;
-} // namespace concepts
 
-namespace concepts {
 template<typename T>
 using default_initializable =
     lib::to_void<lib::enable_if_t<lib::is_constructible_from<T>{}>, decltype(T{}), decltype(::new T)>;
-} // namespace concepts
 
 template<typename T>
-struct is_default_initializable : lib::is_detected<concepts::default_initializable, T> {};
-
-namespace concepts {
-template<typename T>
-using semiregular = lib::to_void<concepts::copyable<T>, concepts::default_initializable<T>>;
-} // namespace concepts
+struct is_default_initializable : lib::is_detected<lib::default_initializable, T> {};
 
 template<typename T>
-struct is_semiregular : lib::is_detected<concepts::semiregular, T> {};
-
-namespace concepts {
-template<typename T>
-using regular = lib::to_void<concepts::semiregular<T>, concepts::equality_comparable<T>>;
-} // namespace concepts
+using semiregular = lib::to_void<lib::copyable<T>, lib::default_initializable<T>>;
 
 template<typename T>
-struct is_regular : lib::is_detected<concepts::regular, T> {};
+struct is_semiregular : lib::is_detected<lib::semiregular, T> {};
+
+template<typename T>
+using regular = lib::to_void<lib::semiregular<T>, lib::equality_comparable<T>>;
+
+template<typename T>
+struct is_regular : lib::is_detected<lib::regular, T> {};
 
 }} // namespace halcheck::lib
 

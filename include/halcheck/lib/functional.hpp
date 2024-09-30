@@ -25,21 +25,17 @@ auto invoke(F &&f, Args &&...args) noexcept(noexcept(
 template<typename F, typename... Args>
 using invoke_result_t = decltype(lib::invoke(std::declval<F>(), std::declval<Args>()...));
 
-namespace concepts {
+template<typename R, typename F, typename... Args>
+using invocable_r = lib::convertible_to<lib::invoke_result_t<F, Args...>, R>;
 
 template<typename R, typename F, typename... Args>
-using invocable_r = lib::enable_if_t<std::is_convertible<lib::invoke_result_t<F, Args...>, R>{}>;
+struct is_invocable_r : lib::is_detected<lib::invocable_r, R, F, Args...> {};
 
 template<typename F, typename... Args>
 using invocable = lib::invoke_result_t<F, Args...>;
 
-} // namespace concepts
-
-template<typename R, typename F, typename... Args>
-struct is_invocable_r : lib::is_detected<concepts::invocable_r, R, F, Args...> {};
-
 template<typename F, typename... Args>
-struct is_invocable : lib::is_detected<concepts::invocable, F, Args...> {};
+struct is_invocable : lib::is_detected<lib::invocable, F, Args...> {};
 
 template<typename...>
 class overload_t {};
