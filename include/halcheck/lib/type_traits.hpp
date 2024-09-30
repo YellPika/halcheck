@@ -4,4 +4,6 @@
 #include <halcheck/lib/type_traits/compat.hpp>   // IWYU pragma: export
 #include <halcheck/lib/type_traits/concepts.hpp> // IWYU pragma: export
 
+#include <type_traits> // IWYU pragma: export
+
 #endif
