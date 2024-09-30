@@ -18,6 +18,14 @@
 
 namespace halcheck { namespace lib {
 
+namespace detail {
+template<typename, template<typename...> class Op, typename... Args>
+struct is_detected_helper : std::false_type {};
+
+template<template<typename...> class Op, typename... Args>
+struct is_detected_helper<lib::to_void<Op<Args...>>, Op, Args...> : std::true_type {};
+} // namespace detail
+
 template<template<typename...> class Op, typename... Args>
 struct is_detected : detail::is_detected_helper<void, Op, Args...> {};
 

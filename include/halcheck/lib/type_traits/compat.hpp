@@ -89,14 +89,6 @@ using add_pointer_t = typename std::add_pointer<T>::type;
 template<typename T>
 using remove_pointer_t = typename std::remove_pointer<T>::type;
 
-namespace detail {
-template<typename, template<typename...> class Op, typename... Args>
-struct is_detected_helper : std::false_type {};
-
-template<template<typename...> class Op, typename... Args>
-struct is_detected_helper<lib::to_void<Op<Args...>>, Op, Args...> : std::true_type {};
-} // namespace detail
-
 template<typename T>
 struct is_referenceable
     : std::integral_constant<
