@@ -462,6 +462,23 @@ using derived_from = lib::enable_if_t<
 template<typename Derived, typename Base>
 struct is_derived_from : lib::is_detected<lib::derived_from, Derived, Base> {};
 
+template<typename T>
+struct is_referenceable
+    : std::integral_constant<
+          bool,
+          std::is_object<T>() ||
+              (std::is_function<T>() && !std::is_const<T>() && !std::is_volatile<T>() && !std::is_reference<T>()) ||
+              std::is_reference<T>()> {};
+
+template<typename T>
+using referenceable = lib::enable_if_t<lib::is_referenceable<T>{}>;
+
+template<typename T>
+using dereferenceable = lib::referenceable<decltype(*std::declval<T &>())>;
+
+template<typename T>
+struct is_dereferenceable : lib::is_detected<lib::dereferenceable, T> {};
+
 }} // namespace halcheck::lib
 
 #endif

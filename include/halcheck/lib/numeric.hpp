@@ -34,6 +34,11 @@ T midpoint(T min, T max) noexcept {
 }
 #endif
 
+template<typename T, HALCHECK_REQUIRE(std::is_integral<T>())>
+lib::make_unsigned_t<T> to_unsigned(T value) {
+  return lib::make_unsigned_t<T>(value);
+}
+
 }} // namespace halcheck::lib
 
 #endif

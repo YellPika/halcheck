@@ -60,12 +60,12 @@ using common_type_t = typename std::common_type<Args...>::type;
 template<typename T>
 using remove_cvref_t = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
 
-template<typename T>
+template<typename T, typename...>
 struct type_identity {
   using type = T;
 };
 
-template<typename T>
+template<typename T, typename...>
 using type_identity_t = T;
 
 template<std::size_t I, typename T>
@@ -91,14 +91,6 @@ using add_pointer_t = typename std::add_pointer<T>::type;
 
 template<typename T>
 using remove_pointer_t = typename std::remove_pointer<T>::type;
-
-template<typename T>
-struct is_referenceable
-    : std::integral_constant<
-          bool,
-          std::is_object<T>() ||
-              (std::is_function<T>() && !std::is_const<T>() && !std::is_volatile<T>() && !std::is_reference<T>()) ||
-              std::is_reference<T>()> {};
 
 }} // namespace halcheck::lib
 
