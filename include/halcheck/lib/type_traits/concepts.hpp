@@ -29,12 +29,6 @@ struct is_detected_helper<lib::to_void<Op<Args...>>, Op, Args...> : std::true_ty
 template<template<typename...> class Op, typename... Args>
 struct is_detected : detail::is_detected_helper<void, Op, Args...> {};
 
-template<typename T>
-using require = int;
-
-template<template<typename...> class Op, typename... Args>
-using negate = lib::enable_if_t<!lib::is_detected<Op, Args...>()>;
-
 template<typename T, typename U, template<typename> class QT, template<typename> class QU>
 struct basic_common_reference {};
 
@@ -443,6 +437,30 @@ using regular = lib::to_void<lib::semiregular<T>, lib::equality_comparable<T>>;
 
 template<typename T>
 struct is_regular : lib::is_detected<lib::regular, T> {};
+
+template<typename T>
+using integral = lib::enable_if_t<std::is_integral<T>{}>;
+
+using std::is_integral;
+
+template<typename T>
+using signed_integral = lib::enable_if_t<std::is_integral<T>() && std::is_signed<T>()>;
+
+template<typename T>
+struct is_signed_integral : lib::is_detected<lib::signed_integral, T> {};
+
+template<typename T>
+using unsigned_integral = lib::enable_if_t<std::is_integral<T>() && std::is_unsigned<T>()>;
+
+template<typename T>
+struct is_unsigned_integral : lib::is_detected<lib::unsigned_integral, T> {};
+
+template<typename Derived, typename Base>
+using derived_from = lib::enable_if_t<
+    std::is_base_of<Base, Derived>() && std::is_convertible<const volatile Derived *, const volatile Base *>()>;
+
+template<typename Derived, typename Base>
+struct is_derived_from : lib::is_detected<lib::derived_from, Derived, Base> {};
 
 }} // namespace halcheck::lib
 
