@@ -89,9 +89,13 @@ public:
 
   operator T() const { return impl; } // NOLINT
 
-  T &operator*() const { return impl; }
+  T &operator*() { return impl; }
 
-  T *operator->() const { return &impl; }
+  const T &operator*() const { return impl; }
+
+  T *operator->() { return &impl; }
+
+  const T *operator->() const { return &impl; }
 
 private:
   T impl;
@@ -131,9 +135,13 @@ public:
 
   operator T() const { return impl; } // NOLINT
 
-  T &operator*() const { return impl; }
+  T &operator*() { return impl; }
 
-  T *operator->() const { return &impl; }
+  const T &operator*() const { return impl; }
+
+  T *operator->() { return &impl; }
+
+  const T *operator->() const { return &impl; }
 
 private:
   T impl;
@@ -177,9 +185,13 @@ public:
 
   operator T() const { return impl; } // NOLINT
 
-  T &operator*() const { return impl; }
+  T &operator*() { return impl; }
 
-  T *operator->() const { return &impl; }
+  const T &operator*() const { return impl; }
+
+  T *operator->() { return &impl; }
+
+  const T *operator->() const { return &impl; }
 
 private:
   T impl;
