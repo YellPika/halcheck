@@ -464,11 +464,10 @@ struct is_derived_from : lib::is_detected<lib::derived_from, Derived, Base> {};
 
 template<typename T>
 struct is_referenceable
-    : std::integral_constant<
-          bool,
-          std::is_object<T>() ||
-              (std::is_function<T>() && !std::is_const<T>() && !std::is_volatile<T>() && !std::is_reference<T>()) ||
-              std::is_reference<T>()> {};
+    : lib::disjunction<
+          std::is_object<T>,
+          std::is_reference<T>,
+          lib::conjunction<std::is_function<T>, std::negate<std::is_const<T>>, std::negate<std::is_volatile<T>>>> {};
 
 template<typename T>
 using referenceable = lib::enable_if_t<lib::is_referenceable<T>{}>;
