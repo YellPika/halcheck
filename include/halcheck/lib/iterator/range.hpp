@@ -23,10 +23,10 @@ struct enable_borrowed_range : std::false_type {};
 static const struct {
 private:
   template<typename T>
-  using member = lib::input_or_output_iterator<decltype(std::declval<T &>().begin())>;
+  using member = lib::iterator<decltype(std::declval<T &>().begin())>;
 
   template<typename T>
-  using free = lib::input_or_output_iterator<decltype(begin(std::declval<T &>()))>;
+  using free = lib::iterator<decltype(begin(std::declval<T &>()))>;
 
 public:
   template<typename T, std::size_t N>
@@ -77,10 +77,10 @@ using iterator_t = decltype(lib::begin(std::declval<T &>()));
 static const class {
 private:
   template<typename T>
-  using member = lib::sentinel_for<decltype(std::declval<T &&>().end()), lib::iterator_t<T>>;
+  using member = lib::iterator<decltype(std::declval<T &&>().end())>;
 
   template<typename T>
-  using free = lib::sentinel_for<decltype(end(std::declval<T &&>())), lib::iterator_t<T>>;
+  using free = lib::iterator<decltype(end(std::declval<T &&>()))>;
 
 public:
   template<typename T, std::size_t N>
@@ -111,15 +111,10 @@ public:
   }
 } end;
 
-// See https://en.cppreference.com/w/cpp/ranges/iterator_t
-
-template<typename T>
-using sentinel_t = decltype(lib::end(std::declval<T &>()));
-
 // See https://en.cppreference.com/w/cpp/ranges/range
 
 template<typename T>
-using range = lib::to_void<lib::iterator_t<T>, lib::sentinel_t<T>>;
+using range = lib::same_as<lib::iterator_t<T>, decltype(lib::end(std::declval<T &>()))>;
 
 template<typename T>
 struct is_range : lib::is_detected<lib::range, T> {};
@@ -155,14 +150,6 @@ using random_access_range = lib::to_void<lib::input_range<T>, lib::random_access
 
 template<typename T>
 struct is_random_access_range : lib::is_detected<lib::random_access_range, T> {};
-
-// See https://en.cppreference.com/w/cpp/ranges/common_range
-
-template<typename T>
-using common_range = lib::to_void<lib::range<T>, lib::same_as<lib::iterator_t<T>, lib::sentinel_t<T>>>;
-
-template<typename T>
-struct is_common_range : lib::is_detected<lib::common_range, T> {};
 
 // See https://en.cppreference.com/w/cpp/ranges/sized_range
 
@@ -215,9 +202,8 @@ public:
       typename T,
       HALCHECK_REQUIRE(!lib::is_detected<member, T>()),
       HALCHECK_REQUIRE(!lib::is_detected<free, T>()),
-      HALCHECK_REQUIRE(lib::is_input_range<T>()),
+      HALCHECK_REQUIRE(lib::is_random_access_range<T>()),
       HALCHECK_REQUIRE(!lib::disable_sized_range<lib::remove_cvref_t<T>>()),
-      HALCHECK_REQUIRE(lib::is_sized_sentinel_for<lib::sentinel_t<T &>, lib::iterator_t<T &>>()),
       HALCHECK_REQUIRE(lib::is_detected<
                        lib::make_unsigned_t,
                        decltype(lib::end(std::declval<T &>()) - lib::begin(std::declval<T &>()))>())>
@@ -251,15 +237,6 @@ using range_value_t = lib::iter_value_t<lib::iterator_t<R>>;
 template<typename R, HALCHECK_REQUIRE(lib::is_range<R>())>
 using range_reference_t = lib::iter_reference_t<lib::iterator_t<R>>;
 
-template<typename R, HALCHECK_REQUIRE(lib::is_range<R>())>
-using range_const_reference_t = lib::iter_const_reference_t<lib::iterator_t<R>>;
-
-template<typename R, HALCHECK_REQUIRE(lib::is_range<R>())>
-using range_rvalue_reference_t = lib::iter_rvalue_reference_t<lib::iterator_t<R>>;
-
-template<typename R, HALCHECK_REQUIRE(lib::is_range<R>())>
-using range_common_reference_t = lib::iter_common_reference_t<lib::iterator_t<R>>;
-
 // See https://en.cppreference.com/w/cpp/ranges/empty
 
 static const struct {
@@ -290,7 +267,7 @@ public:
 } empty;
 
 template<typename T>
-using insertable = lib::to_void<
+using insertable_range = lib::to_void<
     lib::range<T>,
     lib::same_as<
         decltype(std::declval<T &>().insert(
@@ -298,7 +275,7 @@ using insertable = lib::to_void<
         lib::iterator_t<T>>>;
 
 template<typename T>
-struct is_insertable : lib::is_detected<lib::insertable, T> {};
+struct is_insertable_range : lib::is_detected<lib::insertable_range, T> {};
 
 }} // namespace halcheck::lib
 

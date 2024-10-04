@@ -57,7 +57,7 @@ lib::variant<Ts...> arbitrary(gen::tag<lib::variant<Ts...>>, lib::atom);
 
 template<
     typename Container,
-    HALCHECK_REQUIRE(lib::is_insertable<Container>()),
+    HALCHECK_REQUIRE(lib::is_insertable_range<Container>()),
     HALCHECK_REQUIRE(gen::is_arbitrary<lib::range_value_t<Container>>())>
 Container arbitrary(gen::tag<Container>, lib::atom);
 
@@ -122,7 +122,7 @@ lib::variant<Ts...> arbitrary(gen::tag<lib::variant<Ts...>>, lib::atom id) {
 
 template<
     typename Container,
-    HALCHECK_REQUIRE_(lib::is_insertable<Container>()),
+    HALCHECK_REQUIRE_(lib::is_insertable_range<Container>()),
     HALCHECK_REQUIRE_(gen::is_arbitrary<lib::range_value_t<Container>>())>
 Container arbitrary(gen::tag<Container>, lib::atom id) {
   return gen::container<Container>(id, gen::arbitrary<lib::range_value_t<Container>>);

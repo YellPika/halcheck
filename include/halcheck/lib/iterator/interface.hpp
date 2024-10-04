@@ -170,18 +170,12 @@ public:
     return !empty();
   }
 
-  template<
-      typename U = T,
-      HALCHECK_REQUIRE(lib::is_forward_range<const U>()),
-      HALCHECK_REQUIRE(lib::is_sized_sentinel_for<lib::sentinel_t<U>, lib::iterator_t<U>>())>
+  template<typename U = T, HALCHECK_REQUIRE(lib::is_random_access_range<const U>())>
   constexpr auto size() const -> decltype(lib::to_unsigned(lib::end(self<U>()) - lib::begin(self<U>()))) {
     return lib::to_unsigned(lib::end(self()) - lib::begin(self()));
   }
 
-  template<
-      typename U = T,
-      HALCHECK_REQUIRE(lib::is_forward_range<U>()),
-      HALCHECK_REQUIRE(lib::is_sized_sentinel_for<lib::sentinel_t<U>, lib::iterator_t<U>>())>
+  template<typename U = T, HALCHECK_REQUIRE(lib::is_random_access_range<U>())>
   auto size() -> decltype(lib::to_unsigned(lib::end(self<U>()) - lib::begin(self<U>()))) {
     return lib::to_unsigned(lib::end(self()) - lib::begin(self()));
   }
@@ -196,18 +190,12 @@ public:
     return *lib::begin(self());
   }
 
-  template<
-      typename U = T,
-      HALCHECK_REQUIRE(lib::is_bidirectional_range<const U>()),
-      HALCHECK_REQUIRE(lib::is_common_range<const U>())>
+  template<typename U = T, HALCHECK_REQUIRE(lib::is_bidirectional_range<const U>())>
   constexpr auto back() const -> decltype(*std::prev(lib::end(self<U>()))) {
     return *std::prev(lib::end(self()));
   }
 
-  template<
-      typename U = T,
-      HALCHECK_REQUIRE(lib::is_bidirectional_range<U>()),
-      HALCHECK_REQUIRE(lib::is_common_range<U>())>
+  template<typename U = T, HALCHECK_REQUIRE(lib::is_bidirectional_range<U>())>
   auto back() -> decltype(*std::prev(lib::end(self<U>()))) {
     return *std::prev(lib::end(self()));
   }

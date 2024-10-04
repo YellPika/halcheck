@@ -10,7 +10,7 @@ using namespace halcheck;
 namespace test1 {
 using iterator = std::vector<int>::iterator;
 using _ = lib::input_iterator<iterator>;
-static_assert(lib::is_input_or_output_iterator<iterator>(), "");
+static_assert(lib::is_iterator<iterator>(), "");
 static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(lib::is_bidirectional_iterator<iterator>(), "");
@@ -20,7 +20,7 @@ static_assert(lib::is_random_access_iterator<iterator>(), "");
 
 namespace test2 {
 using iterator = std::vector<int>::const_iterator;
-static_assert(lib::is_input_or_output_iterator<iterator>(), "");
+static_assert(lib::is_iterator<iterator>(), "");
 static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(lib::is_bidirectional_iterator<iterator>(), "");
@@ -30,7 +30,7 @@ static_assert(lib::is_random_access_iterator<iterator>(), "");
 
 namespace test3 {
 using iterator = std::set<int>::iterator;
-static_assert(lib::is_input_or_output_iterator<iterator>(), "");
+static_assert(lib::is_iterator<iterator>(), "");
 static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(lib::is_bidirectional_iterator<iterator>(), "");
@@ -40,7 +40,7 @@ static_assert(!lib::is_random_access_iterator<iterator>(), "");
 
 namespace test4 {
 using iterator = std::set<int>::const_iterator;
-static_assert(lib::is_input_or_output_iterator<iterator>(), "");
+static_assert(lib::is_iterator<iterator>(), "");
 static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(lib::is_bidirectional_iterator<iterator>(), "");
@@ -50,7 +50,7 @@ static_assert(!lib::is_random_access_iterator<iterator>(), "");
 
 namespace test5 {
 using iterator = std::forward_list<int>::iterator;
-static_assert(lib::is_input_or_output_iterator<iterator>(), "");
+static_assert(lib::is_iterator<iterator>(), "");
 static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(!lib::is_bidirectional_iterator<iterator>(), "");
@@ -60,7 +60,7 @@ static_assert(!lib::is_random_access_iterator<iterator>(), "");
 
 namespace test6 {
 using iterator = std::forward_list<int>::const_iterator;
-static_assert(lib::is_input_or_output_iterator<iterator>(), "");
+static_assert(lib::is_iterator<iterator>(), "");
 static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");
 static_assert(!lib::is_bidirectional_iterator<iterator>(), "");
@@ -90,7 +90,7 @@ static_assert(!lib::is_random_access_iterator<iterator>(), "");
 
 namespace test9 {
 using iterator = lib::join_iterator<std::vector<std::vector<int>>::const_iterator>;
-static_assert(lib::is_input_or_output_iterator<iterator>(), "");
+static_assert(lib::is_iterator<iterator>(), "");
 static_assert(lib::is_input_iterator<iterator>(), "");
 static_assert(std::is_default_constructible<iterator>(), "");
 static_assert(lib::is_forward_iterator<iterator>(), "");

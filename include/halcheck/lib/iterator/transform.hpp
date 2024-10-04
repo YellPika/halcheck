@@ -18,17 +18,20 @@ namespace halcheck { namespace lib {
 template<
     typename I,
     typename F,
-    typename = lib::to_void<
-        lib::input_iterator<I>,
-        lib::copy_constructible<F>,
-        lib::enable_if_t<std::is_object<F>{}>,
-        lib::regular_invocable<F &, lib::iter_reference_t<I>>>>
+    HALCHECK_REQUIRE(lib::is_input_iterator<I>()),
+    HALCHECK_REQUIRE(lib::is_copy_constructible<F>()),
+    HALCHECK_REQUIRE(std::is_object<F>()),
+    HALCHECK_REQUIRE(lib::is_invocable<F &, lib::iter_reference_t<I>>())>
 class transform_iterator : private lib::iterator_interface<transform_iterator<I, F>> {
 private:
-  template<typename, typename, typename>
+  template<
+      typename J,
+      typename G,
+      HALCHECK_REQUIRE_(lib::is_input_iterator<J>()),
+      HALCHECK_REQUIRE_(lib::is_copy_constructible<G>()),
+      HALCHECK_REQUIRE_(std::is_object<G>()),
+      HALCHECK_REQUIRE_(lib::is_invocable<G &, lib::iter_reference_t<J>>())>
   friend class transform_iterator;
-  template<typename>
-  friend class transform_sentinel;
   friend class lib::iterator_interface<transform_iterator<I, F>>;
 
 public:
@@ -114,25 +117,9 @@ private:
     return x._base < y._base;
   }
 
-  template<bool _ = true, HALCHECK_REQUIRE(lib::is_sized_sentinel_for<I, I>() && _)>
+  template<bool _ = true, HALCHECK_REQUIRE(lib::is_random_access_iterator<I>() && _)>
   friend difference_type operator-(const transform_iterator &x, const transform_iterator &y) {
     return x._base - y._base;
-  }
-
-  template<
-      typename T = I,
-      HALCHECK_REQUIRE(std::is_lvalue_reference<lib::invoke_result_t<const F &, lib::iter_reference_t<T>>>())>
-  friend constexpr lib::remove_reference_t<lib::invoke_result_t<const F &, lib::iter_reference_t<T>>> &&
-  iter_move(const transform_iterator &i) noexcept(noexcept(std::move(*i))) {
-    return std::move(*i);
-  }
-
-  template<
-      typename T = I,
-      HALCHECK_REQUIRE(!std::is_lvalue_reference<lib::invoke_result_t<const F &, lib::iter_reference_t<T>>>())>
-  friend constexpr lib::invoke_result_t<const F &, lib::iter_reference_t<T>>
-  iter_move(const transform_iterator &i) noexcept(noexcept(*i)) {
-    return *i;
   }
 
   I _base;

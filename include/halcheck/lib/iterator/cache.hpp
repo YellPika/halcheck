@@ -3,17 +3,21 @@
 
 #include <halcheck/lib/iterator/base.hpp>
 #include <halcheck/lib/iterator/interface.hpp>
+#include <halcheck/lib/iterator/type_traits.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
+#include <memory>
+
 namespace halcheck { namespace lib {
 
-template<typename I>
+template<typename I, HALCHECK_REQUIRE(lib::is_iterator<I>())>
 class cache_iterator : private lib::iterator_interface<cache_iterator<I>> {
 public:
-  using iterator_concept = lib::iter_concept_t<I>;
-  // using iterator_category = TODO
+  using iterator_category = lib::iter_category_t<I>;
   using value_type = lib::iter_value_t<I>;
+  using reference = const value_type &;
+  using pointer = const value_type *;
   using difference_type = lib::iter_difference_t<I>;
 
   using lib::iterator_interface<cache_iterator<I>>::operator++;
@@ -33,6 +37,11 @@ public:
       _value.emplace(*_base);
 
     return *_value;
+  }
+
+  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::dereference, J>())>
+  const lib::iter_value_t<J> *operator->() const {
+    return std::addressof(**this);
   }
 
   template<bool _ = true, HALCHECK_REQUIRE(lib::is_detected<detail::increment, I>())>

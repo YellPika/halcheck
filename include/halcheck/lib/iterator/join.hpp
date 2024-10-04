@@ -5,7 +5,6 @@
 
 #include <halcheck/lib/iterator/base.hpp>
 #include <halcheck/lib/iterator/interface.hpp>
-#include <halcheck/lib/iterator/move.hpp>
 #include <halcheck/lib/iterator/range.hpp>
 #include <halcheck/lib/iterator/type_traits.hpp>
 #include <halcheck/lib/optional.hpp>
@@ -17,13 +16,10 @@ namespace halcheck { namespace lib {
 
 template<
     typename I,
-    typename S = I,
-    typename = lib::to_void<
-        lib::input_iterator<I>,
-        lib::is_sentinel_for<S, I>,
-        lib::enable_if_t<std::is_reference<lib::iter_reference_t<I>>{}>,
-        lib::input_range<lib::iter_reference_t<I>>>>
-class join_iterator : private lib::iterator_interface<join_iterator<I, S>> {
+    HALCHECK_REQUIRE(lib::is_input_iterator<I>()),
+    HALCHECK_REQUIRE(std::is_reference<lib::iter_reference_t<I>>()),
+    HALCHECK_REQUIRE(lib::is_input_range<lib::iter_reference_t<I>>())>
+class join_iterator : private lib::iterator_interface<join_iterator<I>> {
 public:
   using inner = lib::iterator_t<lib::iter_reference_t<I>>;
 
@@ -32,8 +28,7 @@ public:
   using lib::iterator_interface<join_iterator>::operator[];
 
   using iterator_concept = lib::conditional_t<
-      lib::is_bidirectional_iterator<I>() && lib::is_bidirectional_range<lib::iter_reference_t<I>>() &&
-          lib::is_common_range<lib::iter_reference_t<I>>(),
+      lib::is_bidirectional_iterator<I>() && lib::is_bidirectional_range<lib::iter_reference_t<I>>(),
       std::bidirectional_iterator_tag,
       lib::conditional_t<
           lib::is_forward_iterator<I>() && lib::is_forward_range<lib::iter_reference_t<I>>(),
@@ -48,13 +43,17 @@ public:
       lib::common_type_t<lib::iter_difference_t<I>, lib::range_difference_t<lib::iter_reference_t<I>>>;
 
 private:
-  template<typename, typename, typename>
+  template<
+      typename J,
+      HALCHECK_REQUIRE_(lib::is_input_iterator<J>()),
+      HALCHECK_REQUIRE_(std::is_reference<lib::iter_reference_t<J>>()),
+      HALCHECK_REQUIRE_(lib::is_input_range<lib::iter_reference_t<J>>())>
   friend class join_iterator;
   friend struct join_sentinel;
   friend class lib::iterator_interface<join_iterator>;
 
   I _begin;
-  S _end;
+  I _end;
   lib::optional<inner> _inner;
 
   void satisfy() {
@@ -71,7 +70,7 @@ private:
 public:
   constexpr join_iterator() = default;
 
-  join_iterator(I begin, S end) : _begin(std::move(begin)), _end(std::move(end)) { satisfy(); }
+  join_iterator(I begin, I end) : _begin(std::move(begin)), _end(std::move(end)) { satisfy(); }
 
   constexpr auto operator*() const noexcept(noexcept(**this->_inner)) -> decltype(**this->_inner) { return **_inner; }
 
@@ -92,8 +91,7 @@ public:
   template<
       typename T = I,
       HALCHECK_REQUIRE(lib::is_bidirectional_iterator<T>()),
-      HALCHECK_REQUIRE(lib::is_bidirectional_range<lib::iter_reference_t<T>>()),
-      HALCHECK_REQUIRE(lib::is_common_range<lib::iter_reference_t<T>>())>
+      HALCHECK_REQUIRE(lib::is_bidirectional_range<lib::iter_reference_t<T>>())>
   join_iterator &operator--() {
     if (_begin == _end)
       _inner.emplace(lib::end(*--_begin));
@@ -114,17 +112,12 @@ private:
   friend constexpr bool operator==(const join_iterator &x, const join_iterator &y) {
     return x._begin == y._begin && x._end == y._end && x._inner == y._inner;
   }
-
-  friend constexpr decltype(lib::iter_move(std::declval<const inner &>()))
-  iter_move(const join_iterator &i) noexcept(noexcept(lib::iter_move(*i._inner))) {
-    return lib::iter_move(*i._inner);
-  }
 };
 
 static const struct {
-  template<typename I, typename S>
-  lib::join_iterator<I, S> operator()(I begin, S end) const {
-    return lib::join_iterator<I, S>(std::move(begin), std::move(end));
+  template<typename I>
+  lib::join_iterator<I> operator()(I begin, I end) const {
+    return lib::join_iterator<I>(std::move(begin), std::move(end));
   }
 } make_join_iterator;
 

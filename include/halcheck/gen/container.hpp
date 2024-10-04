@@ -56,7 +56,7 @@ void repeat(lib::atom id, F func) {
 template<
     typename T,
     typename F,
-    HALCHECK_REQUIRE(lib::is_insertable<T>()),
+    HALCHECK_REQUIRE(lib::is_insertable_range<T>()),
     HALCHECK_REQUIRE(lib::is_invocable_r<lib::range_value_t<T>, F, lib::atom>())>
 T container(lib::atom id, F gen) {
   T output;
@@ -74,7 +74,7 @@ T container(lib::atom id, F gen) {
 template<
     typename T,
     typename F,
-    HALCHECK_REQUIRE(lib::is_insertable<T>()),
+    HALCHECK_REQUIRE(lib::is_insertable_range<T>()),
     HALCHECK_REQUIRE(lib::is_invocable_r<lib::range_value_t<T>, F, lib::atom>())>
 T container(lib::atom id, std::size_t size, F gen) {
   auto _ = gen::label(id);

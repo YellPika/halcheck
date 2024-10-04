@@ -37,12 +37,6 @@ using invocable = lib::invoke_result_t<F, Args...>;
 template<typename F, typename... Args>
 struct is_invocable : lib::is_detected<lib::invocable, F, Args...> {};
 
-template<typename F, typename... Args>
-using regular_invocable = lib::invocable<F, Args...>;
-
-template<typename F, typename... Args>
-using is_regular_invocable = lib::is_invocable<F, Args...>;
-
 template<typename...>
 class overload_t {};
 
