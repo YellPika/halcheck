@@ -18,7 +18,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <mutex>
 #include <stdexcept>
 #include <thread>
 #include <utility>
@@ -81,12 +80,17 @@ public:
   lib::add_lvalue_reference_t<const T> get() const { return _value.get(); }
   lib::add_lvalue_reference_t<T> get() { return _value.get(); }
 
-  using children_view = lib::transform_view<lib::integral_view<std::uintmax_t>, detail::forward_shrink_append>;
+  using children_view =
+      lib::subrange<lib::transform_iterator<lib::iota_iterator<std::uintmax_t>, detail::forward_shrink_append>>;
 
   children_view children() const {
-    return lib::make_transform_view(
-        lib::make_integral_view(std::uintmax_t(0), _remaining),
-        detail::forward_shrink_append{&_input});
+    return children_view(
+        lib::make_transform_iterator(
+            lib::make_iota_iterator(std::uintmax_t(0)),
+            detail::forward_shrink_append{&_input}),
+        lib::make_transform_iterator(
+            lib::make_iota_iterator(std::uintmax_t(_remaining)),
+            detail::forward_shrink_append{&_input}));
   }
 
 private:

@@ -121,7 +121,7 @@ template<typename T, typename U>
 using simple_common_reference_t = typename detail::simple_common_reference<T, U>::type;
 
 template<typename, typename...>
-struct common_reference_helper;
+struct common_reference_helper {};
 
 template<typename... Args>
 struct common_reference : common_reference_helper<void, Args...> {};
@@ -233,10 +233,14 @@ using brace_constructible = decltype(T{std::declval<Args>()...});
 template<class T, typename... Args>
 struct is_brace_constructible : lib::is_detected<lib::brace_constructible, T, Args...> {};
 
+namespace detail {
 using std::swap;
 
 template<typename T>
 using swappable = decltype(swap(std::declval<T &>(), std::declval<T &>()));
+} // namespace detail
+
+using detail::swappable;
 
 template<typename T>
 using nothrow_swappable = lib::enable_if_t<noexcept(swap(std::declval<T &>(), std::declval<T &>()))>;

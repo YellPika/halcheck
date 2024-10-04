@@ -66,10 +66,10 @@ public:
   template<
       typename I,
       typename F,
-      HALCHECK_REQUIRE(lib::is_iterator<I>()),
+      HALCHECK_REQUIRE(lib::is_input_iterator<I>()),
       HALCHECK_REQUIRE(lib::is_invocable_r<std::function<void(State &)>, F>())>
   void invoke(I begin, I end, F func) {
-    return invoke(lib::make_view(std::move(begin), std::move(end)), std::move(func));
+    return invoke(lib::make_subrange(std::move(begin), std::move(end)), std::move(func));
   }
 
   /// @brief Waits for all queued operations to complete and verifies their
@@ -82,7 +82,7 @@ public:
 private:
   using future = std::shared_future<std::function<void(State &)>>;
   using iterator = lib::iterator_t<lib::dag<future>>;
-  using const_iterator = lib::const_iterator_t<lib::dag<future>>;
+  using const_iterator = lib::iterator_t<const lib::dag<future>>;
 
   bool check(State, std::vector<std::size_t> &, std::vector<const_iterator> &) const;
 

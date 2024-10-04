@@ -38,22 +38,26 @@ struct shrink_calls {
 
 struct shrink_index_to_trie {
   lib::trie<lib::atom, lib::optional<std::uintmax_t>> operator()(std::uintmax_t index) const {
-    return input.set(path, index);
+    return input->set(*path, index);
   }
 
-  const std::vector<lib::atom> &path;
-  const lib::trie<lib::atom, lib::optional<std::uintmax_t>> &input;
+  const std::vector<lib::atom> *path;
+  const lib::trie<lib::atom, lib::optional<std::uintmax_t>> *input;
 };
 
 struct shrink_call_to_tries {
-  lib::transform_view<lib::integral_view<std::uintmax_t>, detail::shrink_index_to_trie>
+  lib::subrange<lib::transform_iterator<lib::iota_iterator<std::uintmax_t>, detail::shrink_index_to_trie>>
   operator()(const detail::shrink_call &call) const {
-    return lib::make_transform_view(
-        lib::make_integral_view(std::uintmax_t(0), call.size),
-        detail::shrink_index_to_trie{call.path, input});
+    return lib::make_subrange(
+        lib::make_transform_iterator(
+            lib::make_iota_iterator(std::uintmax_t(0)),
+            detail::shrink_index_to_trie{&call.path, input}),
+        lib::make_transform_iterator(
+            lib::make_iota_iterator(call.size),
+            detail::shrink_index_to_trie{&call.path, input}));
   }
 
-  const lib::trie<lib::atom, lib::optional<std::uintmax_t>> &input;
+  const lib::trie<lib::atom, lib::optional<std::uintmax_t>> *input;
 };
 
 struct shrink_handler : eff::handler<shrink_handler, gen::shrink_effect, gen::label_effect> {
@@ -112,11 +116,16 @@ public:
     return output;
   }
 
-  using children_view =
-      lib::concat_view<lib::transform_view<const std::vector<detail::shrink_call>, detail::shrink_call_to_tries>>;
+  using children_view = lib::subrange<lib::join_iterator<lib::cache_iterator<
+      lib::transform_iterator<std::vector<detail::shrink_call>::const_iterator, detail::shrink_call_to_tries>>>>;
+  // lib::concat_view<lib::transform_view<const std::vector<detail::shrink_call>, detail::shrink_call_to_tries>>;
 
   children_view children() const {
-    return lib::make_concat_view(lib::make_transform_view(_calls, detail::shrink_call_to_tries{_input}));
+    auto begin =
+        lib::make_cache_iterator(lib::make_transform_iterator(_calls.begin(), detail::shrink_call_to_tries{&_input}));
+    auto end =
+        lib::make_cache_iterator(lib::make_transform_iterator(_calls.end(), detail::shrink_call_to_tries{&_input}));
+    return children_view(lib::make_join_iterator(begin, end), lib::make_join_iterator(end, end));
   }
 
 private:

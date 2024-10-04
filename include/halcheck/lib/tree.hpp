@@ -1,8 +1,7 @@
 #ifndef HALCHECK_LIB_TREE_HPP
 #define HALCHECK_LIB_TREE_HPP
 
-#include <halcheck/lib/iterator/ranges.hpp>
-#include <halcheck/lib/iterator/transform.hpp>
+#include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/memory.hpp>
 
 #include <unordered_map>
@@ -70,7 +69,7 @@ public:
   const V *operator->() const { return get(); }
 
   using iterator = lib::transform_iterator<lib::iterator_t<Map<K, box>>, unbox>;
-  using const_iterator = lib::transform_iterator<lib::const_iterator_t<Map<K, box>>, const_unbox>;
+  using const_iterator = lib::transform_iterator<lib::iterator_t<const Map<K, box>>, const_unbox>;
 
   iterator begin() { return lib::make_transform_iterator(_children.begin(), unbox()); }
   iterator end() { return lib::make_transform_iterator(_children.end(), unbox()); }

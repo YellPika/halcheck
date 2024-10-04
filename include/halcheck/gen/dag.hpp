@@ -10,7 +10,6 @@
 #include <halcheck/lib/dag.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
-#include <halcheck/lib/iterator/ranges.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <cstdint>

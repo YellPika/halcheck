@@ -92,6 +92,12 @@ using add_pointer_t = typename std::add_pointer<T>::type;
 template<typename T>
 using remove_pointer_t = typename std::remove_pointer<T>::type;
 
+template<std::size_t N>
+struct dispatch_t : dispatch_t<N - 1> {};
+
+template<>
+struct dispatch_t<0> {};
+
 }} // namespace halcheck::lib
 
 #endif
