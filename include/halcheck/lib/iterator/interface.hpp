@@ -136,7 +136,7 @@ private:
 // See https://en.cppreference.com/w/cpp/ranges/view_interface
 
 template<typename T, HALCHECK_REQUIRE(std::is_class<T>()), HALCHECK_REQUIRE(std::is_same<T, lib::remove_cv_t<T>>())>
-class view_interface {
+class view_interface : public lib::view_base {
 private:
   template<typename U = T>
   U &self() {
@@ -145,7 +145,7 @@ private:
 
   template<typename U = T>
   const U &self() const {
-    return static_cast<U &>(*this);
+    return static_cast<const U &>(*this);
   }
 
 public:

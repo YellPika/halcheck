@@ -119,6 +119,19 @@ using range = lib::same<lib::iterator_t<T>, decltype(lib::end(std::declval<T &>(
 template<typename T>
 struct is_range : lib::is_detected<lib::range, T> {};
 
+// See https://en.cppreference.com/w/cpp/ranges/view
+
+struct view_base {};
+
+template<typename T>
+struct enable_view : std::integral_constant<bool, std::is_base_of<lib::view_base, T>{}> {};
+
+template<typename T>
+using view = lib::to_void<lib::range<T>, lib::movable<T>, lib::enable_if_t<lib::enable_view<T>{}>>;
+
+template<typename T>
+struct is_view : lib::is_detected<lib::view, T> {};
+
 // See https://en.cppreference.com/w/cpp/ranges/input_range
 
 template<typename T>
@@ -246,8 +259,8 @@ private:
 
 public:
   template<typename T, HALCHECK_REQUIRE(lib::is_detected<member, T>())>
-  constexpr auto operator()(T &&value) const noexcept(noexcept(value.size())) -> decltype(value.size()) {
-    return value.size();
+  constexpr bool operator()(T &&value) const noexcept(noexcept(bool(value.empty()))) {
+    return bool(value.empty());
   }
 
   template<typename T, HALCHECK_REQUIRE(!lib::is_detected<member, T>()), HALCHECK_REQUIRE(lib::is_sized_range<T>())>

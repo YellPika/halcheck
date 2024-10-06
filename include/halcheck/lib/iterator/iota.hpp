@@ -120,6 +120,38 @@ lib::iota_iterator<T> make_iota_iterator(T value) {
   return lib::iota_iterator<T>(std::move(value));
 }
 
+template<typename T, HALCHECK_REQUIRE(std::is_integral<T>())>
+class iota_view : public lib::view_interface<iota_view<T>> {
+public:
+  iota_view() = default;
+  iota_view(T begin, T end) : _begin(std::move(begin)), _end(std::move(end)) {}
+
+  iota_iterator<T> begin() const { return iota_iterator<T>(_begin); }
+  iota_iterator<T> end() const { return iota_iterator<T>(_end); }
+
+  lib::make_unsigned_t<T> size() const {
+    return _begin < 0 ? (_end < 0 ? lib::to_unsigned(-_begin) - lib::to_unsigned(-_end)
+                                  : lib::to_unsigned(_end) + lib::to_unsigned(-_begin))
+                      : lib::to_unsigned(_end) - lib::to_unsigned(_begin);
+  }
+
+private:
+  T _begin{};
+  T _end{};
+};
+
+static const struct {
+  template<typename T>
+  lib::iota_view<T> operator()(T begin, T end) const {
+    return lib::iota_view<T>(std::move(begin), std::move(end));
+  }
+
+  template<typename T>
+  lib::iota_view<T> operator()(T end) const {
+    return lib::iota_view<T>(0, std::move(end));
+  }
+} iota;
+
 }} // namespace halcheck::lib
 
 #endif

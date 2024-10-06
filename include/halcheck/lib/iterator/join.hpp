@@ -3,6 +3,7 @@
 
 // IWYU pragma: private, include <halcheck/lib/iterator.hpp>
 
+#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator/base.hpp>
 #include <halcheck/lib/iterator/interface.hpp>
 #include <halcheck/lib/iterator/range.hpp>
@@ -118,6 +119,56 @@ static const struct {
     return lib::join_iterator<I>(std::move(begin), std::move(end));
   }
 } make_join_iterator;
+
+template<
+    typename V,
+    HALCHECK_REQUIRE(lib::is_view<V>()),
+    HALCHECK_REQUIRE(lib::is_input_range<V>()),
+    HALCHECK_REQUIRE(std::is_reference<lib::range_reference_t<V>>()),
+    HALCHECK_REQUIRE(lib::is_input_range<lib::range_reference_t<V>>())>
+class join_view : public lib::view_interface<join_view<V>> {
+public:
+  join_view() = default;
+
+  explicit join_view(V base) : _base(std::move(base)) {}
+
+  template<bool _ = true, HALCHECK_REQUIRE(std::is_copy_constructible<V>() && _)>
+  constexpr V base() const & {
+    return _base;
+  }
+
+  V base() && { return std::move(_base); }
+
+  lib::join_iterator<lib::iterator_t<V>> begin() { return lib::make_join_iterator(lib::begin(_base), lib::end(_base)); }
+
+  template<
+      typename U = V,
+      HALCHECK_REQUIRE(lib::is_input_range<const U>()),
+      HALCHECK_REQUIRE(std::is_reference<lib::range_reference_t<const U>>())>
+  lib::join_iterator<lib::iterator_t<const U>> begin() const {
+    return lib::make_join_iterator(lib::begin(_base), lib::end(_base));
+  }
+
+  lib::join_iterator<lib::iterator_t<V>> end() { return lib::make_join_iterator(lib::end(_base), lib::end(_base)); }
+
+  template<
+      typename U = V,
+      HALCHECK_REQUIRE(lib::is_input_range<const U>()),
+      HALCHECK_REQUIRE(std::is_reference<lib::range_reference_t<const U>>())>
+  lib::join_iterator<lib::iterator_t<const U>> end() const {
+    return lib::make_join_iterator(lib::end(_base), lib::end(_base));
+  }
+
+private:
+  V _base;
+};
+
+static const struct {
+  template<typename V>
+  lib::join_view<V> operator()(V base) const {
+    return lib::join_view<V>(std::move(base));
+  }
+} join;
 
 }} // namespace halcheck::lib
 

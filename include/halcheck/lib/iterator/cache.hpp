@@ -3,6 +3,7 @@
 
 #include <halcheck/lib/iterator/base.hpp>
 #include <halcheck/lib/iterator/interface.hpp>
+#include <halcheck/lib/iterator/range.hpp>
 #include <halcheck/lib/iterator/type_traits.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>
@@ -85,6 +86,59 @@ template<typename I>
 lib::cache_iterator<I> make_cache_iterator(I base) {
   return lib::cache_iterator<I>(std::move(base));
 }
+
+template<typename V, HALCHECK_REQUIRE(lib::is_view<V>()), HALCHECK_REQUIRE(lib::is_input_range<V>())>
+class cache_view : public lib::view_interface<cache_view<V>> {
+public:
+  constexpr cache_view() = default;
+
+  constexpr explicit cache_view(V base) // NOLINT
+      : _base(std::move(base)) {}
+
+  template<bool _ = true, HALCHECK_REQUIRE(std::is_copy_constructible<V>() && _)>
+  constexpr V base() const & {
+    return _base;
+  }
+
+  V base() && { return std::move(_base); }
+
+  lib::cache_iterator<lib::iterator_t<V>> begin() { return lib::make_cache_iterator(lib::begin(_base)); }
+
+  template<typename U = V, HALCHECK_REQUIRE(lib::is_input_range<const U>())>
+  lib::cache_iterator<lib::iterator_t<const U>> begin() const {
+    return lib::make_cache_iterator(lib::begin(_base));
+  }
+
+  lib::cache_iterator<lib::iterator_t<V>> end() { return lib::make_cache_iterator(lib::end(_base)); }
+
+  template<typename U = V, HALCHECK_REQUIRE(lib::is_input_range<const U>())>
+  lib::cache_iterator<lib::iterator_t<const U>> end() const {
+    return lib::make_cache_iterator(lib::end(_base));
+  }
+
+  template<typename T = V, typename = decltype(lib::empty(std::declval<const T &>()))>
+  constexpr bool empty() const {
+    return lib::empty(_base);
+  }
+
+  template<typename T = V, HALCHECK_REQUIRE(lib::is_sized_range<T>())>
+  constexpr bool size() const {
+    return lib::size(_base);
+  }
+
+private:
+  V _base;
+};
+
+template<typename V>
+struct enable_borrowed_range<lib::cache_view<V>> : std::true_type {};
+
+static const struct {
+  template<typename V>
+  constexpr lib::cache_view<V> operator()(V view) const {
+    return lib::cache_view<V>(std::move(view));
+  }
+} cache;
 
 }} // namespace halcheck::lib
 
