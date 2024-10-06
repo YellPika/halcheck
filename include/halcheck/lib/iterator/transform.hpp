@@ -37,6 +37,7 @@ private:
 public:
   using lib::iterator_interface<transform_iterator<I, F>>::operator++;
   using lib::iterator_interface<transform_iterator<I, F>>::operator--;
+  using lib::iterator_interface<transform_iterator<I, F>>::operator-=;
   using lib::iterator_interface<transform_iterator<I, F>>::operator[];
 
   using reference = lib::invoke_result_t<const F &, lib::iter_reference_t<I>>;
@@ -93,21 +94,9 @@ public:
     return *this;
   }
 
-  template<bool _ = true, HALCHECK_REQUIRE(lib::is_random_access_iterator<I>() && _)>
-  transform_iterator &operator-=(difference_type n) {
-    _base -= n;
-    return *this;
-  }
-
 private:
-  template<bool _ = true, HALCHECK_REQUIRE(lib::is_equality_comparable<I>() && _)>
   friend constexpr bool operator==(const transform_iterator &x, const transform_iterator &y) {
     return x._base == y._base;
-  }
-
-  template<bool _ = true, HALCHECK_REQUIRE(lib::is_random_access_iterator<I>() && _)>
-  friend constexpr bool operator<(const transform_iterator &x, const transform_iterator &y) {
-    return x._base < y._base;
   }
 
   template<bool _ = true, HALCHECK_REQUIRE(lib::is_random_access_iterator<I>() && _)>

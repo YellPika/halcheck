@@ -16,8 +16,8 @@ using dereference = decltype(*std::declval<I &>());
 template<typename I>
 using equality = lib::boolean_testable<decltype(std::declval<const I &>() == std::declval<const I &>())>;
 
-template<typename I>
-using comparison = lib::boolean_testable<decltype(std::declval<const I &>() < std::declval<const I &>())>;
+template<typename I, typename D = decltype(std::declval<const I &>() - std::declval<const I &>())>
+using difference = lib::enable_if_t<std::is_integral<D>() && std::is_signed<D>()>;
 
 template<typename I>
 using increment = decltype(++std::declval<I &>());
@@ -26,10 +26,7 @@ template<typename I>
 using decrement = decltype(--std::declval<I &>());
 
 template<typename I, typename N>
-using addition = decltype(std::declval<I &>() += std::declval<const N &>());
-
-template<typename I, typename N>
-using subtraction = decltype(std::declval<I &>() -= std::declval<const N &>());
+using addition = lib::same<decltype(std::declval<I &>() += std::declval<const N &>()), I &>;
 } // namespace detail
 
 template<typename I>
@@ -84,23 +81,35 @@ public:
     --*static_cast<J *>(this);
   }
 
+  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::addition, J, lib::iter_difference_t<J>>())>
+  J &operator-=(lib::iter_difference_t<J> n) {
+    J &self = *static_cast<J *>(this);
+    self += -n;
+    return self;
+  }
+
 private:
   template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::equality, J>())>
   friend bool operator!=(const I &lhs, const I &rhs) {
     return !bool(lhs == rhs);
   }
 
-  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::comparison, J>())>
+  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::difference, J>())>
+  friend bool operator<(const I &lhs, const I &rhs) {
+    return (lhs - rhs) < 0;
+  }
+
+  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::difference, J>())>
   friend bool operator>(const I &lhs, const I &rhs) {
     return rhs < lhs;
   }
 
-  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::comparison, J>())>
+  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::difference, J>())>
   friend bool operator<=(const I &lhs, const I &rhs) {
     return !(rhs < lhs);
   }
 
-  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::comparison, J>())>
+  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::difference, J>())>
   friend bool operator>=(const I &lhs, const I &rhs) {
     return !(lhs < rhs);
   }
@@ -117,7 +126,7 @@ private:
     return i;
   }
 
-  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::subtraction, J, lib::iter_difference_t<J>>())>
+  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::addition, J, lib::iter_difference_t<J>>())>
   friend I operator-(I i, lib::iter_difference_t<J> n) {
     i -= n;
     return i;

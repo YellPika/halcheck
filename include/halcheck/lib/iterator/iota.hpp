@@ -58,6 +58,7 @@ class iota_iterator : private lib::iterator_interface<iota_iterator<T>> {
 public:
   using lib::iterator_interface<iota_iterator>::operator++;
   using lib::iterator_interface<iota_iterator>::operator--;
+  using lib::iterator_interface<iota_iterator>::operator-=;
   using lib::iterator_interface<iota_iterator>::operator[];
 
   using value_type = T;
@@ -95,32 +96,17 @@ public:
     _value += n;
   }
 
-  template<typename U = T, HALCHECK_REQUIRE(std::is_unsigned<U>())>
-  iota_iterator &operator-=(difference_type n) {
-    if (n >= 0)
-      _value -= static_cast<U>(n);
-    else
-      _value += static_cast<U>(-n);
-  }
-
-  template<typename U = T, HALCHECK_REQUIRE(!std::is_unsigned<U>())>
-  iota_iterator &operator-=(difference_type n) {
-    _value -= n;
-  }
-
 private:
   friend class lib::iterator_interface<iota_iterator>;
 
   friend bool operator==(const iota_iterator &lhs, const iota_iterator &rhs) { return lhs._value == rhs._value; }
-
-  friend bool operator<(const iota_iterator &lhs, const iota_iterator &rhs) { return lhs._value < rhs._value; }
 
   friend difference_type operator-(const iota_iterator &lhs, const iota_iterator &rhs) {
     using D = difference_type;
 
     if (std::is_signed<T>())
       return D(D(lhs._value) - D(rhs._value));
-    else if (rhs > lhs)
+    else if (rhs._value > lhs._value)
       return D(-D(rhs._value) - D(lhs._value));
     else
       return D(lhs._value - rhs._value);

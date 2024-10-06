@@ -22,6 +22,7 @@ public:
 
   using lib::iterator_interface<cache_iterator<I>>::operator++;
   using lib::iterator_interface<cache_iterator<I>>::operator--;
+  using lib::iterator_interface<cache_iterator<I>>::operator-=;
   using lib::iterator_interface<cache_iterator<I>>::operator[];
 
   cache_iterator() = default;
@@ -68,19 +69,7 @@ public:
     return *this;
   }
 
-  template<bool _ = true, HALCHECK_REQUIRE(lib::is_random_access_iterator<I>() && _)>
-  cache_iterator &operator-=(difference_type n) {
-    _value.reset();
-    _base -= n;
-    return *this;
-  }
-
   friend bool operator==(const cache_iterator &lhs, const cache_iterator &rhs) { return lhs._base == rhs._base; }
-
-  template<bool _ = true, HALCHECK_REQUIRE(lib::is_random_access_iterator<I>() && _)>
-  friend bool operator<(const cache_iterator &lhs, const cache_iterator &rhs) {
-    return lhs._base < rhs._base;
-  }
 
   template<bool _ = true, HALCHECK_REQUIRE(lib::is_random_access_iterator<I>() && _)>
   friend difference_type operator-(const cache_iterator &lhs, const cache_iterator &rhs) {
