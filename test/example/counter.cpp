@@ -70,7 +70,8 @@ HALCHECK_TEST(Counter, Model) {
     previous = current;
   };
 
-  gen::repeat("commands"_s, [&](lib::atom id) { gen::one(id, inc, get); });
+  for (auto _ : gen::repeat("commands"_s))
+    gen::one("command"_s, inc, get);
 }
 
 HALCHECK_TEST(Counter, Linearizability) {
@@ -100,7 +101,8 @@ HALCHECK_TEST(Counter, Linearizability) {
     });
   };
 
-  gen::repeat("commands"_s, [&](lib::atom id) { gen::one(id, get, inc); });
+  for (auto _ : gen::repeat("commands"_s))
+    gen::one("command"_s, inc, get);
 
   EXPECT_TRUE(monitor.check());
 }

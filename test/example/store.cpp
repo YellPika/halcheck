@@ -78,7 +78,8 @@ HALCHECK_TEST(Store, Consistency) {
 
   // Step 1: obtain a random state by performing random commands
   LOG(INFO) << "[init]";
-  gen::repeat("init"_s, [&](lib::atom id) { gen::retry(id, [&](lib::atom id) { return gen::one(id, step, put); }); });
+  for (auto _ : gen::repeat("init"_s))
+    gen::retry("command"_s, [&](lib::atom id) { return gen::one(id, step, put); });
 
   // Step 2: put a random key-value pair
   LOG(INFO) << "[put]";
@@ -103,9 +104,8 @@ HALCHECK_TEST(Store, Consistency) {
   // Step 4: perform a random set of commands that DO NOT affect the value of
   // assinged to key `key' at time `time'.
   LOG(INFO) << "[modify]";
-  gen::repeat("modify"_s, [&](lib::atom id) {
-    gen::retry(id, [&](lib::atom id) { return gen::one(id, step, put_other); });
-  });
+  for (auto _ : gen::repeat("modify"_s))
+    gen::retry("command"_s, [&](lib::atom id) { return gen::one(id, step, put_other); });
 
   // Step 5: check that get returns the same value we wrote
   LOG(INFO) << "[get]";

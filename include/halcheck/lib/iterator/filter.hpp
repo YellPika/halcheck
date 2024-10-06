@@ -47,8 +47,10 @@ public:
 
   constexpr filter_iterator() = default;
 
-  constexpr filter_iterator(I base, I end, F fun)
-      : _base(std::move(base)), _end(std::move(end)), _func(std::move(fun)) {}
+  filter_iterator(I base, I end, F fun) : _base(std::move(base)), _end(std::move(end)), _func(std::move(fun)) {
+    while (_base != _end && !_func(*_base))
+      ++_base;
+  }
 
   template<
       typename I2,

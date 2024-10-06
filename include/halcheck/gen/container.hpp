@@ -10,43 +10,71 @@
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/optional.hpp>
+#include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <utility>
 #include <vector>
 
 namespace halcheck { namespace gen {
 
-/// @brief Repeatedly calls a function. During shrinking, one or more calls
-///        may be omitted.
-/// @tparam F A nullary function type.
-/// @param func The function to call.
-template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F, lib::atom>())>
-void repeat(lib::atom id, F func) {
-  using namespace lib::literals;
-
-  auto _ = gen::label(id);
-
-  auto size = gen::sample("size"_s, gen::size());
-
-  std::vector<bool> skip;
-  {
-    auto _ = gen::label("shrink"_s);
-    for (std::uintmax_t i = 0; i < size; i++)
-      skip.push_back(gen::shrink(lib::number(i)).has_value());
-  }
-
-  {
-    auto _ = gen::label("func"_s);
-    for (std::uintmax_t i = 0; i < size; i++) {
-      if (!skip[skip.size() - i - 1])
-        lib::invoke(func, lib::number(i));
+static const class {
+private:
+  struct to_label {
+    lib::destructable operator()(std::uintmax_t i) const {
+      auto label1 = gen::label(id);
+      auto label2 = gen::label(lib::number(i));
+      return std::make_pair(std::move(label1), std::move(label2));
     }
+
+    lib::atom id;
+  };
+
+  struct if_noshrink {
+    bool operator()(std::uintmax_t i) const { return !skip[skip.size() - i - 1]; }
+    std::vector<bool> skip;
+  };
+
+  using iterator =
+      lib::transform_iterator<lib::filter_iterator<lib::iota_iterator<std::uintmax_t>, if_noshrink>, to_label>;
+
+public:
+  lib::subrange<iterator> operator()(lib::atom id) const {
+    using namespace lib::literals;
+
+    auto _ = gen::label(id);
+
+    auto size = gen::sample("size"_s, gen::size());
+
+    std::vector<bool> skip;
+    {
+      auto _ = gen::label("shrink"_s);
+      for (std::uintmax_t i = 0; i < size; i++)
+        skip.push_back(gen::shrink(lib::number(i)).has_value());
+    }
+
+    auto begin = lib::make_iota_iterator(std::uintmax_t(0));
+    auto end = lib::make_iota_iterator(size);
+    return lib::make_subrange(
+        iterator(lib::make_filter_iterator(begin, end, if_noshrink{skip}), to_label{id}),
+        iterator(lib::make_filter_iterator(end, end, if_noshrink{skip}), to_label{id}));
   }
-}
+
+  /// @brief Repeatedly calls a function. During shrinking, one or more calls
+  ///        may be omitted.
+  /// @tparam F A nullary function type.
+  /// @param func The function to call.
+  template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F, lib::atom>())>
+  void operator()(lib::atom id, F func) const {
+    using namespace lib::literals;
+    for (auto _ : (*this)(id))
+      lib::invoke(func, "func"_s);
+  }
+} repeat;
 
 /// @brief Generates a random container value.
 /// @tparam T The type of container to generate.
@@ -59,9 +87,11 @@ template<
     HALCHECK_REQUIRE(lib::is_insertable_range<T>()),
     HALCHECK_REQUIRE(lib::is_invocable_r<lib::range_value_t<T>, F, lib::atom>())>
 T container(lib::atom id, F gen) {
+  using namespace lib::literals;
   T output;
   auto it = lib::end(output);
-  gen::repeat(id, [&](lib::atom id) { it = std::next(output.insert(it, lib::invoke(gen, id))); });
+  for (auto _ : gen::repeat(id))
+    it = std::next(output.insert(it, lib::invoke(gen, "gen"_s)));
   return output;
 }
 

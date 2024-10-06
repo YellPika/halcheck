@@ -87,13 +87,13 @@ HALCHECK_TEST(Stack, Model) {
     std::vector<int> model;
   } m;
 
-  gen::repeat("commands"_s, [&](lib::atom id) {
-    gen::retry(id, [&](lib::atom id) {
+  for (auto _ : gen::repeat("commands"_s)) {
+    gen::retry("command"_s, [&](lib::atom id) {
       auto _ = gen::label(id);
       auto command = gen::noshrink([] { return gen::element("command"_s, &monitor::push, &monitor::pop); });
       gen::label("exec"_s, command, m);
     });
-  });
+  }
 }
 
 HALCHECK_TEST(Stack, Linearizability) {
@@ -164,9 +164,8 @@ HALCHECK_TEST(Stack, Linearizability) {
     });
   };
 
-  gen::repeat("commands"_s, [&](lib::atom id) {
-    gen::retry(id, [&](lib::atom id) { return gen::one(id, push, pop); });
-  });
+  for (auto _ : gen::repeat("commands"_s))
+    gen::retry("command"_s, [&](lib::atom id) { return gen::one(id, push, pop); });
 
   EXPECT_TRUE(monitor.check());
 }
