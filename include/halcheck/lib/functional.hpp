@@ -26,7 +26,7 @@ template<typename F, typename... Args>
 using invoke_result_t = decltype(lib::invoke(std::declval<F>(), std::declval<Args>()...));
 
 template<typename R, typename F, typename... Args>
-using invocable_r = lib::convertible_to<lib::invoke_result_t<F, Args...>, R>;
+using invocable_r = lib::convertible<lib::invoke_result_t<F, Args...>, R>;
 
 template<typename R, typename F, typename... Args>
 struct is_invocable_r : lib::is_detected<lib::invocable_r, R, F, Args...> {};

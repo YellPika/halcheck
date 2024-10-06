@@ -19,7 +19,7 @@ template<
     typename I,
     typename F,
     HALCHECK_REQUIRE(lib::is_input_iterator<I>()),
-    HALCHECK_REQUIRE(lib::is_copy_constructible<F>()),
+    HALCHECK_REQUIRE(std::is_copy_constructible<F>()),
     HALCHECK_REQUIRE(std::is_object<F>()),
     HALCHECK_REQUIRE(lib::is_invocable<F &, lib::iter_reference_t<I>>())>
 class transform_iterator : private lib::iterator_interface<transform_iterator<I, F>> {
@@ -28,7 +28,7 @@ private:
       typename J,
       typename G,
       HALCHECK_REQUIRE_(lib::is_input_iterator<J>()),
-      HALCHECK_REQUIRE_(lib::is_copy_constructible<G>()),
+      HALCHECK_REQUIRE_(std::is_copy_constructible<G>()),
       HALCHECK_REQUIRE_(std::is_object<G>()),
       HALCHECK_REQUIRE_(lib::is_invocable<G &, lib::iter_reference_t<J>>())>
   friend class transform_iterator;
@@ -60,17 +60,17 @@ public:
   template<
       typename I2,
       typename F2,
-      HALCHECK_REQUIRE(lib::is_convertible_to<I2, I>()),
-      HALCHECK_REQUIRE(lib::is_convertible_to<F2, F>())>
+      HALCHECK_REQUIRE(std::is_convertible<I2, I>()),
+      HALCHECK_REQUIRE(std::is_convertible<F2, F>())>
   constexpr transform_iterator(transform_iterator<I2, F2> other) // NOLINT
       : _base(std::move(other._base)), _func(std::move(*other._func)) {}
 
   template<
       typename I2,
       typename F2,
-      HALCHECK_REQUIRE(lib::is_constructible_from<I, I2>()),
-      HALCHECK_REQUIRE(lib::is_constructible_from<F, F2>()),
-      HALCHECK_REQUIRE(!lib::is_convertible_to<I2, I>() || !lib::is_convertible_to<F2, F>())>
+      HALCHECK_REQUIRE(std::is_constructible<I, I2>()),
+      HALCHECK_REQUIRE(std::is_constructible<F, F2>()),
+      HALCHECK_REQUIRE(!std::is_convertible<I2, I>() || !std::is_convertible<F2, F>())>
   explicit constexpr transform_iterator(transform_iterator<I2, F2> other) // NOLINT
       : _base(std::move(other._base)), _func(*std::move(other._func)) {}
 

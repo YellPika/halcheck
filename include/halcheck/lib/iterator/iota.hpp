@@ -53,7 +53,7 @@ struct iota_diff<I, lib::enable_if_t<std::is_integral<I>() && sizeof(I) >= sizeo
 template<typename I>
 using iota_diff_t = typename iota_diff<I>::type;
 
-template<typename T, HALCHECK_REQUIRE(lib::is_integral<T>())>
+template<typename T, HALCHECK_REQUIRE(std::is_integral<T>())>
 class iota_iterator : private lib::iterator_interface<iota_iterator<T>> {
 public:
   using lib::iterator_interface<iota_iterator>::operator++;

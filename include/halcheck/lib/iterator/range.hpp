@@ -114,7 +114,7 @@ public:
 // See https://en.cppreference.com/w/cpp/ranges/range
 
 template<typename T>
-using range = lib::same_as<lib::iterator_t<T>, decltype(lib::end(std::declval<T &>()))>;
+using range = lib::same<lib::iterator_t<T>, decltype(lib::end(std::declval<T &>()))>;
 
 template<typename T>
 struct is_range : lib::is_detected<lib::range, T> {};
@@ -269,7 +269,7 @@ public:
 template<typename T>
 using insertable_range = lib::to_void<
     lib::range<T>,
-    lib::same_as<
+    lib::same<
         decltype(std::declval<T &>().insert(
             std::declval<lib::iterator_t<const T &>>(), std::declval<lib::range_value_t<T>>())),
         lib::iterator_t<T>>>;
