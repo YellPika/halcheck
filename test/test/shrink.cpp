@@ -3,9 +3,7 @@
 #include <halcheck/gtest.hpp>
 
 #include <cstdint>
-#include <functional>
 #include <future>
-#include <iterator>
 #include <limits>
 #include <ostream>
 #include <utility>
@@ -22,11 +20,11 @@ HALCHECK_TEST(Shrink, To) {
   auto src = gen::arbitrary<T>("src"_s);
 
   auto func = [&] { return gen::shrink_to("eval"_s, dst, src); };
-  auto prev = gen::make_shrinks(std::ref(func));
+  auto prev = gen::make_shrinks(func);
   ASSERT_EQ(prev.get(), src);
   while (prev.children().begin() != prev.children().end()) {
-    auto offset = gen::range("offset"_s, 0, prev.size());
-    auto next = gen::make_shrinks(*std::next(prev.children().begin(), long(offset)), std::ref(func));
+    auto child = gen::element_of("child"_s, prev.children());
+    auto next = gen::make_shrinks(std::move(child), func);
     if (dst < src) {
       ASSERT_LE(dst, next.get());
       ASSERT_LT(next.get(), prev.get());

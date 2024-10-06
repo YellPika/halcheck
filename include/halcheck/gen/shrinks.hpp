@@ -46,18 +46,12 @@ struct shrink_index_to_trie {
 };
 
 struct shrink_call_to_tries {
-  lib::subrange<lib::transform_iterator<lib::iota_iterator<std::uintmax_t>, detail::shrink_index_to_trie>>
-  operator()(const detail::shrink_call &call) const {
-    return lib::make_subrange(
-        lib::make_transform_iterator(
-            lib::make_iota_iterator(std::uintmax_t(0)),
-            detail::shrink_index_to_trie{&call.path, input}),
-        lib::make_transform_iterator(
-            lib::make_iota_iterator(call.size),
-            detail::shrink_index_to_trie{&call.path, input}));
+  lib::transform_view<lib::iota_view<std::size_t>, detail::shrink_index_to_trie> operator()(std::size_t i) const {
+    return lib::transform(lib::iota(calls[i].size), detail::shrink_index_to_trie{&calls[i].path, &input});
   }
 
-  const lib::trie<lib::atom, lib::optional<std::uintmax_t>> *input;
+  std::vector<detail::shrink_call> calls;
+  lib::trie<lib::atom, lib::optional<std::uintmax_t>> input;
 };
 
 struct shrink_handler : eff::handler<shrink_handler, gen::shrink_effect, gen::label_effect> {
@@ -109,24 +103,10 @@ public:
   lib::add_lvalue_reference_t<const T> get() const { return _value.get(); }
   lib::add_lvalue_reference_t<T> get() { return _value.get(); }
 
-  std::size_t size() const {
-    std::size_t output = 0;
-    for (auto &&call : _calls)
-      output += call.size;
-    return output;
-  }
+  using children_view =
+      lib::join_view<lib::cache_view<lib::transform_view<lib::iota_view<std::size_t>, detail::shrink_call_to_tries>>>;
 
-  using children_view = lib::subrange<lib::join_iterator<lib::cache_iterator<
-      lib::transform_iterator<std::vector<detail::shrink_call>::const_iterator, detail::shrink_call_to_tries>>>>;
-  // lib::concat_view<lib::transform_view<const std::vector<detail::shrink_call>, detail::shrink_call_to_tries>>;
-
-  children_view children() const {
-    auto begin =
-        lib::make_cache_iterator(lib::make_transform_iterator(_calls.begin(), detail::shrink_call_to_tries{&_input}));
-    auto end =
-        lib::make_cache_iterator(lib::make_transform_iterator(_calls.end(), detail::shrink_call_to_tries{&_input}));
-    return children_view(lib::make_join_iterator(begin, end), lib::make_join_iterator(end, end));
-  }
+  const children_view &children() const { return _children; }
 
 private:
   template<typename F, typename... Args>
@@ -138,15 +118,15 @@ private:
       : _value(eff::handle(
             [&] { return lib::make_result_holder(func, std::forward<Args>(args)...); },
             detail::shrink_handler(input, {}, calls))),
-        _calls([&] {
+        _children([&] {
           std::lock_guard<std::mutex> _(calls->mutex);
-          return calls->data;
-        }()),
-        _input(std::move(input)) {}
+          return lib::join(lib::cache(lib::transform(
+              lib::iota(calls->data.size()),
+              detail::shrink_call_to_tries{std::move(calls->data), std::move(input)})));
+        }()) {}
 
   lib::result_holder<T> _value;
-  std::vector<detail::shrink_call> _calls;
-  lib::trie<lib::atom, lib::optional<std::uintmax_t>> _input;
+  children_view _children;
 };
 
 static const struct {

@@ -29,12 +29,12 @@ namespace detail {
 
 struct forward_shrink_append {
   std::vector<std::uintmax_t> operator()(std::uintmax_t value) const {
-    auto output = *input;
+    auto output = input;
     output.push_back(value);
     return output;
   }
 
-  const std::vector<std::uintmax_t> *input;
+  std::vector<std::uintmax_t> input;
 };
 
 struct forward_shrink_handler : eff::handler<forward_shrink_handler, gen::shrink_effect> {
@@ -80,28 +80,19 @@ public:
   lib::add_lvalue_reference_t<const T> get() const { return _value.get(); }
   lib::add_lvalue_reference_t<T> get() { return _value.get(); }
 
-  using children_view =
-      lib::subrange<lib::transform_iterator<lib::iota_iterator<std::uintmax_t>, detail::forward_shrink_append>>;
+  using children_view = lib::transform_view<lib::iota_view<std::uintmax_t>, detail::forward_shrink_append>;
 
-  children_view children() const {
-    return children_view(
-        lib::make_transform_iterator(
-            lib::make_iota_iterator(std::uintmax_t(0)),
-            detail::forward_shrink_append{&_input}),
-        lib::make_transform_iterator(
-            lib::make_iota_iterator(std::uintmax_t(_remaining)),
-            detail::forward_shrink_append{&_input}));
-  }
+  const children_view &children() const { return _children; }
 
 private:
   template<typename F, typename... Args>
   forward_shrinks(detail::forward_shrink_handler handler, std::vector<uintmax_t> input, F func, Args &&...args)
       : _value(eff::handle([&] { return lib::make_result_holder(func, std::forward<Args>(args)...); }, handler)),
-        _input(std::move(input)), _remaining(handler.data->remaining) {}
+        _children(lib::transform(lib::iota(handler.data->remaining), detail::forward_shrink_append{std::move(input)})) {
+  }
 
   lib::result_holder<T> _value;
-  std::vector<std::uintmax_t> _input;
-  std::uintmax_t _remaining;
+  children_view _children;
 };
 
 static const struct {

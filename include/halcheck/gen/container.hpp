@@ -39,11 +39,10 @@ private:
     std::vector<bool> skip;
   };
 
-  using iterator =
-      lib::transform_iterator<lib::filter_iterator<lib::iota_iterator<std::uintmax_t>, if_noshrink>, to_label>;
+  using view = lib::transform_view<lib::filter_view<lib::iota_view<std::uintmax_t>, if_noshrink>, to_label>;
 
 public:
-  lib::subrange<iterator> operator()(lib::atom id) const {
+  view operator()(lib::atom id) const {
     using namespace lib::literals;
 
     auto _ = gen::label(id);
@@ -57,11 +56,7 @@ public:
         skip.push_back(gen::shrink(lib::number(i)).has_value());
     }
 
-    auto begin = lib::make_iota_iterator(std::uintmax_t(0));
-    auto end = lib::make_iota_iterator(size);
-    return lib::make_subrange(
-        iterator(lib::make_filter_iterator(begin, end, if_noshrink{skip}), to_label{id}),
-        iterator(lib::make_filter_iterator(end, end, if_noshrink{skip}), to_label{id}));
+    return lib::transform(lib::filter(lib::iota(size), if_noshrink{std::move(skip)}), to_label{id});
   }
 
   /// @brief Repeatedly calls a function. During shrinking, one or more calls

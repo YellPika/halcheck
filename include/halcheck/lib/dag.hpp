@@ -143,48 +143,32 @@ private:
   };
 
 public:
-  using view = lib::subrange<lib::transform_iterator<lib::iota_iterator<std::size_t>, to_iterator>>;
-  using const_view = lib::subrange<lib::transform_iterator<lib::iota_iterator<std::size_t>, to_const_iterator>>;
+  using view = lib::transform_view<lib::iota_view<std::size_t>, to_iterator>;
+  using const_view = lib::transform_view<lib::iota_view<std::size_t>, to_const_iterator>;
 
   const_view children(const_iterator it) const {
     auto &&data = _nodes[*it.base()].children;
-    return const_view(
-        lib::make_transform_iterator(lib::make_iota_iterator(std::size_t(0)), to_const_iterator{&_nodes, &data}),
-        lib::make_transform_iterator(lib::make_iota_iterator(data.size()), to_const_iterator{&_nodes, &data}));
+    return lib::transform(lib::iota(data.size()), to_const_iterator{&_nodes, &data});
   }
 
   view children(const_iterator it) {
     auto &&data = _nodes[*it.base()].children;
-    return view(
-        lib::make_transform_iterator(lib::make_iota_iterator(std::size_t(0)), to_iterator{&_nodes, &data}),
-        lib::make_transform_iterator(lib::make_iota_iterator(data.size()), to_iterator{&_nodes, &data}));
+    return lib::transform(lib::iota(data.size()), to_iterator{&_nodes, &data});
   }
 
   const_view parents(const_iterator it) const {
     auto &&data = _nodes[*it.base()].parents;
-    return const_view(
-        lib::make_transform_iterator(lib::make_iota_iterator(std::size_t(0)), to_const_iterator{&_nodes, &data}),
-        lib::make_transform_iterator(lib::make_iota_iterator(data.size()), to_const_iterator{&_nodes, &data}));
+    return lib::transform(lib::iota(data.size()), to_const_iterator{&_nodes, &data});
   }
 
   view parents(const_iterator it) {
     auto &&data = _nodes[*it.base()].parents;
-    return view(
-        lib::make_transform_iterator(lib::make_iota_iterator(std::size_t(0)), to_iterator{&_nodes, &data}),
-        lib::make_transform_iterator(lib::make_iota_iterator(data.size()), to_iterator{&_nodes, &data}));
+    return lib::transform(lib::iota(data.size()), to_iterator{&_nodes, &data});
   }
 
-  const_view roots() const {
-    return const_view(
-        lib::make_transform_iterator(lib::make_iota_iterator(std::size_t(0)), to_const_iterator{&_nodes, &_roots}),
-        lib::make_transform_iterator(lib::make_iota_iterator(_roots.size()), to_const_iterator{&_nodes, &_roots}));
-  }
+  const_view roots() const { return lib::transform(lib::iota(_roots.size()), to_const_iterator{&_nodes, &_roots}); }
 
-  view roots() {
-    return view(
-        lib::make_transform_iterator(lib::make_iota_iterator(std::size_t(0)), to_iterator{&_nodes, &_roots}),
-        lib::make_transform_iterator(lib::make_iota_iterator(_roots.size()), to_iterator{&_nodes, &_roots}));
-  }
+  view roots() { return lib::transform(lib::iota(_roots.size()), to_iterator{&_nodes, &_roots}); }
 
   void reserve(std::size_t size) { _nodes.reserve(size); }
 };
