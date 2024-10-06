@@ -11,7 +11,7 @@
 
 namespace halcheck { namespace lib {
 
-template<typename I, HALCHECK_REQUIRE(lib::is_iterator<I>())>
+template<typename I, HALCHECK_REQUIRE(lib::is_input_iterator<I>())>
 class cache_iterator : private lib::iterator_interface<cache_iterator<I>> {
 public:
   using iterator_category = lib::iter_category_t<I>;
@@ -28,58 +28,63 @@ public:
 
   explicit cache_iterator(I base) : _base(std::move(base)) {}
 
+  template<typename J, HALCHECK_REQUIRE(std::is_convertible<J, I>())>
+  cache_iterator(cache_iterator<J> other) // NOLINT: implicit conversion
+      : _base(std::move(other._base)) {}
+
+  template<typename J, HALCHECK_REQUIRE(!std::is_convertible<J, I>()), HALCHECK_REQUIRE(std::is_constructible<I, J>())>
+  explicit cache_iterator(cache_iterator<J> other) // NOLINT: implicit conversion
+      : _base(std::move(other._base)) {}
+
   const I &base() const & { return _base; }
   I &&base() && { return std::move(_base); }
 
-  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::dereference, J>())>
-  const lib::iter_value_t<J> &operator*() const {
+  reference operator*() const {
     if (!_value)
       _value.emplace(*_base);
 
     return *_value;
   }
 
-  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::dereference, J>())>
-  const lib::iter_value_t<J> *operator->() const {
-    return std::addressof(**this);
-  }
+  pointer operator->() const { return std::addressof(**this); }
 
-  template<bool _ = true, HALCHECK_REQUIRE(lib::is_detected<detail::increment, I>())>
   cache_iterator &operator++() {
     _value.reset();
     ++_base;
     return *this;
   }
 
-  template<bool _ = true, HALCHECK_REQUIRE(lib::is_detected<detail::decrement, I>())>
+  template<bool _ = true, HALCHECK_REQUIRE(lib::is_bidirectional_iterator<I>() && _)>
   cache_iterator &operator--() {
     _value.reset();
     --_base;
     return *this;
   }
 
-  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::addition, J>())>
-  cache_iterator &operator+=(lib::iter_difference_t<J> n) {
+  template<bool _ = true, HALCHECK_REQUIRE(lib::is_random_access_iterator<I>() && _)>
+  cache_iterator &operator+=(difference_type n) {
     _value.reset();
     _base += n;
     return *this;
   }
 
-  template<typename J = I, HALCHECK_REQUIRE(lib::is_detected<detail::subtraction, J>())>
-  cache_iterator &operator-=(lib::iter_difference_t<J> n) {
+  template<bool _ = true, HALCHECK_REQUIRE(lib::is_random_access_iterator<I>() && _)>
+  cache_iterator &operator-=(difference_type n) {
     _value.reset();
     _base -= n;
     return *this;
   }
 
-  template<bool _ = true, HALCHECK_REQUIRE(lib::is_detected<detail::equality, I>())>
-  friend bool operator==(const cache_iterator &lhs, const cache_iterator &rhs) {
-    return lhs._base == rhs._base;
-  }
+  friend bool operator==(const cache_iterator &lhs, const cache_iterator &rhs) { return lhs._base == rhs._base; }
 
-  template<bool _ = true, HALCHECK_REQUIRE(lib::is_detected<detail::equality, I>())>
+  template<bool _ = true, HALCHECK_REQUIRE(lib::is_random_access_iterator<I>() && _)>
   friend bool operator<(const cache_iterator &lhs, const cache_iterator &rhs) {
     return lhs._base < rhs._base;
+  }
+
+  template<bool _ = true, HALCHECK_REQUIRE(lib::is_random_access_iterator<I>() && _)>
+  friend difference_type operator-(const cache_iterator &lhs, const cache_iterator &rhs) {
+    return lhs._base - rhs._base;
   }
 
 private:

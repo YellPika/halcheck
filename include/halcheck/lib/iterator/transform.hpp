@@ -39,13 +39,6 @@ public:
   using lib::iterator_interface<transform_iterator<I, F>>::operator--;
   using lib::iterator_interface<transform_iterator<I, F>>::operator[];
 
-  using iterator_concept = lib::conditional_t<
-      lib::is_random_access_iterator<I>{},
-      std::random_access_iterator_tag,
-      lib::conditional_t<
-          lib::is_bidirectional_iterator<I>{},
-          std::bidirectional_iterator_tag,
-          lib::conditional_t<lib::is_forward_iterator<I>{}, std::forward_iterator_tag, std::input_iterator_tag>>>;
   using reference = lib::invoke_result_t<const F &, lib::iter_reference_t<I>>;
   using iterator_category =
       lib::conditional_t<!std::is_reference<reference>(), std::input_iterator_tag, lib::iter_category_t<I>>;

@@ -27,15 +27,13 @@ public:
   using lib::iterator_interface<join_iterator>::operator--;
   using lib::iterator_interface<join_iterator>::operator[];
 
-  using iterator_concept = lib::conditional_t<
-      lib::is_bidirectional_iterator<I>() && lib::is_bidirectional_range<lib::iter_reference_t<I>>(),
+  using iterator_category = lib::conditional_t<
+      lib::is_bidirectional_iterator<I>() && lib::is_bidirectional_iterator<inner>(),
       std::bidirectional_iterator_tag,
       lib::conditional_t<
-          lib::is_forward_iterator<I>() && lib::is_forward_range<lib::iter_reference_t<I>>(),
+          lib::is_forward_iterator<I>() && lib::is_forward_iterator<inner>(),
           std::forward_iterator_tag,
           std::input_iterator_tag>>;
-  // TODO: iterator_category
-  using iterator_category = std::forward_iterator_tag;
   using reference = lib::iter_reference_t<inner>;
   using pointer = void;
   using value_type = lib::range_value_t<lib::iter_reference_t<I>>;
