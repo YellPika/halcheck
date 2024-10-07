@@ -2,7 +2,6 @@
 
 #include "nlohmann/json.hpp"
 
-#include <halcheck/eff/api.hpp>
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/scope.hpp>
@@ -13,9 +12,6 @@
 #include <chrono>
 #include <exception>
 #include <fstream>
-#include <functional>
-#include <ostream>
-#include <random>
 #include <string>
 #include <utility>
 

@@ -3,8 +3,6 @@
 #include <halcheck/gtest.hpp>
 #include <halcheck/tyche/observe.hpp>
 
-#include <string>
-
 using namespace halcheck;
 
 test::strategy gtest::default_strategy() {

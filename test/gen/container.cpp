@@ -4,7 +4,6 @@
 
 #include <cstdint>
 #include <ostream>
-#include <string>
 #include <vector>
 
 using namespace halcheck;

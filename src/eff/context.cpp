@@ -1,7 +1,6 @@
 #include "halcheck/eff/context.hpp"
 
 #include <halcheck/lib/scope.hpp>
-#include <halcheck/lib/utility.hpp>
 
 #include <array>
 #include <atomic>

@@ -5,15 +5,8 @@
 #include <halcheck/gtest.hpp>
 
 #include <atomic>
-#include <chrono>
-#include <cstddef>
-#include <future>
 #include <ostream>
 #include <random>
-#include <stdexcept>
-#include <string>
-#include <thread>
-#include <unordered_map>
 #include <vector>
 
 using namespace halcheck;

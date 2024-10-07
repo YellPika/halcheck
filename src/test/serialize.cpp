@@ -1,9 +1,7 @@
 #include "halcheck/test/serialize.hpp"
 
 #include <halcheck/eff/api.hpp>
-#include <halcheck/gen/discard.hpp>
 #include <halcheck/lib/functional.hpp>
-#include <halcheck/lib/scope.hpp>
 #include <halcheck/test/deserialize.hpp>
 #include <halcheck/test/strategy.hpp>
 

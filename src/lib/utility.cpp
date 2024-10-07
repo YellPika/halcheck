@@ -1,1 +1,1 @@
-#include "halcheck/lib/utility.hpp"
+#include "halcheck/lib/utility.hpp" // IWYU pragma: keep

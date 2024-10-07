@@ -6,13 +6,13 @@
 #include <halcheck/gen/range.hpp>
 #include <halcheck/gen/sample.hpp>
 #include <halcheck/gen/shrink.hpp>
+#include <halcheck/lib/atom.hpp>
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/numeric.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <array>
 #include <cstdint>
-#include <initializer_list>
 #include <type_traits>
 #include <utility>
 

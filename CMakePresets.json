@@ -9,7 +9,7 @@
       "binaryDir": "build/${presetName}",
       "cacheVariables": {
         "CMAKE_COLOR_DIAGNOSTICS": "ON",
-        "CMAKE_CXX_INCLUDE_WHAT_YOU_USE": "include-what-you-use;-Xiwyu;--no-fwd_decls;-Xiwyu;--transitive_includes_only",
+        "CMAKE_CXX_INCLUDE_WHAT_YOU_USE": "include-what-you-use;-Xiwyu;--no_fwd_decls;-Xiwyu;--transitive_includes_only",
         "CMAKE_CXX_STANDARD": "11",
         "CMAKE_CXX_EXTENSIONS": "OFF",
         "CMAKE_LINKER_TYPE": "MOLD",

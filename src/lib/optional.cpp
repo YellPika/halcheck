@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <mutex>
-#include <vector>
+#include <type_traits>
 
 using namespace halcheck;
 

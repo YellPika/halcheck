@@ -21,7 +21,6 @@
 #include <halcheck/test/strategy.hpp>
 
 #include <cstdint>
-#include <string>
 #include <vector>
 
 using namespace halcheck;

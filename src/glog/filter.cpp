@@ -9,7 +9,6 @@
 #include <glog/logging.h>
 
 #include <cstddef>
-#include <functional>
 #include <iostream>
 #include <mutex>
 #include <string>

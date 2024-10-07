@@ -5,7 +5,7 @@
 #include <halcheck/lib/type_traits.hpp>
 
 #include <sstream>
-#include <string>
+#include <string> // IWYU pragma: export
 
 namespace halcheck { namespace lib {
 

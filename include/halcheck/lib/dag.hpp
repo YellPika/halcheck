@@ -10,8 +10,6 @@
 #include <cstddef>
 #include <future>
 #include <initializer_list>
-#include <iterator>
-#include <type_traits>
 #include <utility>
 #include <vector>
 

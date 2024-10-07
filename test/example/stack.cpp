@@ -4,16 +4,10 @@
 #include <halcheck/glog.hpp>
 #include <halcheck/gtest.hpp>
 
-#include "gtest/gtest.h"
-
 #include <atomic>
-#include <chrono>
 #include <cstddef>
 #include <ostream>
-#include <random>
 #include <stdexcept>
-#include <string>
-#include <thread>
 #include <vector>
 
 using namespace halcheck;

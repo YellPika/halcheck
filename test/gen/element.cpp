@@ -2,6 +2,7 @@
 #include <halcheck/gtest.hpp>
 
 #include <algorithm>
+#include <cstddef>
 #include <vector>
 
 using namespace halcheck;

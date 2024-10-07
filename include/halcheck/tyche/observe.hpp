@@ -5,6 +5,8 @@
 #include <halcheck/lib/utility.hpp>
 #include <halcheck/test/strategy.hpp>
 
+#include <string>
+
 namespace halcheck { namespace tyche {
 
 test::strategy

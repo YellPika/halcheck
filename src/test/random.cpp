@@ -17,9 +17,7 @@
 #include <halcheck/test/strategy.hpp>
 
 #include <cstdint>
-#include <functional>
 #include <random>
-#include <string>
 
 using namespace halcheck;
 

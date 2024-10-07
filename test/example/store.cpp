@@ -2,8 +2,11 @@
 #include <halcheck/glog.hpp>
 #include <halcheck/gtest.hpp>
 
+#include <cstddef>
 #include <map>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace halcheck;
