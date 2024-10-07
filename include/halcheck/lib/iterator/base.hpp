@@ -1,6 +1,8 @@
 #ifndef HALCHECK_LIB_ITERATOR_BASE_HPP
 #define HALCHECK_LIB_ITERATOR_BASE_HPP
 
+// IWYU pragma: private, include <halcheck/lib/iterator.hpp>
+
 #include <iterator>
 
 namespace halcheck { namespace lib {

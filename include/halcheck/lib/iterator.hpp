@@ -4,6 +4,7 @@
 #include <halcheck/lib/iterator/base.hpp>        // IWYU pragma: export
 #include <halcheck/lib/iterator/cache.hpp>       // IWYU pragma: export
 #include <halcheck/lib/iterator/filter.hpp>      // IWYU pragma: export
+#include <halcheck/lib/iterator/generate.hpp>    // IWYU pragma: export
 #include <halcheck/lib/iterator/interface.hpp>   // IWYU pragma: export
 #include <halcheck/lib/iterator/iota.hpp>        // IWYU pragma: export
 #include <halcheck/lib/iterator/join.hpp>        // IWYU pragma: export

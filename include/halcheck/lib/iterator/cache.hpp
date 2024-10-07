@@ -1,6 +1,8 @@
 #ifndef HALCHECK_LIB_ITERATOR_CACHE_HPP
 #define HALCHECK_LIB_ITERATOR_CACHE_HPP
 
+// IWYU pragma: private, include <halcheck/lib/iterator.hpp>
+
 #include <halcheck/lib/iterator/base.hpp>
 #include <halcheck/lib/iterator/interface.hpp>
 #include <halcheck/lib/iterator/range.hpp>
