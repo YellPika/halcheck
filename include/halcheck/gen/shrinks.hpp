@@ -36,22 +36,29 @@ struct shrink_calls {
   std::vector<shrink_call> data;
 };
 
-struct shrink_index_to_trie {
-  lib::trie<lib::atom, lib::optional<std::uintmax_t>> operator()(std::uintmax_t index) const {
-    return input->set(*path, index);
+struct to_tries {
+  to_tries() = default;
+
+  to_tries(
+      const std::vector<detail::shrink_call> *calls, const lib::trie<lib::atom, lib::optional<std::uintmax_t>> *input)
+      : calls(calls), input(input) {}
+
+  lib::optional<lib::trie<lib::atom, lib::optional<std::uintmax_t>>> operator()() {
+    while (call_index < calls->size() && sample_index == (*calls)[call_index].size) {
+      sample_index = 0;
+      ++call_index;
+    }
+
+    if (call_index == calls->size())
+      return lib::nullopt;
+    else
+      return input->set((*calls)[call_index].path, sample_index++);
   }
 
-  const std::vector<lib::atom> *path;
-  const lib::trie<lib::atom, lib::optional<std::uintmax_t>> *input;
-};
-
-struct shrink_call_to_tries {
-  lib::transform_view<lib::iota_view<std::size_t>, detail::shrink_index_to_trie> operator()(std::size_t i) const {
-    return lib::transform(lib::iota(calls[i].size), detail::shrink_index_to_trie{&calls[i].path, &input});
-  }
-
-  std::vector<detail::shrink_call> calls;
-  lib::trie<lib::atom, lib::optional<std::uintmax_t>> input;
+  const std::vector<detail::shrink_call> *calls = nullptr;
+  const lib::trie<lib::atom, lib::optional<std::uintmax_t>> *input = nullptr;
+  std::size_t call_index = 0;
+  std::size_t sample_index = 0;
 };
 
 struct shrink_handler : eff::handler<shrink_handler, gen::shrink_effect, gen::label_effect> {
@@ -103,10 +110,13 @@ public:
   lib::add_lvalue_reference_t<const T> get() const { return _value.get(); }
   lib::add_lvalue_reference_t<T> get() { return _value.get(); }
 
-  using children_view =
-      lib::join_view<lib::cache_view<lib::transform_view<lib::iota_view<std::size_t>, detail::shrink_call_to_tries>>>;
+  using children_view = lib::subrange<lib::generate_iterator<detail::to_tries>>;
 
-  const children_view &children() const { return _children; }
+  children_view children() const {
+    return lib::make_subrange(
+        lib::make_generate_iterator(detail::to_tries{&_calls, &_input}),
+        lib::generate_iterator<detail::to_tries>());
+  }
 
 private:
   template<typename F, typename... Args>
@@ -118,15 +128,15 @@ private:
       : _value(eff::handle(
             [&] { return lib::make_result_holder(func, std::forward<Args>(args)...); },
             detail::shrink_handler(input, {}, calls))),
-        _children([&] {
+        _calls([&] {
           std::lock_guard<std::mutex> _(calls->mutex);
-          return lib::join(lib::cache(lib::transform(
-              lib::iota(calls->data.size()),
-              detail::shrink_call_to_tries{std::move(calls->data), std::move(input)})));
-        }()) {}
+          return std::move(calls->data);
+        }()),
+        _input(std::move(input)) {}
 
   lib::result_holder<T> _value;
-  children_view _children;
+  std::vector<detail::shrink_call> _calls;
+  lib::trie<lib::atom, lib::optional<std::uintmax_t>> _input;
 };
 
 static const struct {
