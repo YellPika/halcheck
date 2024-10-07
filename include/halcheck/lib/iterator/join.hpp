@@ -71,7 +71,9 @@ public:
 
   join_iterator(I begin, I end) : _begin(std::move(begin)), _end(std::move(end)) { satisfy(); }
 
-  constexpr auto operator*() const noexcept(noexcept(**this->_inner)) -> decltype(**this->_inner) { return **_inner; }
+  constexpr auto operator*() const noexcept(noexcept(*std::declval<const inner &>())) -> decltype(**this->_inner) {
+    return **_inner;
+  }
 
   template<typename T = inner, typename = decltype(&T::operator->), HALCHECK_REQUIRE(lib::is_copyable<T>())>
   constexpr inner operator->() const {

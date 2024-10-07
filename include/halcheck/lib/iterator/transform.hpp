@@ -76,7 +76,7 @@ public:
   I base() && { return std::move(_base); }
 
   constexpr lib::invoke_result_t<const F &, lib::iter_reference_t<I>> operator*() const
-      noexcept(noexcept(lib::invoke(this->_func, *this->_base))) {
+      noexcept(lib::is_nothrow_invocable<const F &, lib::iter_reference_t<I>>()) {
     return lib::invoke(_func, *_base);
   }
 

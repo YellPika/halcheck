@@ -40,13 +40,13 @@ public:
   };
 
   template<typename T, std::size_t N>
-  constexpr T *operator()(T (&value)[]) const { // NOLINT
-    return value + 0;
+  constexpr T *operator()(T *value) const { // NOLINT
+    return value;
   };
 
   template<typename T, std::size_t N>
-  constexpr const T *operator()(const T (&value)[]) const { // NOLINT
-    return value + 0;
+  constexpr const T *operator()(const T *value) const { // NOLINT
+    return value;
   };
 
   template<
@@ -181,7 +181,7 @@ private:
 
 public:
   template<typename T>
-  constexpr void operator()(T (&value)[]) const = delete; // NOLINT
+  constexpr void operator()(T *) const = delete; // NOLINT
 
   template<typename T, std::size_t N>
   constexpr std::size_t operator()(T (&)[N]) const noexcept { // NOLINT

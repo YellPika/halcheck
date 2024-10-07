@@ -37,6 +37,12 @@ using invocable = lib::invoke_result_t<F, Args...>;
 template<typename F, typename... Args>
 struct is_invocable : lib::is_detected<lib::invocable, F, Args...> {};
 
+template<typename F, typename... Args>
+using nothrow_invocable = lib::enable_if_t<noexcept(lib::invoke(std::declval<F>(), std::declval<Args>()...))>;
+
+template<typename F, typename... Args>
+struct is_nothrow_invocable : lib::is_detected<lib::nothrow_invocable, F, Args...> {};
+
 template<typename...>
 class overload_t {};
 

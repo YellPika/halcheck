@@ -75,7 +75,7 @@ public:
 
   I base() && { return std::move(_base); }
 
-  constexpr reference operator*() const noexcept(noexcept(*_base)) { return *_base; }
+  constexpr reference operator*() const noexcept(noexcept(*std::declval<const I &>())) { return *_base; }
 
   filter_iterator &operator++() {
     do {
