@@ -20,48 +20,29 @@ namespace halcheck { namespace lib {
 template<typename T>
 class dag {
 private:
-  class node {
-  public:
-    template<typename... Args>
-    explicit node(Args &&...args) : value(std::forward<Args>(args)...) {}
-
-  private:
-    friend class dag;
-
-    T value;
+  struct edges {
     std::vector<std::size_t> children;
     std::vector<std::size_t> parents;
   };
 
-  std::vector<node> _nodes;
+  std::vector<T> _labels;
+  std::vector<edges> _edges;
   std::vector<std::size_t> _roots;
 
-  struct from_index {
-    T &operator()(std::size_t index) const { return (*nodes)[index].value; }
-    std::vector<node> *nodes;
-  };
-  struct from_const_index {
-    from_const_index() : nodes(nullptr) {}
-    explicit from_const_index(const std::vector<node> *nodes) : nodes(nodes) {}
-    from_const_index(from_index other) : nodes(other.nodes) {} // NOLINT
-    const T &operator()(std::size_t index) const { return (*nodes)[index].value; }
-    const std::vector<node> *nodes;
-  };
-
 public:
-  using iterator = lib::transform_iterator<lib::iota_iterator<std::size_t>, from_index>;
-  using const_iterator = lib::transform_iterator<lib::iota_iterator<std::size_t>, from_const_index>;
+  using iterator = lib::index_iterator<std::vector<T>>;
+  using const_iterator = lib::index_iterator<const std::vector<T>>;
   static_assert(std::is_convertible<iterator, const_iterator>(), "");
 
-  iterator begin() { return iterator(lib::iota_iterator<std::size_t>(0), from_index{&_nodes}); }
-  const_iterator begin() const { return const_iterator(lib::iota_iterator<std::size_t>(0), from_const_index{&_nodes}); }
+  iterator begin() { return iterator(_labels); }
+  const_iterator begin() const { return const_iterator(_labels); }
 
-  iterator end() { return iterator(lib::iota_iterator<std::size_t>(size()), from_index{&_nodes}); }
-  const_iterator end() const {
-    return const_iterator(lib::iota_iterator<std::size_t>(size()), from_const_index{&_nodes});
-  }
+  iterator end() { return iterator(_labels, size()); }
+  const_iterator end() const { return const_iterator(_labels, size()); }
 
-  std::size_t size() const { return _nodes.size(); }
+  bool empty() const { return _labels.empty(); }
+
+  std::size_t size() const { return _labels.size(); }
 
   template<
       typename I,
@@ -70,9 +51,10 @@ public:
       HALCHECK_REQUIRE(std::is_convertible<lib::iter_reference_t<I>, const_iterator>()),
       HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
   iterator emplace(I begin, I end, Args &&...args) {
-    auto index = _nodes.size();
-    _nodes.emplace_back(std::forward<Args>(args)...);
-    auto &parents = _nodes.back().parents;
+    auto index = size();
+    _labels.emplace_back(std::forward<Args>(args)...);
+    _edges.emplace_back();
+    auto &parents = _edges.back().parents;
 
     try {
       if (begin == end)
@@ -80,23 +62,28 @@ public:
 
       while (begin != end) {
         const_iterator i = *begin++;
-        if (_nodes[*i.base()].children.empty() || _nodes[*i.base()].children.back() != index)
-          _nodes[*i.base()].children.push_back(index);
-        parents.push_back(*i.base());
+        if (_edges[i.index()].children.empty() || _edges[i.index()].children.back() != index)
+          _edges[i.index()].children.push_back(index);
+        parents.push_back(i.index());
       }
     } catch (...) {
-      _nodes.pop_back();
-      for (auto &&node : _nodes) {
-        if (node.children.back() == index)
-          node.children.pop_back();
+      for (auto &&edge : _edges) {
+        if (edge.children.back() == index)
+          edge.children.pop_back();
       }
+
+      if (_roots.back() == index)
+        _roots.pop_back();
+
+      _labels.pop_back();
+      _edges.pop_back();
       throw;
     }
 
     std::sort(parents.begin(), parents.end());
     parents.erase(std::unique(parents.begin(), parents.end()), parents.end());
 
-    return iterator(lib::make_iota_iterator(index), from_index{&_nodes});
+    return iterator(_labels, index);
   }
 
   template<
@@ -115,60 +102,57 @@ public:
   }
 
   void clear() {
-    _nodes.clear();
+    _labels.clear();
+    _edges.clear();
     _roots.clear();
   }
 
 private:
   struct to_iterator {
-    iterator operator()(std::size_t index) const {
-      return iterator(lib::make_iota_iterator((*data)[index]), from_index{nodes});
-    }
-    std::vector<node> *nodes;
-    std::vector<std::size_t> *data;
+    iterator operator()(std::size_t index) const { return iterator(self->_labels, index); }
+    dag *self;
   };
 
   struct to_const_iterator {
-    to_const_iterator() : nodes(nullptr), data(nullptr) {};
-    to_const_iterator(const std::vector<node> *nodes, const std::vector<std::size_t> *data)
-        : nodes(nodes), data(data) {}
-    to_const_iterator(to_iterator other) : nodes(other.nodes), data(other.data) {} // NOLINT
-    const_iterator operator()(std::size_t index) const {
-      return const_iterator(lib::make_iota_iterator((*data)[index]), from_const_index{nodes});
-    }
-    const std::vector<node> *nodes;
-    const std::vector<std::size_t> *data;
+    to_const_iterator() : self(nullptr) {};
+    explicit to_const_iterator(const dag *self) : self(self) {}
+    to_const_iterator(const to_iterator &other) : self(other.self) {} // NOLINT
+    const_iterator operator()(std::size_t index) const { return const_iterator(self->_labels, index); }
+    const dag *self;
   };
 
 public:
-  using view = lib::transform_view<lib::iota_view<std::size_t>, to_iterator>;
-  using const_view = lib::transform_view<lib::iota_view<std::size_t>, to_const_iterator>;
+  using view = lib::transform_view<lib::ref_view<const std::vector<std::size_t>>, to_iterator>;
+  using const_view = lib::transform_view<lib::ref_view<const std::vector<std::size_t>>, to_const_iterator>;
 
   const_view children(const_iterator it) const {
-    auto &&data = _nodes[*it.base()].children;
-    return lib::transform(lib::iota(data.size()), to_const_iterator{&_nodes, &data});
+    auto &&data = _edges[it.index()].children;
+    return lib::transform(lib::ref(data), to_const_iterator{this});
   }
 
   view children(const_iterator it) {
-    auto &&data = _nodes[*it.base()].children;
-    return lib::transform(lib::iota(data.size()), to_iterator{&_nodes, &data});
+    auto &&data = _edges[it.index()].children;
+    return lib::transform(lib::ref(data), to_iterator{this});
   }
 
   const_view parents(const_iterator it) const {
-    auto &&data = _nodes[*it.base()].parents;
-    return lib::transform(lib::iota(data.size()), to_const_iterator{&_nodes, &data});
+    auto &&data = _edges[it.index()].parents;
+    return lib::transform(lib::ref(data), to_const_iterator{this});
   }
 
   view parents(const_iterator it) {
-    auto &&data = _nodes[*it.base()].parents;
-    return lib::transform(lib::iota(data.size()), to_iterator{&_nodes, &data});
+    auto &&data = _edges[it.index()].parents;
+    return lib::transform(lib::ref(data), to_iterator{this});
   }
 
-  const_view roots() const { return lib::transform(lib::iota(_roots.size()), to_const_iterator{&_nodes, &_roots}); }
+  const_view roots() const { return lib::transform(lib::ref(_roots), to_const_iterator{this}); }
 
-  view roots() { return lib::transform(lib::iota(_roots.size()), to_iterator{&_nodes, &_roots}); }
+  view roots() { return lib::transform(lib::ref(_roots), to_iterator{this}); }
 
-  void reserve(std::size_t size) { _nodes.reserve(size); }
+  void reserve(std::size_t size) {
+    _labels.reserve(size);
+    _edges.reserve(size);
+  }
 };
 
 /// @brief Executes a function on each value in a given graph and stores the

@@ -76,7 +76,6 @@ HALCHECK_TEST(Counter, Linearizability) {
 
   auto get = [&](lib::atom id) {
     auto threads = gen_threads(id);
-    LOG(INFO) << "[monitor] get() on threads " << testing::PrintToString(threads);
     monitor.invoke(threads, [=, &object] {
       auto actual = object.get();
       LOG(INFO) << "[system] get(): " << actual << " on threads " << testing::PrintToString(threads);
@@ -86,7 +85,6 @@ HALCHECK_TEST(Counter, Linearizability) {
 
   auto inc = [&](lib::atom id) {
     auto threads = gen_threads(id);
-    LOG(INFO) << "[monitor] inc() on threads " << testing::PrintToString(threads);
     monitor.invoke(threads, [=, &object] {
       LOG(INFO) << "[system] inc() on threads " << testing::PrintToString(threads);
       object.inc();
