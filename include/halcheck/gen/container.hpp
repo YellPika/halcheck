@@ -1,6 +1,7 @@
 #ifndef HALCHECK_GEN_CONTAINER_HPP
 #define HALCHECK_GEN_CONTAINER_HPP
 
+#include <halcheck/eff/api.hpp>
 #include <halcheck/gen/label.hpp>
 #include <halcheck/gen/range.hpp>
 #include <halcheck/gen/sample.hpp>
@@ -21,6 +22,50 @@
 #include <vector>
 
 namespace halcheck { namespace gen {
+
+static const struct {
+private:
+  template<typename F>
+  struct to_label {
+    lib::invoke_result_t<const F &, lib::atom> operator()(std::uintmax_t i) const {
+      auto _ = context();
+      return lib::invoke(func, lib::number(i));
+    }
+
+    std::function<lib::destructable()> context;
+    F func;
+  };
+
+  struct if_noshrink {
+    bool operator()(std::uintmax_t i) const { return !skip[skip.size() - i - 1]; }
+    std::vector<bool> skip;
+  };
+
+  template<typename F>
+  using view = lib::transform_view<lib::filter_view<lib::iota_view<std::uintmax_t>, if_noshrink>, to_label<F>>;
+
+public:
+  template<typename F, HALCHECK_REQUIRE(lib::is_invocable<const F &, lib::atom>())>
+  view<F> operator()(lib::atom id, F gen) const {
+    using namespace lib::literals;
+
+    auto _ = gen::label(id);
+    auto context = eff::clone();
+
+    auto size = gen::sample("size"_s, gen::size());
+
+    std::vector<bool> skip;
+    {
+      auto _ = gen::label("shrink"_s);
+      for (std::uintmax_t i = 0; i < size; i++)
+        skip.push_back(gen::shrink(lib::number(i)).has_value());
+    }
+
+    return lib::transform(
+        lib::filter(lib::iota(size), if_noshrink{std::move(skip)}),
+        to_label<F>{std::move(context), std::move(gen)});
+  }
+} view;
 
 static const class {
 private:
