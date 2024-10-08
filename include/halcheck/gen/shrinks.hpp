@@ -34,6 +34,7 @@ struct shrink_call {
 struct shrink_calls {
   std::mutex mutex;
   std::vector<shrink_call> data;
+  std::size_t size;
 };
 
 struct to_tries {
@@ -74,6 +75,7 @@ struct shrink_handler : eff::handler<shrink_handler, gen::shrink_effect, gen::la
       if (auto locked = calls.lock()) {
         std::lock_guard<std::mutex> _(locked->mutex);
         locked->data.push_back({path, args.size});
+        locked->size += args.size;
       }
     }
     if (args.size == 0 || !output)
@@ -110,13 +112,23 @@ public:
   lib::add_lvalue_reference_t<const T> get() const { return _value.get(); }
   lib::add_lvalue_reference_t<T> get() { return _value.get(); }
 
-  using children_view = lib::subrange<lib::generate_iterator<detail::to_tries>>;
+  class children_view : public lib::view_interface<children_view> {
+  public:
+    explicit children_view(const shrinks &parent) : _parent(&parent) {}
 
-  children_view children() const {
-    return lib::make_subrange(
-        lib::make_generate_iterator(detail::to_tries{&_calls, &_input}),
-        lib::generate_iterator<detail::to_tries>());
-  }
+    lib::generate_iterator<detail::to_tries> begin() const {
+      return lib::make_generate_iterator(detail::to_tries{&_parent->_calls, &_parent->_input});
+    }
+
+    lib::generate_iterator<detail::to_tries> end() const { return lib::generate_iterator<detail::to_tries>(); }
+
+    std::size_t size() const { return _parent->_size; }
+
+  private:
+    const shrinks *_parent;
+  };
+
+  children_view children() const { return children_view(*this); }
 
 private:
   template<typename F, typename... Args>
@@ -132,11 +144,12 @@ private:
           std::lock_guard<std::mutex> _(calls->mutex);
           return std::move(calls->data);
         }()),
-        _input(std::move(input)) {}
+        _input(std::move(input)), _size(calls->size) {}
 
   lib::result_holder<T> _value;
   std::vector<detail::shrink_call> _calls;
   lib::trie<lib::atom, lib::optional<std::uintmax_t>> _input;
+  std::size_t _size;
 };
 
 static const struct {
