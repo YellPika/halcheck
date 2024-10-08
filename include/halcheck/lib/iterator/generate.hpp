@@ -47,7 +47,7 @@ private:
     return !lhs._value && !rhs._value;
   }
 
-  F _func;
+  lib::assignable<F> _func;
   lib::optional<value_type> _value;
 };
 

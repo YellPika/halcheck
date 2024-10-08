@@ -35,6 +35,9 @@ using convertible = lib::enable_if_t<std::is_convertible<From, To>{}>;
 template<typename T, typename U>
 using same = lib::enable_if_t<std::is_same<T, U>{}>;
 
+template<typename T, typename U>
+using base_of = lib::enable_if_t<std::is_base_of<T, U>{}>;
+
 template<typename T>
 using tuple_like = decltype(std::tuple_size<T>::value);
 
