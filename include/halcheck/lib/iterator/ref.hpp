@@ -17,6 +17,9 @@ namespace halcheck { namespace lib {
 template<typename R, HALCHECK_REQUIRE(std::is_object<R>()), HALCHECK_REQUIRE(lib::is_range<R>())>
 class ref_view : public lib::view_interface<ref_view<R>> {
 private:
+  template<typename T, HALCHECK_REQUIRE_(std::is_object<T>()), HALCHECK_REQUIRE_(lib::is_range<T>())>
+  friend class ref_view;
+
   static std::true_type FUN(R &);
   static std::false_type FUN(R &&);
 
@@ -28,6 +31,10 @@ public:
       HALCHECK_REQUIRE(decltype(FUN(std::declval<T>()))())>
   constexpr ref_view(T &&base) // NOLINT
       : _base(std::addressof(static_cast<R &>(std::forward<T>(base)))) {}
+
+  template<typename T, HALCHECK_REQUIRE(std::is_convertible<T *, R *>())>
+  constexpr ref_view(const ref_view<T> &other) // NOLINT
+      : _base(other._base) {}
 
   constexpr R &base() const { return *_base; }
 

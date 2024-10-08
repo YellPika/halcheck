@@ -133,6 +133,15 @@ template<
     HALCHECK_REQUIRE(lib::is_invocable<const F &, lib::range_reference_t<V>>())>
 class transform_view : public lib::view_interface<transform_view<V, F>> {
 private:
+  template<
+      typename V2,
+      typename F2,
+      HALCHECK_REQUIRE_(lib::is_input_range<V2>()),
+      HALCHECK_REQUIRE_(std::is_move_constructible<F2>()),
+      HALCHECK_REQUIRE_(std::is_object<F2>()),
+      HALCHECK_REQUIRE_(lib::is_invocable<const F2 &, lib::range_reference_t<V2>>())>
+  friend class transform_view;
+
   struct ref {
     explicit ref(const F *base = nullptr) : base(base) {}
     template<typename... Args>
@@ -146,6 +155,23 @@ public:
   constexpr transform_view() = default;
 
   constexpr transform_view(V base, F func) : _base(std::move(base)), _func(std::move(func)) {}
+
+  template<
+      typename V2,
+      typename F2,
+      HALCHECK_REQUIRE(std::is_convertible<V2, V>()),
+      HALCHECK_REQUIRE(std::is_convertible<F2, F>())>
+  constexpr transform_view(transform_view<V2, F2> other) // NOLINT
+      : _base(std::move(other._base)), _func(std::move(*other._func)) {}
+
+  template<
+      typename V2,
+      typename F2,
+      HALCHECK_REQUIRE(std::is_constructible<V, V2>()),
+      HALCHECK_REQUIRE(std::is_constructible<F, F2>()),
+      HALCHECK_REQUIRE(!std::is_convertible<V2, V>() || !std::is_convertible<F2, F>())>
+  explicit constexpr transform_view(transform_view<V2, F2> other) // NOLINT
+      : _base(std::move(other._base)), _func(*std::move(other._func)) {}
 
   template<bool _ = true, HALCHECK_REQUIRE(std::is_copy_constructible<V>() && _)>
   constexpr V base() const & {
