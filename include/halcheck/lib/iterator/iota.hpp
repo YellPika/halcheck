@@ -59,20 +59,19 @@ public:
   using lib::iterator_interface<iota_iterator>::operator++;
   using lib::iterator_interface<iota_iterator>::operator--;
   using lib::iterator_interface<iota_iterator>::operator-=;
+  using lib::iterator_interface<iota_iterator>::operator[];
 
   using value_type = T;
-  using reference = const T &;
+  using reference = T;
   using pointer = void;
   using difference_type = lib::iota_diff_t<T>;
-  using iterator_category = std::random_access_iterator_tag;
+  using iterator_category = std::input_iterator_tag;
 
   constexpr iota_iterator() = default;
 
   constexpr explicit iota_iterator(T value) : _value(std::move(value)) {}
 
-  constexpr reference operator*() const noexcept { return _value; }
-
-  constexpr value_type operator[](difference_type n) const noexcept { return _value + n; }
+  constexpr value_type operator*() const noexcept { return _value; }
 
   iota_iterator &operator++() {
     ++_value;
