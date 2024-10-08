@@ -127,7 +127,7 @@ template<typename T>
 struct enable_view : std::integral_constant<bool, std::is_base_of<lib::view_base, T>{}> {};
 
 template<typename T>
-using view = lib::to_void<lib::range<T>, lib::movable<T>, lib::enable_if_t<lib::enable_view<T>{}>>;
+using view = lib::void_t<lib::range<T>, lib::movable<T>, lib::enable_if_t<lib::enable_view<T>{}>>;
 
 template<typename T>
 struct is_view : lib::is_detected<lib::view, T> {};
@@ -135,7 +135,7 @@ struct is_view : lib::is_detected<lib::view, T> {};
 // See https://en.cppreference.com/w/cpp/ranges/input_range
 
 template<typename T>
-using input_range = lib::to_void<lib::range<T>, lib::input_iterator<lib::iterator_t<T>>>;
+using input_range = lib::void_t<lib::range<T>, lib::input_iterator<lib::iterator_t<T>>>;
 
 template<typename T>
 struct is_input_range : lib::is_detected<lib::input_range, T> {};
@@ -143,7 +143,7 @@ struct is_input_range : lib::is_detected<lib::input_range, T> {};
 // See https://en.cppreference.com/w/cpp/ranges/forward_range
 
 template<typename T>
-using forward_range = lib::to_void<lib::input_range<T>, lib::forward_iterator<lib::iterator_t<T>>>;
+using forward_range = lib::void_t<lib::input_range<T>, lib::forward_iterator<lib::iterator_t<T>>>;
 
 template<typename T>
 struct is_forward_range : lib::is_detected<lib::forward_range, T> {};
@@ -151,7 +151,7 @@ struct is_forward_range : lib::is_detected<lib::forward_range, T> {};
 // See https://en.cppreference.com/w/cpp/ranges/bidirectional_range
 
 template<typename T>
-using bidirectional_range = lib::to_void<lib::input_range<T>, lib::bidirectional_iterator<lib::iterator_t<T>>>;
+using bidirectional_range = lib::void_t<lib::input_range<T>, lib::bidirectional_iterator<lib::iterator_t<T>>>;
 
 template<typename T>
 struct is_bidirectional_range : lib::is_detected<lib::bidirectional_range, T> {};
@@ -159,7 +159,7 @@ struct is_bidirectional_range : lib::is_detected<lib::bidirectional_range, T> {}
 // See https://en.cppreference.com/w/cpp/ranges/random_access_range
 
 template<typename T>
-using random_access_range = lib::to_void<lib::input_range<T>, lib::random_access_iterator<lib::iterator_t<T>>>;
+using random_access_range = lib::void_t<lib::input_range<T>, lib::random_access_iterator<lib::iterator_t<T>>>;
 
 template<typename T>
 struct is_random_access_range : lib::is_detected<lib::random_access_range, T> {};
@@ -229,7 +229,7 @@ public:
 // See https://en.cppreference.com/w/cpp/ranges/sized_range
 
 template<typename T>
-using sized_range = lib::to_void<lib::range<T>, decltype(lib::size(std::declval<T &>()))>;
+using sized_range = lib::void_t<lib::range<T>, decltype(lib::size(std::declval<T &>()))>;
 
 template<typename T>
 struct is_sized_range : lib::is_detected<lib::sized_range, T> {};
@@ -280,7 +280,7 @@ public:
 } empty;
 
 template<typename T>
-using insertable_range = lib::to_void<
+using insertable_range = lib::void_t<
     lib::range<T>,
     lib::same<
         decltype(std::declval<T &>().insert(

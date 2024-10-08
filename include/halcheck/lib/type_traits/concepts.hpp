@@ -23,7 +23,7 @@ template<typename, template<typename...> class Op, typename... Args>
 struct is_detected_helper : std::false_type {};
 
 template<template<typename...> class Op, typename... Args>
-struct is_detected_helper<lib::to_void<Op<Args...>>, Op, Args...> : std::true_type {};
+struct is_detected_helper<lib::void_t<Op<Args...>>, Op, Args...> : std::true_type {};
 } // namespace detail
 
 template<template<typename...> class Op, typename... Args>
@@ -81,7 +81,7 @@ template<typename T>
 using move_assignable = lib::enable_if_t<std::is_move_assignable<T>{}>;
 
 template<typename T>
-using movable = lib::to_void<lib::move_constructible<T>, lib::move_assignable<T>>;
+using movable = lib::void_t<lib::move_constructible<T>, lib::move_assignable<T>>;
 
 template<typename T>
 struct is_movable : lib::is_detected<lib::movable, T> {};
@@ -93,20 +93,20 @@ template<typename T>
 using copy_assignable = lib::enable_if_t<std::is_copy_assignable<T>{}>;
 
 template<typename T>
-using copyable = lib::to_void<lib::copy_constructible<T>, lib::copy_assignable<T>>;
+using copyable = lib::void_t<lib::copy_constructible<T>, lib::copy_assignable<T>>;
 
 template<typename T>
 struct is_copyable : lib::is_detected<lib::copyable, T> {};
 
 template<typename B>
 using boolean_testable =
-    lib::to_void<lib::convertible<B, bool>, lib::convertible<decltype(!std::forward<B>(std::declval<B &>())), bool>>;
+    lib::void_t<lib::convertible<B, bool>, lib::convertible<decltype(!std::forward<B>(std::declval<B &>())), bool>>;
 
 template<typename B>
 struct is_boolean_testable : lib::is_detected<lib::boolean_testable, B> {};
 
 template<typename T>
-using equality_comparable = lib::to_void<
+using equality_comparable = lib::void_t<
     lib::boolean_testable<decltype(std::declval<const T &>() == std::declval<const T &>())>,
     lib::boolean_testable<decltype(std::declval<const T &>() != std::declval<const T &>())>>;
 

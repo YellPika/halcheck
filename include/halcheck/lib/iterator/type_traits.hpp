@@ -14,7 +14,7 @@ namespace halcheck { namespace lib {
 // See https://en.cppreference.com/w/cpp/iterator/input_or_output_iterator
 
 template<typename I>
-using iterator = lib::to_void<
+using iterator = lib::void_t<
     lib::copy_constructible<I>,
     lib::copy_assignable<I>,
     lib::destructible<I>,
@@ -31,7 +31,7 @@ struct is_iterator : lib::is_detected<lib::iterator, I> {};
 // See https://en.cppreference.com/w/cpp/iterator/input_iterator
 
 template<typename I>
-using input_iterator = lib::to_void<
+using input_iterator = lib::void_t<
     lib::iterator<I>,
     lib::equality_comparable<I>,
     lib::same<decltype(*std::declval<I &>()), lib::iter_reference_t<I>>,
@@ -45,7 +45,7 @@ struct is_input_iterator : lib::is_detected<lib::input_iterator, I> {};
 // See https://en.cppreference.com/w/cpp/iterator/output_iterator
 
 template<typename I, typename T>
-using output_iterator = lib::to_void<
+using output_iterator = lib::void_t<
     lib::iterator<I>,
     decltype(*std::declval<I &>() = std::forward<T>(std::declval<T &>())),
     lib::convertible<decltype(std::declval<I &>()++), const I &>,
@@ -58,7 +58,7 @@ struct is_output_iterator : lib::is_detected<lib::output_iterator, I, T> {};
 // See https://en.cppreference.com/w/cpp/iterator/forward_iterator
 
 template<typename I>
-using forward_iterator = lib::to_void<
+using forward_iterator = lib::void_t<
     lib::input_iterator<I>,
     lib::default_constructible<I>,
     lib::convertible<decltype(std::declval<I &>()++), const I &>,
@@ -71,7 +71,7 @@ struct is_forward_iterator : lib::is_detected<lib::forward_iterator, I> {};
 // See https://en.cppreference.com/w/cpp/iterator/bidirectional_iterator
 
 template<typename I>
-using bidirectional_iterator = lib::to_void<
+using bidirectional_iterator = lib::void_t<
     lib::forward_iterator<I>,
     lib::same<decltype(*std::declval<I &>()--), lib::iter_reference_t<I>>,
     lib::same<decltype(--std::declval<I &>()), I &>,
@@ -84,7 +84,7 @@ struct is_bidirectional_iterator : lib::is_detected<lib::bidirectional_iterator,
 // See https://en.cppreference.com/w/cpp/iterator/random_access_iterator
 
 template<typename I>
-using random_access_iterator = lib::to_void<
+using random_access_iterator = lib::void_t<
     lib::bidirectional_iterator<I>,
     lib::same<decltype(std::declval<I &>() += std::declval<const lib::iter_difference_t<I> &>()), I &>,
     lib::same<decltype(std::declval<const lib::iter_difference_t<I> &>() + std::declval<const I &>()), I>,

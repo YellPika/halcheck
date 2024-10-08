@@ -10,7 +10,7 @@
 namespace halcheck { namespace lib {
 
 template<typename...>
-using to_void = void;
+using void_t = void;
 
 template<bool Cond, typename T, typename F>
 using conditional_t = typename std::conditional<Cond, T, F>::type;
