@@ -1,8 +1,11 @@
 #ifndef HALCHECK_LIB_RTTI_HPP
 #define HALCHECK_LIB_RTTI_HPP
 
+#include <halcheck/lib/type_traits.hpp>
+
 #include <cstddef>
 #include <functional>
+#include <type_traits>
 #if defined(__clang__)
 #if __has_feature(cxx_rtti)
 #define HALCHECK_RTTI
@@ -45,10 +48,15 @@ public:
 
   std::size_t hash() const { return std::hash<std::size_t>()(_index); }
 
-  template<typename T>
+  template<typename T, HALCHECK_REQUIRE(!std::is_void<T>())>
   static type_id make() {
     static type_id output(next());
     return output;
+  }
+
+  template<typename T, HALCHECK_REQUIRE(std::is_void<T>())>
+  static type_id make() {
+    return type_id();
   }
 
 private:
