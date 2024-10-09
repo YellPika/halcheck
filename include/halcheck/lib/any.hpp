@@ -12,6 +12,14 @@
 
 namespace halcheck { namespace lib {
 
+class any;
+
+template<typename T, HALCHECK_REQUIRE(!std::is_void<T>())>
+T *any_cast(any *operand) noexcept;
+
+template<typename T, HALCHECK_REQUIRE(!std::is_void<T>())>
+const T *any_cast(const any *operand) noexcept;
+
 /// @brief See https://en.cppreference.com/w/cpp/utility/any.
 /// @ingroup util
 class any {
@@ -193,7 +201,7 @@ T any_cast(any &&operand) {
 }
 
 /// @brief See https://en.cppreference.com/w/cpp/utility/any/any_cast.
-template<typename T, HALCHECK_REQUIRE(!std::is_void<T>())>
+template<typename T, HALCHECK_REQUIRE_(!std::is_void<T>())>
 const T *any_cast(const any *operand) noexcept {
   if (operand && operand->type() == lib::type_id::make<T>())
     return reinterpret_cast<const T *>(operand->_impl->data());
@@ -202,7 +210,7 @@ const T *any_cast(const any *operand) noexcept {
 }
 
 /// @brief See https://en.cppreference.com/w/cpp/utility/any/any_cast.
-template<typename T, HALCHECK_REQUIRE(!std::is_void<T>())>
+template<typename T, HALCHECK_REQUIRE_(!std::is_void<T>())>
 T *any_cast(any *operand) noexcept {
   if (operand && operand->type() == lib::type_id::make<T>())
     return reinterpret_cast<T *>(operand->_impl->data());

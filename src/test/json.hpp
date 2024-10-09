@@ -19,9 +19,9 @@ void from_json(const nlohmann::json &j, lib::symbol &s) { s = lib::symbol(j.get<
 
 void from_json(const nlohmann::json &j, lib::number &n) { n = lib::number(j.get<lib::number::value_type>()); }
 
-void to_json(nlohmann::json &j, const lib::symbol &s) { j = static_cast<const std::string &>(s); }
+void to_json(nlohmann::json &j, const lib::symbol &s) { j = (const std::string &)s; }
 
-void to_json(nlohmann::json &j, const lib::number &n) { j = static_cast<const lib::number::value_type &>(n); }
+void to_json(nlohmann::json &j, const lib::number &n) { j = (const lib::number::value_type &)n; }
 
 template<typename K, typename V>
 void to_json(nlohmann::json &j, const lib::trie<K, V> &t) {
