@@ -3,6 +3,12 @@
 
 /// @defgroup lib Support Library
 
+/// @defgroup util Utility Library
+/// @ingroup lib
+
+/// @defgroup meta Metaprogramming Library
+/// @ingroup lib
+
 #include <halcheck/lib/any.hpp>         // IWYU pragma: export
 #include <halcheck/lib/atom.hpp>        // IWYU pragma: export
 #include <halcheck/lib/bit.hpp>         // IWYU pragma: export

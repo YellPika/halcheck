@@ -1,6 +1,10 @@
 #ifndef HALCHECK_LIB_ATOM_HPP
 #define HALCHECK_LIB_ATOM_HPP
 
+/// @defgroup atom
+/// Identifiers with constant time equality comparison and hashing.
+/// @ingroup lib
+
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/variant.hpp>
 
@@ -14,7 +18,7 @@
 namespace halcheck { namespace lib {
 
 /// @brief A \ref symbol is conceptually a std::string with constant time equality comparison and hashing.
-/// @ingroup lib
+/// @ingroup atom
 class symbol {
 public:
   using value_type = std::string;
@@ -59,7 +63,7 @@ private:
 };
 
 /// @brief A \ref number is conceptually a signed integer with constant time equality comparison and hashing.
-/// @ingroup lib
+/// @ingroup atom
 class number {
 public:
   /// @brief The underlying integral type.
@@ -125,7 +129,7 @@ private:
 };
 
 /// @brief An atom is either a symbol or a number.
-/// @ingroup lib
+/// @ingroup atom
 using atom = lib::variant<lib::symbol, lib::number>;
 
 namespace literals {

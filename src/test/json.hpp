@@ -39,7 +39,7 @@ void from_json(const nlohmann::json &j, lib::trie<K, V> &t) {
 }
 
 void to_json(nlohmann::json &j, const lib::atom &t) {
-  lib::visit(lib::overload([&](lib::number value) { j = value; }, [&](lib::symbol value) { j = value; }), t);
+  lib::visit(lib::make_overload([&](lib::number value) { j = value; }, [&](lib::symbol value) { j = value; }), t);
 }
 
 void from_json(const nlohmann::json &j, lib::atom &t) {

@@ -13,7 +13,7 @@
 namespace halcheck { namespace lib {
 
 /// @brief See https://en.cppreference.com/w/cpp/utility/any.
-/// @ingroup lib
+/// @ingroup util
 class any {
 public:
   /// @brief See https://en.cppreference.com/w/cpp/utility/any/any.

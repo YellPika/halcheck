@@ -1,19 +1,17 @@
 #ifndef HALCHECK_LIB_BIT_HPP
 #define HALCHECK_LIB_BIT_HPP
 
+/// @defgroup bit Bit Manipulation
+/// @ingroup lib
+
 #include <halcheck/lib/type_traits.hpp>
 
 #include <cstring>
 
-#if __cplusplus >= 201806L
-#include <bit> // IWYU pragma: export
-#endif
-
 namespace halcheck { namespace lib {
 
-#if __cplusplus >= 201806L
-using std::bit_cast;
-#else
+/// @brief See https://en.cppreference.com/w/cpp/numeric/bit_cast.
+/// @ingroup bit
 template<
     typename T,
     typename U,
@@ -26,7 +24,6 @@ T bit_cast(const U &src) noexcept {
   std::memcpy(&dest, &src, sizeof(U));
   return dest;
 }
-#endif
 
 }} // namespace halcheck::lib
 

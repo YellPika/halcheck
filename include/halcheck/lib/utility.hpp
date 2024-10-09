@@ -55,7 +55,7 @@ public:
 
   T &get() & {
     return lib::visit(
-        lib::overload(
+        lib::make_overload(
             [](T &value) -> T & { return value; },
             [](std::exception_ptr e) -> T & { std::rethrow_exception(std::move(e)); }),
         _value);
@@ -77,7 +77,7 @@ public:
 
   T &get() & {
     return lib::visit(
-        lib::overload(
+        lib::make_overload(
             [](T *value) -> T & { return *value; },
             [](std::exception_ptr e) -> T & { std::rethrow_exception(std::move(e)); }),
         _value);

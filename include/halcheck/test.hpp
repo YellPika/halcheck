@@ -1,6 +1,8 @@
 #ifndef HALCHECK_TEST_HPP
 #define HALCHECK_TEST_HPP
 
+/// @defgroup test Test Strategy Library
+
 #include <halcheck/test/check.hpp>       // IWYU pragma: export
 #include <halcheck/test/config.hpp>      // IWYU pragma: export
 #include <halcheck/test/deserialize.hpp> // IWYU pragma: export

@@ -1,6 +1,8 @@
 #ifndef HALCHECK_GEN_HPP
 #define HALCHECK_GEN_HPP
 
+/// @defgroup gen Generator Library
+
 #include <halcheck/gen/arbitrary.hpp>       // IWYU pragma: export
 #include <halcheck/gen/container.hpp>       // IWYU pragma: export
 #include <halcheck/gen/dag.hpp>             // IWYU pragma: export

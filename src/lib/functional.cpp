@@ -1,5 +1,6 @@
 #include "halcheck/lib/functional.hpp"
 
+#include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <memory>
@@ -24,9 +25,9 @@ static_assert(!is_invocable_r<void, decltype(lambda0), int>(), "");
 static_assert(is_invocable_r<int, decltype(lambda1), int>(), "");
 
 static_assert(!is_movable<decltype(lambda0)>(), "");
-static_assert(is_movable<assignable<decltype(lambda0)>>(), "");
+static_assert(is_movable<optional<decltype(lambda0)>>(), "");
 static_assert(!is_copyable<decltype(lambda0)>(), "");
-static_assert(is_copyable<assignable<decltype(lambda0)>>(), "");
+static_assert(is_copyable<optional<decltype(lambda0)>>(), "");
 
 namespace {
 struct lambda2 {
@@ -35,4 +36,4 @@ struct lambda2 {
 };
 } // namespace
 
-static_assert(!is_copyable<assignable<lambda2>>(), "");
+static_assert(!is_copyable<optional<lambda2>>(), "");
