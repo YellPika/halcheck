@@ -29,7 +29,7 @@ private:
   struct to_label {
     lib::invoke_result_t<const F &, lib::atom> operator()(std::uintmax_t i) const {
       auto _ = context();
-      return lib::invoke(func, lib::number(i));
+      return lib::invoke(func, i);
     }
 
     std::function<lib::destructable()> context;
@@ -58,7 +58,7 @@ public:
     {
       auto _ = gen::label("shrink"_s);
       for (std::uintmax_t i = 0; i < size; i++)
-        skip.push_back(gen::shrink(lib::number(i)).has_value());
+        skip.push_back(gen::shrink(i).has_value());
     }
 
     return lib::transform(
@@ -72,7 +72,7 @@ private:
   struct to_label {
     lib::destructable operator()(std::uintmax_t i) const {
       auto label1 = gen::label(id);
-      auto label2 = gen::label(lib::number(i));
+      auto label2 = gen::label(i);
       return std::make_pair(std::move(label1), std::move(label2));
     }
 
@@ -98,7 +98,7 @@ public:
     {
       auto _ = gen::label("shrink"_s);
       for (std::uintmax_t i = 0; i < size; i++)
-        skip.push_back(gen::shrink(lib::number(i)).has_value());
+        skip.push_back(gen::shrink(i).has_value());
     }
 
     return lib::transform(lib::filter(lib::iota(size), if_noshrink{std::move(skip)}), to_label{id});
@@ -152,7 +152,7 @@ T container(lib::atom id, std::size_t size, F gen) {
   T output;
   auto it = lib::end(output);
   while (size-- > 0)
-    it = std::next(output.insert(it, lib::invoke(gen, lib::number(size))));
+    it = std::next(output.insert(it, lib::invoke(gen, size)));
   return output;
 }
 
@@ -160,7 +160,7 @@ template<typename I, HALCHECK_REQUIRE(lib::is_forward_iterator<I>())>
 void shuffle(lib::atom id, I begin, I end) {
   auto _ = gen::label(id);
   for (auto it = begin; it != end; ++it)
-    std::iter_swap(it, gen::range(lib::number(it - begin), it, end));
+    std::iter_swap(it, gen::range(it - begin, it, end));
 }
 
 template<typename Range, HALCHECK_REQUIRE(lib::is_forward_range<lib::decay_t<Range>>())>

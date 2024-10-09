@@ -17,7 +17,7 @@ HALCHECK_TEST(Container, Shrinks) {
   for (std::uintmax_t i = 0; !prev.get().empty(); i++) {
     LOG(INFO) << "prev: " << testing::PrintToString(prev.get());
     ASSERT_NE(prev.children().begin(), prev.children().end());
-    auto next = gen::make_shrinks(gen::element_of(lib::number(i), prev.children()), func);
+    auto next = gen::make_shrinks(gen::element_of(i, prev.children()), func);
     if (next.get().size() == prev.get().size()) {
       std::uintmax_t j = 0;
       while (j < prev.get().size() && next.get()[j] == prev.get()[j])
@@ -44,7 +44,7 @@ HALCHECK_TEST(Container, ForwardShrinks) {
   for (std::uintmax_t i = 0; !prev.children().empty(); i++) {
     LOG(INFO) << "prev: " << testing::PrintToString(prev.get()) << ", shrinks: " << prev.children().size();
     ASSERT_NE(prev.children().begin(), prev.children().end());
-    auto next = gen::make_forward_shrinks(gen::element_of(lib::number(i), prev.children()), func);
+    auto next = gen::make_forward_shrinks(gen::element_of(i, prev.children()), func);
     if (next.get().size() == prev.get().size()) {
       std::uintmax_t j = 0;
       while (j < prev.get().size() && next.get()[j] == prev.get()[j])

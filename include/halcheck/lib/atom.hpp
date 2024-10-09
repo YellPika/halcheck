@@ -1,12 +1,14 @@
 #ifndef HALCHECK_LIB_ATOM_HPP
 #define HALCHECK_LIB_ATOM_HPP
 
+#include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/variant.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 namespace halcheck { namespace lib {
@@ -15,6 +17,8 @@ namespace halcheck { namespace lib {
 /// @ingroup lib
 class symbol {
 public:
+  using value_type = std::string;
+
   /// @brief Construct a new \ref symbol from a std::string.
   explicit symbol(const std::string &);
 
@@ -27,48 +31,97 @@ public:
   /// @return The hash code of the associated std::string.
   inline std::size_t hash() const noexcept { return _data->second; }
 
-  /// @brief Accesses the underlying std::string.
+  /// @brief Casts the underlying string to a value.
   ///
-  /// @return A reference to the underlying std::string.
-  /// @note Given x and y of type \ref symbol, then x == y iff &*x == &*y.
-  const std::string &operator*() const noexcept;
+  /// @tparam T The type of value to cast to.
+  /// @return The underlying string reference casted to \p T.
+  template<typename T, HALCHECK_REQUIRE(std::is_constructible<T, const std::string &>())>
+  explicit operator T() const {
+    return T(_data->first);
+  }
 
 private:
   /// @brief Determines if two symbols are equal.
   ///
-  /// @param lhs,rhs The lib::symbols to compare.
-  /// @retval true lhs and rhs' underlying strings are equal.
-  /// @retval false lhs and rhs' underlying strings are not equal.
+  /// @param lhs,rhs The \ref symbol "symbols" to compare.
+  /// @retval true The underlying strings of \p lhs and \p rhs are equal.
+  /// @retval false The underlying strings of \p lhs and \p rhs are not equal.
   friend bool operator==(const symbol &lhs, const symbol &rhs) { return lhs._data == rhs._data; }
 
   /// @brief Determines if two symbols are not equal.
   ///
-  /// @param lhs,rhs The lib::symbols to compare.
-  /// @retval true lhs and rhs' underlying strings are not equal.
-  /// @retval false lhs and rhs' underlying strings are equal.
+  /// @param lhs,rhs The \ref symbol "symbols" to compare.
+  /// @retval true The underlying strings of \p lhs and \p rhs are not equal.
+  /// @retval false The underlying strings of \p lhs and \p rhs are equal.
   friend bool operator!=(const symbol &lhs, const symbol &rhs) { return lhs._data != rhs._data; }
 
   std::pair<const std::string, std::size_t> *_data;
 };
 
+/// @brief A \ref number is conceptually a signed integer with constant time equality comparison and hashing.
+/// @ingroup lib
 class number {
 public:
-  number() : _value(0) {}
+  /// @brief The underlying integral type.
+  using value_type = std::int64_t;
 
-  explicit number(std::uintmax_t value) : _value(value) {}
+  /// @brief Creates a number with zero as its underlying value.
+  number() = default;
 
-  std::uintmax_t &operator*() noexcept { return _value; }
-  const std::uintmax_t &operator*() const noexcept { return _value; }
+  /// @brief Creates a number with the given underlying value.
+  number(value_type value) // NOLINT: implicit conversion
+      : _value(value) {}
+
+  /// @brief Casts the underlying number to a value.
+  ///
+  /// This overload participates in overload resolution only if
+  /// + <tt> std::is_integral<T>() </tt> is convertible to `true`,
+  /// + <tt> std::is_signed<T>() </tt> is convertible to `true`, and
+  /// + <tt> sizeof(T) >= sizeof(\ref value_type) </tt>
+  ///
+  /// @tparam T The type of value to cast to.
+  /// @return The underlying number reference casted to \p T.
+  template<
+      typename T,
+      HALCHECK_REQUIRE(std::is_integral<T>()),
+      HALCHECK_REQUIRE(std::is_signed<T>()),
+      HALCHECK_REQUIRE(sizeof(T) >= sizeof(value_type))>
+  explicit operator T() const {
+    return _value;
+  }
+
+  /// @brief Casts the underlying number to a value.
+  ///
+  /// This overload participates in overload resolution only if
+  /// + <tt> std::is_integral<T>() </tt> is convertible to `false`, and
+  /// + <tt> std::is_constructible<T, \ref value_type>() </tt> is convertible to `true`.
+  ///
+  /// @tparam T The type of value to cast to.
+  /// @return The underlying number reference casted to \p T.
+  template<
+      typename T,
+      HALCHECK_REQUIRE(!std::is_integral<T>()),
+      HALCHECK_REQUIRE(std::is_constructible<T, const value_type &>())>
+  explicit operator T() const {
+    return T(_value);
+  }
 
 private:
-  friend bool operator==(number lhs, number rhs) { return *lhs == *rhs; }
-  friend bool operator!=(number lhs, number rhs) { return *lhs != *rhs; }
-  friend bool operator<(number lhs, number rhs) { return *lhs < *rhs; }
-  friend bool operator>(number lhs, number rhs) { return *lhs > *rhs; }
-  friend bool operator<=(number lhs, number rhs) { return *lhs <= *rhs; }
-  friend bool operator>=(number lhs, number rhs) { return *lhs >= *rhs; }
+  /// @brief Determines if two numbers are equal.
+  ///
+  /// @param lhs,rhs The \ref number "numbers" to compare.
+  /// @retval true The underlying strings of \p lhs and \p rhs are equal.
+  /// @retval false The underlying strings of \p lhs and \p rhs are not equal.
+  friend bool operator==(number lhs, number rhs) { return lhs._value == rhs._value; }
 
-  std::uintmax_t _value;
+  /// @brief Determines if two numbers are equal.
+  ///
+  /// @param lhs,rhs The \ref number "numbers" to compare.
+  /// @retval true The underlying strings of \p lhs and \p rhs are not equal.
+  /// @retval false The underlying strings of \p lhs and \p rhs are equal.
+  friend bool operator!=(number lhs, number rhs) { return lhs._value != rhs._value; }
+
+  value_type _value = 0;
 };
 
 /// @brief An atom is either a symbol or a number.
@@ -103,7 +156,6 @@ lib::symbol operator""_s() {
 #else
 inline lib::symbol operator""_s(const char *data, std::size_t size) { return lib::symbol(std::string(data, size)); }
 #endif
-inline lib::number operator""_n(unsigned long long int value) { return lib::number(value); }
 } // namespace literals
 
 }} // namespace halcheck::lib
@@ -115,7 +167,9 @@ struct hash<halcheck::lib::symbol> {
 };
 template<>
 struct hash<halcheck::lib::number> {
-  std::size_t operator()(halcheck::lib::number value) const noexcept { return std::hash<std::uintmax_t>()(*value); }
+  std::size_t operator()(halcheck::lib::number value) const noexcept {
+    return std::hash<halcheck::lib::number::value_type>()(halcheck::lib::number::value_type(value));
+  }
 };
 } // namespace std
 #endif

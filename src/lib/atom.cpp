@@ -1,6 +1,7 @@
 #include "halcheck/lib/atom.hpp"
 
 #include <cstddef>
+#include <functional>
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -22,5 +23,3 @@ lib::symbol::symbol(const std::string &value) {
 }
 
 lib::symbol::symbol(const char *value) : symbol(std::string(value)) {}
-
-const std::string &lib::symbol::operator*() const noexcept { return _data->first; }

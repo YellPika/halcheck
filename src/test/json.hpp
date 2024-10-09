@@ -10,11 +10,18 @@
 #define JSON_USE_IMPLICIT_CONVERSIONS 0
 #include <nlohmann/json.hpp> // IWYU pragma: export
 
-#include <cstdint>
 #include <string>
 #include <unordered_map>
 
 namespace halcheck { namespace lib {
+
+void from_json(const nlohmann::json &j, lib::symbol &s) { s = lib::symbol(j.get<std::string>()); }
+
+void from_json(const nlohmann::json &j, lib::number &n) { n = lib::number(j.get<lib::number::value_type>()); }
+
+void to_json(nlohmann::json &j, const lib::symbol &s) { j = static_cast<const std::string &>(s); }
+
+void to_json(nlohmann::json &j, const lib::number &n) { j = static_cast<const lib::number::value_type &>(n); }
 
 template<typename K, typename V>
 void to_json(nlohmann::json &j, const lib::trie<K, V> &t) {
@@ -32,14 +39,14 @@ void from_json(const nlohmann::json &j, lib::trie<K, V> &t) {
 }
 
 void to_json(nlohmann::json &j, const lib::atom &t) {
-  lib::visit(lib::overload([&](lib::number value) { j = *value; }, [&](lib::symbol value) { j = *value; }), t);
+  lib::visit(lib::overload([&](lib::number value) { j = value; }, [&](lib::symbol value) { j = value; }), t);
 }
 
 void from_json(const nlohmann::json &j, lib::atom &t) {
   if (j.is_string())
-    t = lib::symbol(j.get<std::string>());
+    t = j.get<lib::symbol>();
   else
-    t = lib::number(j.get<std::uintmax_t>());
+    t = j.get<lib::number>();
 }
 
 }} // namespace halcheck::lib

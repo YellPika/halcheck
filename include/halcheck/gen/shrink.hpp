@@ -76,7 +76,7 @@ static const struct {
       auto children = lib::invoke(func, root);
       auto begin = lib::begin(children);
       auto end = lib::end(children);
-      if (auto j = (*this)(lib::number(i), std::distance(begin, end)))
+      if (auto j = (*this)(i, std::distance(begin, end)))
         root = std::move(*std::next(begin, *j));
       else
         break;

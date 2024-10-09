@@ -19,13 +19,13 @@ static void check_reference() {
 HALCHECK_TEST(ElementOf, Reference_Shrinks) {
   auto value = gen::make_shrinks(check_reference);
   for (std::size_t i = 0; !value.children().empty(); i++)
-    value = gen::make_shrinks(gen::element_of(lib::number(i), value.children()), check_reference);
+    value = gen::make_shrinks(gen::element_of(i, value.children()), check_reference);
 }
 
 HALCHECK_TEST(ElementOf, Reference_ForwardShrinks) {
   auto value = gen::make_forward_shrinks(check_reference);
   for (std::size_t i = 0; !value.children().empty(); i++)
-    value = gen::make_forward_shrinks(gen::element_of(lib::number(i), value.children()), check_reference);
+    value = gen::make_forward_shrinks(gen::element_of(i, value.children()), check_reference);
 }
 
 HALCHECK_TEST(Element, Example) {

@@ -100,14 +100,14 @@ T arbitrary(gen::tag<T>, lib::atom id) {
 template<typename T, typename U, HALCHECK_REQUIRE_(gen::is_arbitrary<T>()), HALCHECK_REQUIRE_(gen::is_arbitrary<U>())>
 std::pair<T, U> arbitrary(gen::tag<std::pair<T, U>>, lib::atom id) {
   auto _ = gen::label(id);
-  return std::make_pair(gen::arbitrary<T>(lib::number(0)), gen::arbitrary<U>(lib::number(1)));
+  return std::make_pair(gen::arbitrary<T>(0), gen::arbitrary<U>(1));
 }
 
 template<typename... Ts, HALCHECK_REQUIRE_(lib::conjunction<gen::is_arbitrary<Ts>...>())>
 std::tuple<Ts...> arbitrary(gen::tag<std::tuple<Ts...>>, lib::atom id) {
   auto _ = gen::label(id);
   std::uintmax_t i = 0;
-  return std::tuple<Ts...>{gen::arbitrary<Ts>(lib::number(i++))...};
+  return std::tuple<Ts...>{gen::arbitrary<Ts>(i++)...};
 }
 
 template<typename T, HALCHECK_REQUIRE_(gen::is_arbitrary<T>())>

@@ -25,7 +25,7 @@ static inline std::vector<std::size_t> gen_threads(halcheck::lib::atom id) {
 
   auto keep = gen::noshrink(gen::range, "keep"_s, 0, max_threads);
   for (std::size_t i = 0; i < max_threads; i++) {
-    if (i == keep || !gen::arbitrary<bool>(lib::number(i)))
+    if (i == keep || !gen::arbitrary<bool>(i))
       output.push_back(i);
   }
 

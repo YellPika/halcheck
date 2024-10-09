@@ -38,7 +38,7 @@ lib::invoke_result_t<F, lib::atom> retry(lib::atom id, std::uintmax_t max, F fun
   auto _ = gen::label(id);
   for (std::uintmax_t i = 0;; i++) {
     try {
-      return lib::invoke(func, lib::number(i));
+      return lib::invoke(func, i);
     } catch (const gen::discard &) {
       if (max > 0 && i >= max)
         throw;
