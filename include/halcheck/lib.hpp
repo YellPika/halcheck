@@ -1,6 +1,8 @@
 #ifndef HALCHECK_LIB_HPP
 #define HALCHECK_LIB_HPP
 
+/// @defgroup lib Support Library
+
 #include <halcheck/lib/any.hpp>         // IWYU pragma: export
 #include <halcheck/lib/atom.hpp>        // IWYU pragma: export
 #include <halcheck/lib/bit.hpp>         // IWYU pragma: export

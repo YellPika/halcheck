@@ -3,7 +3,6 @@
 
 #include <halcheck/lib/variant.hpp>
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -12,17 +11,41 @@
 
 namespace halcheck { namespace lib {
 
+/// @brief A \ref symbol is conceptually a std::string with constant time equality comparison and hashing.
+/// @ingroup lib
 class symbol {
 public:
+  /// @brief Construct a new \ref symbol from a std::string.
   explicit symbol(const std::string &);
+
+  /// @brief Construct a new \ref symbol from a C string.
   explicit symbol(const char * = "");
 
+  /// @brief Gets a hash code for this \ref symbol. Equivalent to computing the hash code of the underlying std::string,
+  ///        but guaranteed to be computed in constant time.
+  ///
+  /// @return The hash code of the associated std::string.
   inline std::size_t hash() const noexcept { return _data->second; }
 
+  /// @brief Accesses the underlying std::string.
+  ///
+  /// @return A reference to the underlying std::string.
+  /// @note Given x and y of type \ref symbol, then x == y iff &*x == &*y.
   const std::string &operator*() const noexcept;
 
 private:
+  /// @brief Determines if two symbols are equal.
+  ///
+  /// @param lhs,rhs The lib::symbols to compare.
+  /// @retval true lhs and rhs' underlying strings are equal.
+  /// @retval false lhs and rhs' underlying strings are not equal.
   friend bool operator==(const symbol &lhs, const symbol &rhs) { return lhs._data == rhs._data; }
+
+  /// @brief Determines if two symbols are not equal.
+  ///
+  /// @param lhs,rhs The lib::symbols to compare.
+  /// @retval true lhs and rhs' underlying strings are not equal.
+  /// @retval false lhs and rhs' underlying strings are equal.
   friend bool operator!=(const symbol &lhs, const symbol &rhs) { return lhs._data != rhs._data; }
 
   std::pair<const std::string, std::size_t> *_data;
@@ -48,6 +71,8 @@ private:
   std::uintmax_t _value;
 };
 
+/// @brief An atom is either a symbol or a number.
+/// @ingroup lib
 using atom = lib::variant<lib::symbol, lib::number>;
 
 namespace literals {
