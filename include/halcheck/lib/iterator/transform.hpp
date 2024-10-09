@@ -8,6 +8,7 @@
 #include <halcheck/lib/iterator/interface.hpp>
 #include <halcheck/lib/iterator/range.hpp>
 #include <halcheck/lib/iterator/type_traits.hpp>
+#include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <iterator>
@@ -77,7 +78,7 @@ public:
 
   constexpr lib::invoke_result_t<const F &, lib::iter_reference_t<I>> operator*() const
       noexcept(lib::is_nothrow_invocable<const F &, lib::iter_reference_t<I>>()) {
-    return lib::invoke(_func, *_base);
+    return lib::invoke(*_func, *_base);
   }
 
   transform_iterator &operator++() {
@@ -108,7 +109,7 @@ private:
   }
 
   I _base;
-  lib::assignable<F> _func;
+  lib::optional<F> _func;
 };
 
 static const struct {
@@ -216,7 +217,7 @@ public:
 
 private:
   V _base;
-  lib::assignable<F> _func;
+  lib::optional<F> _func;
 };
 
 template<

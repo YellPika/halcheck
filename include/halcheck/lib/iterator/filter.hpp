@@ -8,6 +8,7 @@
 #include <halcheck/lib/iterator/interface.hpp>
 #include <halcheck/lib/iterator/range.hpp>
 #include <halcheck/lib/iterator/type_traits.hpp>
+#include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <iterator>
@@ -50,7 +51,7 @@ public:
   constexpr filter_iterator() = default;
 
   filter_iterator(I base, I end, F fun) : _base(std::move(base)), _end(std::move(end)), _func(std::move(fun)) {
-    while (_base != _end && !_func(*_base))
+    while (_base != _end && !lib::invoke(*_func, *_base))
       ++_base;
   }
 
@@ -80,7 +81,7 @@ public:
   filter_iterator &operator++() {
     do {
       ++_base;
-    } while (_base != _end && !_func(*_base));
+    } while (_base != _end && !lib::invoke(*_func, *_base));
     return *this;
   }
 
@@ -88,7 +89,7 @@ public:
   filter_iterator &operator--() {
     do {
       --_base;
-    } while (!_func(*_base));
+    } while (!lib::invoke(*_func, *_base));
     return *this;
   }
 
@@ -96,7 +97,7 @@ private:
   friend constexpr bool operator==(const filter_iterator &x, const filter_iterator &y) { return x._base == y._base; }
 
   I _base, _end;
-  lib::assignable<F> _func;
+  lib::optional<F> _func;
 };
 
 static const struct {
@@ -162,7 +163,7 @@ public:
 
 private:
   V _base;
-  lib::assignable<F> _func;
+  lib::optional<F> _func;
 };
 
 template<typename V, typename F>

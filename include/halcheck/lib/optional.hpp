@@ -34,8 +34,34 @@ class optional;
 
 namespace detail {
 
-template<typename T, bool = std::is_trivially_destructible<T>()>
-struct optional_base { // NOLINT
+template<typename T, typename = void>
+struct optional_base {
+  constexpr optional_base() noexcept : _dummy(), _has_value(false) {}
+
+  template<typename... Args>
+  explicit constexpr optional_base(lib::in_place_t, Args &&...args)
+      : _value(std::forward<Args>(args)...), _has_value(true) {}
+
+  struct dummy {};
+  union {
+    dummy _dummy;
+    T _value;
+  };
+  bool _has_value;
+};
+
+template<typename T>
+struct optional_base<T &> {
+  constexpr optional_base() noexcept : _value(nullptr) {}
+
+  explicit constexpr optional_base(lib::in_place_t, T &value) noexcept : _value(std::addressof(value)) {}
+
+  struct dummy {};
+  T *_value;
+};
+
+template<typename T>
+struct optional_base<T, lib::enable_if_t<!std::is_trivially_destructible<T>()>> { // NOLINT
   constexpr optional_base() noexcept : _dummy(), _has_value(false) {}
 
   template<typename... Args>
@@ -54,32 +80,6 @@ struct optional_base { // NOLINT
     T _value;
   };
   bool _has_value;
-};
-
-template<typename T>
-struct optional_base<T, true> {
-  constexpr optional_base() noexcept : _dummy(), _has_value(false) {}
-
-  template<typename... Args>
-  explicit constexpr optional_base(lib::in_place_t, Args &&...args)
-      : _value(std::forward<Args>(args)...), _has_value(true) {}
-
-  struct dummy {};
-  union {
-    dummy _dummy;
-    T _value;
-  };
-  bool _has_value;
-};
-
-template<typename T>
-struct optional_base<T &, true> {
-  constexpr optional_base() noexcept : _value(nullptr) {}
-
-  explicit constexpr optional_base(lib::in_place_t, T &value) noexcept : _value(std::addressof(value)) {}
-
-  struct dummy {};
-  T *_value;
 };
 
 template<typename T>
@@ -147,8 +147,16 @@ struct optional_ops<T &> : private optional_base<T &> {
   }
 };
 
-template<typename T, bool = std::is_trivially_copy_constructible<T>() || !std::is_copy_constructible<T>()>
-struct optional_copy_constructor_base : public optional_ops<T> { // NOLINT
+template<typename T, typename = void>
+struct optional_copy_constructor_base : public optional_ops<T> {
+  using optional_ops<T>::optional_ops;
+};
+
+template<typename T>
+struct optional_copy_constructor_base<
+    T,
+    lib::enable_if_t<!std::is_trivially_copy_constructible<T>() && std::is_copy_constructible<T>()>>
+    : public optional_ops<T> { // NOLINT
   using optional_ops<T>::optional_ops;
 
   optional_copy_constructor_base() = default;
@@ -163,13 +171,17 @@ struct optional_copy_constructor_base : public optional_ops<T> { // NOLINT
   }
 };
 
-template<typename T>
-struct optional_copy_constructor_base<T, true> : public optional_ops<T> {
-  using optional_ops<T>::optional_ops;
+template<typename T, typename = void>
+struct optional_copy_assignment_base : public optional_copy_constructor_base<T> {
+  using optional_copy_constructor_base<T>::optional_copy_constructor_base;
 };
 
-template<typename T, bool = std::is_trivially_copy_assignable<T>() || !std::is_copy_assignable<T>()>
-struct optional_copy_assignment_base : public optional_copy_constructor_base<T> {
+template<typename T>
+struct optional_copy_assignment_base<
+    T,
+    lib::enable_if_t<
+        !std::is_trivially_copy_assignable<T>() && std::is_copy_constructible<T>() && std::is_copy_assignable<T>()>>
+    : public optional_copy_constructor_base<T> {
   using optional_copy_constructor_base<T>::optional_copy_constructor_base;
 
   optional_copy_assignment_base() = default;
@@ -193,12 +205,37 @@ struct optional_copy_assignment_base : public optional_copy_constructor_base<T> 
 };
 
 template<typename T>
-struct optional_copy_assignment_base<T, true> : public optional_copy_constructor_base<T> {
+struct optional_copy_assignment_base<
+    T,
+    lib::enable_if_t<
+        !std::is_trivially_copy_assignable<T>() && std::is_copy_constructible<T>() && !std::is_copy_assignable<T>()>>
+    : public optional_copy_constructor_base<T> {
   using optional_copy_constructor_base<T>::optional_copy_constructor_base;
+
+  optional_copy_assignment_base() = default;
+  optional_copy_assignment_base(optional_copy_assignment_base &&) = default;
+  optional_copy_assignment_base &operator=(optional_copy_assignment_base &&) = default;
+  optional_copy_assignment_base(const optional_copy_assignment_base &) = default;
+  ~optional_copy_assignment_base() = default;
+
+  optional_copy_assignment_base &operator=(const optional_copy_assignment_base &other) {
+    if (this != &other && *other)
+      this->emplace(*other);
+
+    return *this;
+  }
 };
 
-template<typename T, bool = std::is_trivially_move_constructible<T>() || !std::is_move_constructible<T>()>
-struct optional_move_constructor_base : public optional_copy_assignment_base<T> { // NOLINT
+template<typename T, typename = void>
+struct optional_move_constructor_base : public optional_copy_assignment_base<T> {
+  using optional_copy_assignment_base<T>::optional_copy_assignment_base;
+};
+
+template<typename T>
+struct optional_move_constructor_base<
+    T,
+    lib::enable_if_t<!std::is_trivially_move_constructible<T>() && std::is_move_constructible<T>()>>
+    : public optional_copy_assignment_base<T> { // NOLINT
   using optional_copy_assignment_base<T>::optional_copy_assignment_base;
 
   optional_move_constructor_base() = default;
@@ -214,13 +251,16 @@ struct optional_move_constructor_base : public optional_copy_assignment_base<T> 
   }
 };
 
-template<typename T>
-struct optional_move_constructor_base<T, true> : public optional_copy_assignment_base<T> {
-  using optional_copy_assignment_base<T>::optional_copy_assignment_base;
+template<typename T, typename = void>
+struct optional_move_assignment_base : public optional_move_constructor_base<T> {
+  using optional_move_constructor_base<T>::optional_move_constructor_base;
 };
 
-template<typename T, bool = std::is_trivially_move_assignable<T>() || !std::is_move_assignable<T>()>
-struct optional_move_assignment_base : public optional_move_constructor_base<T> { // NOLINT
+template<typename T>
+struct optional_move_assignment_base<
+    T,
+    lib::enable_if_t<!std::is_trivially_move_assignable<T>() && std::is_move_assignable<T>()>>
+    : public optional_move_constructor_base<T> { // NOLINT
   using optional_move_constructor_base<T>::optional_move_constructor_base;
 
   optional_move_assignment_base() = default;
@@ -245,8 +285,25 @@ struct optional_move_assignment_base : public optional_move_constructor_base<T> 
 };
 
 template<typename T>
-struct optional_move_assignment_base<T, true> : public optional_move_constructor_base<T> {
+struct optional_move_assignment_base<
+    T,
+    lib::enable_if_t<!std::is_trivially_move_assignable<T>() && !std::is_move_assignable<T>()>>
+    : public optional_move_constructor_base<T> { // NOLINT
   using optional_move_constructor_base<T>::optional_move_constructor_base;
+
+  optional_move_assignment_base() = default;
+  optional_move_assignment_base(const optional_move_assignment_base &) = default;
+  optional_move_assignment_base &operator=(const optional_move_assignment_base &) = default;
+  optional_move_assignment_base(optional_move_assignment_base &&) = default;
+  ~optional_move_assignment_base() = default;
+
+  optional_move_assignment_base &
+  operator=(optional_move_assignment_base &&other) noexcept(std::is_nothrow_move_constructible<T>()) {
+    if (this != &other && *other)
+      this->emplace(std::move(*other));
+
+    return *this;
+  }
 };
 
 } // namespace detail

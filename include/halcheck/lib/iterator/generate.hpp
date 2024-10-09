@@ -35,7 +35,7 @@ public:
   constexpr reference &operator*() const noexcept { return *_value; }
 
   generate_iterator &operator++() {
-    if (auto value = lib::invoke(_func))
+    if (auto value = lib::invoke(*_func))
       _value.emplace(std::move(*value));
     else
       _value.reset();
@@ -47,7 +47,7 @@ private:
     return !lhs._value && !rhs._value;
   }
 
-  lib::assignable<F> _func;
+  lib::optional<F> _func;
   lib::optional<value_type> _value;
 };
 
