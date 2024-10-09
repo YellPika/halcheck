@@ -13,8 +13,13 @@
 #include <tuple>
 #include <type_traits>
 
+#ifdef HALCHECK_DOXYGEN
+#define HALCHECK_REQUIRE(...)
+#define HALCHECK_REQUIRE_(...)
+#else
 #define HALCHECK_REQUIRE(...) ::halcheck::lib::enable_if_t<(__VA_ARGS__), int> = 0
 #define HALCHECK_REQUIRE_(...) ::halcheck::lib::enable_if_t<(__VA_ARGS__), int>
+#endif
 
 namespace halcheck { namespace lib {
 

@@ -88,3 +88,21 @@ if(HALCHECK_DEVELOPMENT)
     add_subdirectory(test)
   endif()
 endif()
+
+#[[ Documentation ]]
+
+if(HALCHECK_DEVELOPMENT)
+  find_package(Doxygen)
+  if(DOXYGEN_FOUND)
+    set(DOXYGEN_EXPAND_ONLY_PREDEF YES)
+    set(DOXYGEN_EXPAND_AS_DEFINED HALCHECK_REQUIRE HALCHECK_REQUIRE_)
+    set(DOXYGEN_MACRO_EXPANSION YES)
+    set(DOXYGEN_PREDEFINED HALCHECK_DOXYGEN)
+    set(DOXYGEN_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+    set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+    set(DOXYGEN_HIDE_UNDOC_CLASSES YES)
+    set(DOXYGEN_HIDE_UNDOC_MEMBERS YES)
+    doxygen_add_docs(doxygen ${CMAKE_CURRENT_SOURCE_DIR}/include ALL)
+  endif()
+endif()
