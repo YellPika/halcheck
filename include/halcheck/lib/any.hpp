@@ -32,7 +32,6 @@ public:
 
   any(any &&other) noexcept(false) : _type(other._type), _impl(other.has_value() ? other._impl->move() : nullptr) {}
 
-  /// @fn template<typename T> any(T &&value)
   template<
       typename T,
       HALCHECK_REQUIRE(!lib::is_specialization_of<lib::decay_t<T>, lib::in_place_type_t>()),
