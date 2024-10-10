@@ -1,6 +1,8 @@
 #ifndef HALCHECK_LIB_SCOPE_HPP
 #define HALCHECK_LIB_SCOPE_HPP
 
+/// @file
+
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>
@@ -8,28 +10,112 @@
 #include <halcheck/lib/variant.hpp>
 
 #include <cstddef>
-#include <memory>
 #include <type_traits>
 
 namespace halcheck { namespace lib {
 
-template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
+/// @brief Calls a function upon destruction.
+///
+/// @tparam F The type of function to call upon destruction.
+/// @ingroup utility
+template<
+    typename F = lib::move_only_function<void() &&>,
+    HALCHECK_REQUIRE(lib::is_invocable<F &&>()),
+    HALCHECK_REQUIRE(std::is_nothrow_move_constructible<F>())>
 class finally_t {
 public:
-  explicit finally_t(F func) noexcept : _func(std::move(func)) {}
-  finally_t(finally_t &&other) noexcept : _func(std::move(other._func)) { other._func.reset(); }
+  template<
+      typename G,
+      HALCHECK_REQUIRE_(lib::is_invocable<G &&>()),
+      HALCHECK_REQUIRE_(std::is_nothrow_move_constructible<G>())>
+  friend class finally_t;
+
+  constexpr finally_t() = default;
+
+  /// @brief Construct an object that calls the given function upon destruction.
+  ///
+  /// @param func The function to call.
+  constexpr explicit finally_t(F func) noexcept(std::is_nothrow_move_constructible<F>())
+      : _func(lib::in_place, std::move(func)) {}
+
+  /// @brief Delays the invocation of a \ref finally_t "finally_t"'s underlying function by transfering the
+  /// responsibility of calling the function to a new \ref finally_t.
+  ///
+  /// @param other The object from which to transfer the function.
+  finally_t(finally_t &&other) noexcept(std::is_nothrow_move_constructible<F>()) : _func(std::move(other._func)) {
+    other._func.reset();
+  }
+
+  /// @brief Delays the invocation of a \ref finally_t "finally_t"'s underlying function by transfering the
+  /// responsibility of calling the function to a new \ref finally_t.
+  ///
+  /// @param other The object from which to transfer the function.
+  template<typename G, HALCHECK_REQUIRE(std::is_convertible<G, F>())>
+  finally_t(finally_t<G> &&other) noexcept(std::is_constructible<F, G>()) // NOLINT: implicit conversion
+      : _func(std::move(other._func)) {
+    other._func.reset();
+  }
+
+  /// @brief Delays the invocation of a \ref finally_t "finally_t"'s underlying function by transfering the
+  /// responsibility of calling the function to a new \ref finally_t.
+  ///
+  /// @param other The object from which to transfer the function.
+  template<typename G, HALCHECK_REQUIRE(!std::is_convertible<G, F>()), HALCHECK_REQUIRE(std::is_constructible<F, G>())>
+  explicit finally_t(finally_t<G> &&other) noexcept(std::is_constructible<F, G>()) : _func(std::move(other._func)) {
+    other._func.reset();
+  }
+
   finally_t(const finally_t &) = delete;
   finally_t &operator=(const finally_t &) = delete;
   finally_t &operator=(finally_t &&) = delete;
   void *operator new(std::size_t) = delete;
   void *operator new[](std::size_t) = delete;
 
+  /// @brief Invokes the underlying function.
   ~finally_t() noexcept {
     if (_func)
       lib::invoke(std::move(*_func));
   }
 
 private:
+  template<typename G>
+  struct combine {
+    lib::optional<F> first;
+    lib::optional<G> second;
+
+    void operator()() {
+      if (second)
+        lib::invoke(std::move(*second));
+      if (first)
+        lib::invoke(std::move(*first));
+    }
+  };
+
+  template<typename G>
+  finally_t<combine<G>> make_combined(finally_t<G> &&other) && {
+    if (!_func && !other._func)
+      return finally_t<combine<G>>();
+
+    combine<G> func{std::move(_func), std::move(other._func)};
+    _func.reset();
+    other._func.reset();
+    return finally_t<combine<G>>(std::move(func));
+  }
+
+  /// @brief Combines two \ref finally_t values into one, such that both underlying functions are called upon
+  /// destruction of the return value.
+  ///
+  /// @note The underlying functions are called in the _reverse_ order of arguments provided, i.e. arguments should be
+  /// provided in the same order they are created.
+  /// @tparam G The other type of function to call.
+  /// @param lhs The second function to call.
+  /// @param rhs The first function to call.
+  /// @return
+  template<typename G>
+  friend finally_t<combine<G>> operator+(finally_t &&lhs, finally_t<G> &&rhs) {
+    return std::move(lhs).make_combined(std::move(rhs));
+  }
+
   lib::optional<F> _func;
 };
 
@@ -37,59 +123,17 @@ private:
 /// @tparam F the type of function to execute.
 /// @param func The function to execute.
 /// @return An object that executes the function upon destruction.
+/// @ingroup utility
 template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
-finally_t<F> finally(F func) {
-  return finally_t<F>(std::move(func));
-}
-
-/// @brief Represents an arbitrary destructable value.
-class destructable {
-public:
-  destructable() = default;
-
-  /// @brief Constructs a destructable that does nothing upon destruction.
-  template<typename T, HALCHECK_REQUIRE(std::is_trivially_destructible<lib::decay_t<T>>())>
-  destructable(T) {} // NOLINT: implicit conversion
-
-  /// @brief Creates a destructable from an r-value.
-  /// @tparam T The type of value to hold.
-  /// @param value The value to hold.
-  template<
-      typename T,
-      HALCHECK_REQUIRE(!std::is_trivially_destructible<lib::decay_t<T>>()),
-      HALCHECK_REQUIRE(!std::is_reference<T>()),
-      HALCHECK_REQUIRE(!std::is_same<T, destructable>())>
-  destructable(T &&value) // NOLINT: implicit conversion
-      : _impl(new derived<T>(std::forward<T>(value))) {}
-
-  template<typename T, typename... Args, HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
-  explicit destructable(lib::in_place_type_t<T>, Args &&...args) : _impl(new derived<T>(std::forward<Args>(args)...)) {}
-
-private:
-  struct base {
-    virtual ~base() = default;
-  };
-
-  template<typename T>
-  struct derived : base {
-    template<typename... Args>
-    explicit derived(Args &&...args) : value(std::forward<Args>(args)...) {}
-
-    T value;
-  };
-
-  std::unique_ptr<base> _impl;
-};
-
-template<typename T, typename... Args>
-lib::destructable make_destructable(Args &&...args) {
-  return lib::destructable(lib::in_place_type_t<T>(), std::forward<Args>(args)...);
+lib::finally_t<F> finally(F func) {
+  return lib::finally_t<F>(std::move(func));
 }
 
 template<typename T>
 struct exchange_finally_t {
 public:
-  exchange_finally_t(T &target, T old) : target(&target), old(std::move(old)) {}
+  template<typename U>
+  exchange_finally_t(T &target, U &&next) : target(&target), old(lib::exchange(target, std::forward<U>(next))) {}
   void operator()() const { *target = old; }
 
 private:
@@ -98,7 +142,7 @@ private:
 
 template<typename T, typename U>
 lib::finally_t<lib::exchange_finally_t<T>> tmp_exchange(T &value, U &&next) {
-  return lib::finally(exchange_finally_t<T>(value, lib::exchange(value, next)));
+  return lib::finally(exchange_finally_t<T>(value, std::forward<U>(next)));
 }
 
 }} // namespace halcheck::lib

@@ -25,10 +25,10 @@ namespace {
 struct handler : eff::handler<handler, gen::label_effect, gen::sample_effect, gen::size_effect> {
   explicit handler(std::mt19937_64 engine, std::uintmax_t size) : engine(engine), size(size) {}
 
-  lib::destructable operator()(gen::label_effect args) override {
+  lib::finally_t<> operator()(gen::label_effect args) override {
     auto previous = engine;
     engine.seed(engine() + std::hash<lib::atom>()(args.value));
-    return std::make_pair(gen::label(args.value), lib::finally([&, previous] { engine = previous; }));
+    return gen::label(args.value) + lib::finally([&, previous] { engine = previous; });
   }
 
   std::uintmax_t operator()(gen::sample_effect args) override {

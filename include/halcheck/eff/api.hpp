@@ -47,11 +47,11 @@ lib::invoke_result_t<F> handle(F func, T &&handler) {
 }
 
 template<typename T, HALCHECK_REQUIRE(eff::is_handler<lib::decay_t<T>>())>
-lib::destructable handle(T handler) {
+lib::finally_t<> handle(T handler) {
   return eff::context::handle(std::forward<T>(handler));
 }
 
-inline std::function<lib::destructable()> clone() { return eff::context::clone(); }
+inline std::function<lib::finally_t<>()> clone() { return eff::context::clone(); }
 
 template<typename F>
 class wrap_t {
@@ -74,7 +74,7 @@ public:
   }
 
 private:
-  std::function<lib::destructable()> apply;
+  std::function<lib::finally_t<>()> apply;
   F func;
 };
 

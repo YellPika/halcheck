@@ -10,8 +10,11 @@
 namespace halcheck { namespace lib {
 
 /// @brief Converts a value to a std::string using operator<<.
+///
+/// This overload participates in overload resolution only if lib::is_printable<T> holds.
 /// @tparam T The type of value to convert from.
 /// @param value The value to convert from.
+/// @ingroup string
 template<typename T, HALCHECK_REQUIRE(lib::is_printable<T>())>
 std::string to_string(const T &value) {
   std::ostringstream os;
@@ -20,8 +23,11 @@ std::string to_string(const T &value) {
 }
 
 /// @brief Converts a std::string to a value using operator>>.
+///
+/// This overload participates in overload resolution only if lib::is_parsable<T> holds.
 /// @tparam T The type of value to convert to.
 /// @param value The string to convert from.
+/// @ingroup string
 template<typename T, HALCHECK_REQUIRE(lib::is_parsable<T>())>
 lib::optional<T> of_string(const std::string &value) {
   T output;

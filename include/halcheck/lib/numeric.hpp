@@ -1,26 +1,25 @@
 #ifndef HALCHECK_LIB_NUMERIC_HPP
 #define HALCHECK_LIB_NUMERIC_HPP
 
-#if __cplusplus >= 201902L
-#include <numeric> // IWYU pragma: export
-#else
+/// @file
+
 #include <halcheck/lib/type_traits.hpp>
 
 #include <cmath>
 #include <limits>
-#endif
 
 namespace halcheck { namespace lib {
 
-#if __cplusplus >= 201902L
-using std::midpoint;
-#else
+/// @brief See https://en.cppreference.com/w/cpp/numeric/midpoint.
+/// @ingroup numeric
 template<typename T, HALCHECK_REQUIRE(std::is_integral<T>())>
 constexpr T midpoint(T min, T max) noexcept {
   using U = lib::make_unsigned_t<T>;
   return min <= max ? min + T(U(max - min) >> 1) : min - T(U(min - max) >> 1);
 }
 
+/// @brief See https://en.cppreference.com/w/cpp/numeric/midpoint.
+/// @ingroup numeric
 template<typename T, HALCHECK_REQUIRE(std::is_floating_point<T>())>
 T midpoint(T min, T max) noexcept {
   static const T lo = std::numeric_limits<T>::min() * 2;
@@ -32,8 +31,14 @@ T midpoint(T min, T max) noexcept {
          : amax < lo            ? min / 2 + max
                                 : min / 2 + max / 2;
 }
-#endif
 
+/// @brief Converts an integral value into its equivalent unsigned version.
+///
+/// @tparam T The integral type to convert from.
+/// @param value The value to convert.
+/// @return If \p T is an unsigned type, then returns \p value. Otherwise, returns the result of casting \p value to a
+/// signed type.
+/// @ingroup numeric
 template<typename T, HALCHECK_REQUIRE(std::is_integral<T>())>
 lib::make_unsigned_t<T> to_unsigned(T value) {
   return lib::make_unsigned_t<T>(value);

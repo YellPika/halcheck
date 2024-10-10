@@ -6,6 +6,7 @@
 #include <halcheck/lib/tuple.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
+#include <halcheck/lib/variant.hpp>
 
 #include <array>
 #include <cstddef>
@@ -36,7 +37,7 @@ private:
   static thread_local const std::array<entry, size> empty, *current;
 
   struct clone_effect {
-    std::function<lib::destructable()> fallback() const;
+    std::function<lib::finally_t<>()> fallback() const;
   };
 
   template<typename T>
@@ -51,12 +52,12 @@ public:
   private:
     friend class context;
 
-    std::function<lib::destructable()> operator()(clone_effect args) override {
+    std::function<lib::finally_t<>()> operator()(clone_effect args) override {
       return std::bind(
-          [](const std::function<lib::destructable()> &context, T copy) {
+          [](const std::function<lib::finally_t<>()> &context, T copy) {
             auto first = context();
             auto second = handle(std::move(copy));
-            return std::make_pair(std::move(first), std::move(second));
+            return std::move(first) + std::move(second);
           },
           invoke(args),
           *static_cast<T *>(this));
@@ -82,23 +83,19 @@ public:
   }
 
   template<typename T>
-  static lib::destructable handle(T handler) {
+  static lib::finally_t<> handle(T handler) {
     struct frame {
       explicit frame(T handler)
-          : handler(std::move(handler)), copy(this->handler.install()),
-            applier(lib::tmp_exchange(current, &this->copy)) {}
-      frame(frame &&) = delete;
-      frame(const frame &) = delete;
-      frame &operator=(frame &&) = delete;
-      frame &operator=(const frame &) = delete;
-      ~frame() = default;
+          : handler(std::move(handler)), copy(this->handler.install()), applier(current, &this->copy) {}
+
+      void operator()() const { applier(); }
 
       T handler;
       std::array<entry, size> copy;
-      lib::finally_t<lib::exchange_finally_t<const std::array<entry, size> *>> applier;
+      lib::exchange_finally_t<const std::array<entry, size> *> applier;
     };
 
-    return lib::make_destructable<frame>(std::move(handler));
+    return lib::finally(lib::move_only_function<void() &&>(lib::in_place_type_t<frame>(), std::move(handler)));
   }
 
   template<typename F, typename T>
@@ -108,7 +105,7 @@ public:
     return lib::invoke(func);
   }
 
-  static std::function<lib::destructable()> clone() { return invoke(clone_effect()); }
+  static std::function<lib::finally_t<>()> clone() { return invoke(clone_effect()); }
 
   static lib::finally_t<lib::exchange_finally_t<const std::array<entry, size> *>> reset() {
     return lib::tmp_exchange(current, &empty);

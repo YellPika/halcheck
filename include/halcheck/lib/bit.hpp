@@ -1,8 +1,7 @@
 #ifndef HALCHECK_LIB_BIT_HPP
 #define HALCHECK_LIB_BIT_HPP
 
-/// @defgroup bit Bit Manipulation
-/// @ingroup lib
+/// @file
 
 #include <halcheck/lib/type_traits.hpp>
 
@@ -11,7 +10,7 @@
 namespace halcheck { namespace lib {
 
 /// @brief See https://en.cppreference.com/w/cpp/numeric/bit_cast.
-/// @ingroup bit
+/// @ingroup numeric
 template<
     typename T,
     typename U,

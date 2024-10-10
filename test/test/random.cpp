@@ -13,7 +13,7 @@ HALCHECK_TEST(Test, Random_Error) {
   using namespace lib::literals;
 
   EXPECT_THROW(
-      test::random()([&] {
+      (test::config(test::set("MAX_SUCCESS", 0)) | test::random())([&] {
         switch (gen::sample("a"_s) % 8) {
         case 0:
           throw gen::discard();

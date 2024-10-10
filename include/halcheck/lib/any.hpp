@@ -1,6 +1,8 @@
 #ifndef HALCHECK_LIB_ANY_HPP
 #define HALCHECK_LIB_ANY_HPP
 
+/// @file
+
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/typeinfo.hpp>
 #include <halcheck/lib/variant.hpp>
@@ -21,20 +23,16 @@ template<typename T, HALCHECK_REQUIRE(!std::is_void<T>())>
 const T *any_cast(const any *operand) noexcept;
 
 /// @brief See https://en.cppreference.com/w/cpp/utility/any.
-/// @ingroup util
+/// @ingroup utility
 class any {
 public:
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/any.
   constexpr any() noexcept = default;
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/any.
   any(const any &other) : _type(other._type), _impl(other.has_value() ? other._impl->clone() : nullptr) {}
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/any.
   any(any &&other) noexcept(false) : _type(other._type), _impl(other.has_value() ? other._impl->move() : nullptr) {}
 
   /// @fn template<typename T> any(T &&value)
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/any.
   template<
       typename T,
       HALCHECK_REQUIRE(!lib::is_specialization_of<lib::decay_t<T>, lib::in_place_type_t>()),
@@ -42,7 +40,6 @@ public:
   any(T &&value) // NOLINT: implicit conversion
       : any(lib::in_place_type_t<lib::decay_t<T>>(), std::forward<T>(value)) {}
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/any.
   template<
       typename T,
       typename... Args,
@@ -51,7 +48,6 @@ public:
   explicit any(lib::in_place_type_t<T>, Args &&...args)
       : _type(lib::type_id::make<T>()), _impl(new derived<T>(std::forward<Args>(args)...)) {}
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/any.
   template<
       typename T,
       typename U,
@@ -61,22 +57,18 @@ public:
   explicit any(lib::in_place_type_t<T>, std::initializer_list<U> il, Args &&...args)
       : _type(lib::type_id::make<T>()), _impl(new derived<T>(il, std::forward<Args>(args)...)) {}
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/%7Eany.
   ~any() = default;
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/operator%3D.
   any &operator=(const any &rhs) {
     any(rhs).swap(*this);
     return *this;
   }
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/operator%3D.
   any &operator=(any &&rhs) noexcept {
     swap(rhs);
     return *this;
   }
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/operator%3D.
   template<
       typename T,
       HALCHECK_REQUIRE(!lib::is_specialization_of<lib::decay_t<T>, lib::in_place_type_t>()),
@@ -86,7 +78,6 @@ public:
     return *this;
   }
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/emplace.
   template<
       typename T,
       typename... Args,
@@ -96,7 +87,6 @@ public:
     _impl.reset(new derived<T>(std::forward<Args>(args)...));
   }
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/emplace.
   template<
       typename T,
       typename U,
@@ -107,23 +97,19 @@ public:
     _impl.reset(new derived<T>(il, std::forward<Args>(args)...));
   }
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/reset.
   void reset() noexcept {
     _type = lib::type_id::make<void>();
     _impl.reset();
   }
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/swap.
   void swap(any &other) noexcept {
     using std::swap;
     swap(_type, other._type);
     swap(_impl, other._impl);
   }
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/has_value.
   constexpr bool has_value() const noexcept { return bool(_impl); }
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/type.
   constexpr const lib::type_id &type() const { return _type; }
 
 private:
@@ -133,7 +119,6 @@ private:
   template<typename T, HALCHECK_REQUIRE_(!std::is_void<T>())>
   friend T *any_cast(any *operand) noexcept;
 
-  /// @brief See https://en.cppreference.com/w/cpp/utility/any/swap2.
   friend void swap(any &lhs, any &rhs) noexcept { lhs.swap(rhs); }
 
   struct base {

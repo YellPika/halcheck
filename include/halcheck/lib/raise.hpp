@@ -1,11 +1,14 @@
 #ifndef HALCHECK_LIB_RAISE_HPP
 #define HALCHECK_LIB_RAISE_HPP
 
+/// @file
+
 #include <stdexcept>
 
 namespace halcheck { namespace lib {
 
 /// @brief A type for values that do not exist.
+/// @ingroup utility
 struct raise {
   /// @brief Throws the given value.
   /// @tparam T The type of value to throw.

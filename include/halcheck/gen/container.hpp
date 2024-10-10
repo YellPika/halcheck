@@ -32,7 +32,7 @@ private:
       return lib::invoke(func, i);
     }
 
-    std::function<lib::destructable()> context;
+    std::function<lib::finally_t<>()> context;
     F func;
   };
 
@@ -70,10 +70,10 @@ public:
 static const class {
 private:
   struct to_label {
-    lib::destructable operator()(std::uintmax_t i) const {
+    lib::finally_t<> operator()(std::uintmax_t i) const {
       auto label1 = gen::label(id);
       auto label2 = gen::label(i);
-      return std::make_pair(std::move(label1), std::move(label2));
+      return std::move(label1) + std::move(label2);
     }
 
     lib::atom id;

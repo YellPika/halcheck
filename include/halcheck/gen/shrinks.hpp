@@ -84,14 +84,14 @@ struct shrink_handler : eff::handler<shrink_handler, gen::shrink_effect, gen::la
       return std::min(*output, args.size - 1);
   }
 
-  lib::destructable operator()(gen::label_effect args) override {
+  lib::finally_t<> operator()(gen::label_effect args) override {
     auto prev = input;
     input = input.child(args.value);
     path.push_back(args.value);
-    return std::make_pair(gen::label(args.value), lib::finally([&, prev] {
-                            path.pop_back();
-                            input = prev;
-                          }));
+    return gen::label(args.value) + lib::finally([&, prev] {
+             path.pop_back();
+             input = prev;
+           });
   }
 
   lib::trie<lib::atom, lib::optional<std::uintmax_t>> input;

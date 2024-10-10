@@ -45,7 +45,7 @@ struct handler : eff::handler<handler, gen::sample_effect, gen::label_effect, ge
       return 0;
   }
 
-  lib::destructable operator()(gen::label_effect args) override {
+  lib::finally_t<> operator()(gen::label_effect args) override {
     auto prev = current;
     current = &(*current)[args.value];
     auto self = this;

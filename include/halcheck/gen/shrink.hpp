@@ -154,7 +154,7 @@ static const struct {
         handler());
   }
 
-  lib::destructable operator()() const { return eff::handle(handler()); }
+  lib::finally_t<> operator()() const { return eff::handle(handler()); }
 } noshrink;
 
 }} // namespace halcheck::gen

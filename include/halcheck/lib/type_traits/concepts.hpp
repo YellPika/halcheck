@@ -127,12 +127,24 @@ struct is_hashable : lib::is_detected<lib::hashable, T> {};
 template<typename T, typename Stream>
 using printable = lib::same<decltype(std::declval<Stream &>() << std::declval<const T &>()), Stream &>;
 
+/// @brief Determines whether a type is printable (i.e. can be output on a <tt> std::basic_ostream </tt>).
+///
+/// @tparam T The type to check.
+/// @tparam CharT
+/// @tparam Traits
+/// @ingroup meta
 template<typename T, typename CharT = char, typename Traits = std::char_traits<CharT>>
 struct is_printable : lib::is_detected<lib::printable, T, std::basic_ostream<CharT, Traits>> {};
 
 template<typename T, typename Stream>
 using parsable = lib::same<decltype(std::declval<Stream &>() >> std::declval<T &>()), Stream &>;
 
+/// @brief Determines whether a type is parsable (i.e. can be read from a <tt> std::basic_istream </tt>).
+///
+/// @tparam T The type to check.
+/// @tparam CharT
+/// @tparam Traits
+/// @ingroup meta
 template<typename T, typename CharT = char, typename Traits = std::char_traits<CharT>>
 struct is_parsable : lib::is_detected<lib::parsable, T, std::basic_istream<CharT, Traits>> {};
 

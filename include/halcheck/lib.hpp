@@ -3,10 +3,19 @@
 
 /// @defgroup lib Support Library
 
-/// @defgroup util Utility Library
+/// @defgroup utility Utilities
 /// @ingroup lib
 
-/// @defgroup meta Metaprogramming Library
+/// @defgroup functional Functional Programming
+/// @ingroup lib
+
+/// @defgroup meta Metaprogramming
+/// @ingroup lib
+
+/// @defgroup numeric Numerics
+/// @ingroup lib
+
+/// @defgroup string Strings
 /// @ingroup lib
 
 #include <halcheck/lib/any.hpp>         // IWYU pragma: export
