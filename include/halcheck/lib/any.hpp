@@ -108,9 +108,9 @@ public:
     swap(_impl, other._impl);
   }
 
-  constexpr bool has_value() const noexcept { return bool(_impl); }
+  bool has_value() const noexcept { return bool(_impl); }
 
-  constexpr const lib::type_id &type() const { return _type; }
+  const lib::type_id &type() const { return _type; }
 
 private:
   template<typename T, HALCHECK_REQUIRE_(!std::is_void<T>())>
