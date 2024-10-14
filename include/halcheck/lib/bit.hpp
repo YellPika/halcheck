@@ -2,6 +2,8 @@
 #define HALCHECK_LIB_BIT_HPP
 
 /// @file
+/// @brief Bit-level operations.
+/// @see https://en.cppreference.com/w/cpp/header/bit
 
 #include <halcheck/lib/type_traits.hpp>
 
@@ -9,8 +11,8 @@
 
 namespace halcheck { namespace lib {
 
-/// @brief See https://en.cppreference.com/w/cpp/numeric/bit_cast.
-/// @ingroup numeric
+/// @brief Performs a bit-level conversion from one type to another.
+/// @see std::bit_cast
 template<
     typename T,
     typename U,

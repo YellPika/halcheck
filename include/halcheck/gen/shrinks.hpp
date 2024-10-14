@@ -70,7 +70,7 @@ struct shrink_handler : eff::handler<shrink_handler, gen::shrink_effect, gen::la
       : input(std::move(input)), path(std::move(path)), calls(std::move(calls)) {}
 
   lib::optional<std::uintmax_t> operator()(gen::shrink_effect args) override {
-    auto output = input.get();
+    auto output = *input;
     if (!output && args.size > 0) {
       if (auto locked = calls.lock()) {
         std::lock_guard<std::mutex> _(locked->mutex);
@@ -86,7 +86,7 @@ struct shrink_handler : eff::handler<shrink_handler, gen::shrink_effect, gen::la
 
   lib::finally_t<> operator()(gen::label_effect args) override {
     auto prev = input;
-    input = input.child(args.value);
+    input = input.drop(args.value);
     path.push_back(args.value);
     return gen::label(args.value) + lib::finally([&, prev] {
              path.pop_back();

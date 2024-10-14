@@ -1,6 +1,10 @@
 #ifndef HALCHECK_LIB_RTTI_HPP
 #define HALCHECK_LIB_RTTI_HPP
 
+/// @file
+/// @brief Utilties for std::type_info.
+/// @see https://en.cppreference.com/w/cpp/header/typeinfo
+
 #include <halcheck/lib/type_traits.hpp>
 
 #include <cstddef>
@@ -42,20 +46,34 @@ std::string nameof() {
 }
 #endif
 
+/// @brief A runtime type identifier that does not require RTTI.
 struct type_id {
 public:
+  /// @brief Constructs the type identifier for `void`.
   constexpr type_id() : _index(0) {}
 
+  /// @brief Gets a hash code associated with this type identifier.
+  /// @post <tt> x.hash() == y.hash() || x != y </tt>
   std::size_t hash() const { return std::hash<std::size_t>()(_index); }
 
-  template<typename T, HALCHECK_REQUIRE(!std::is_void<T>())>
-  static type_id make() {
+  /// @brief Gets the unique type identifier associated with the given type.
+  /// @tparam T The type for which to obtain an identifier.
+  /// @returns A unique type identifier for @p T.
+  /// @post <tt> type_id::of<T>() == type_id::of<U>() </tt> iff <tt> std:is_same<T, U>() </tt>.
+  /// @details This overload only participates in overload resolution if @p T is not `void`.
+  template<typename T, HALCHECK_REQUIRE(!std::is_same<T, void>())>
+  static type_id of() {
     static type_id output(next());
     return output;
   }
 
-  template<typename T, HALCHECK_REQUIRE(std::is_void<T>())>
-  static type_id make() {
+  /// @brief Gets the unique type identifier associated with the given type.
+  /// @tparam T The type for which to obtain an identifier.
+  /// @returns A unique type identifier for @p T.
+  /// @post <tt> type_id::of<T>() == type_id::of<U>() </tt> iff <tt> std:is_same<T, U>() </tt>.
+  /// @details This overload only participates in overload resolution if @p T is `void`.
+  template<typename T, HALCHECK_REQUIRE(std::is_same<T, void>())>
+  static type_id of() {
     return type_id();
   }
 
@@ -77,6 +95,7 @@ private:
 }} // namespace halcheck::lib
 
 namespace std {
+/// @brief The std::hash specialization for @ref halcheck::lib::type_id.
 template<>
 struct hash<halcheck::lib::type_id> {
   std::size_t operator()(halcheck::lib::type_id value) const { return value.hash(); }

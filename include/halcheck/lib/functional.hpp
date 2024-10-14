@@ -2,6 +2,8 @@
 #define HALCHECK_LIB_FUNCTIONAL_HPP
 
 /// @file
+/// @brief Utilities for functional programming.
+/// @see https://en.cppreference.com/w/cpp/header/functional
 
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/variant.hpp>
@@ -14,8 +16,8 @@
 
 namespace halcheck { namespace lib {
 
-/// @brief See https://en.cppreference.com/w/cpp/utility/functional/invoke.
-/// @ingroup functional
+/// @brief An implementation of std::invoke.
+/// @see std::invoke
 static const struct {
   template<typename F, typename... Args, HALCHECK_REQUIRE(std::is_member_pointer<lib::decay_t<F>>())>
   auto operator()(F &&f, Args &&...args) const noexcept(
@@ -30,53 +32,48 @@ static const struct {
   }
 } invoke;
 
-/// @brief See https://en.cppreference.com/w/cpp/types/result_of.
-/// @ingroup meta
+/// @brief An implementation of std::invoke_result_t
+/// @see std::invoke_result_t
 template<typename F, typename... Args>
 using invoke_result_t = decltype(lib::invoke(std::declval<F>(), std::declval<Args>()...));
 
-/// @brief See https://en.cppreference.com/w/cpp/types/is_invocable.
-/// @ingroup meta
+/// @private
 template<typename R, typename F, typename... Args>
 using invocable_r = lib::convertible<lib::invoke_result_t<F, Args...>, R>;
 
-/// @brief See https://en.cppreference.com/w/cpp/types/is_invocable.
-/// @ingroup meta
+/// @brief An implementation of std::is_invocable_r
+/// @see std::is_invocable_r
 template<typename R, typename F, typename... Args>
 struct is_invocable_r : lib::is_detected<lib::invocable_r, R, F, Args...> {};
 
-/// @brief See https://en.cppreference.com/w/cpp/types/is_invocable.
-/// @ingroup meta
+/// @private
 template<typename F, typename... Args>
 using invocable = lib::invoke_result_t<F, Args...>;
 
-/// @brief See https://en.cppreference.com/w/cpp/types/is_invocable.
-/// @ingroup meta
+/// @brief An implementation of std::is_invocable
+/// @see std::is_invocable
 template<typename F, typename... Args>
 struct is_invocable : lib::is_detected<lib::invocable, F, Args...> {};
 
-/// @brief See https://en.cppreference.com/w/cpp/types/is_invocable.
-/// @ingroup meta
+/// @private
 template<typename F, typename... Args>
 using nothrow_invocable = lib::enable_if_t<noexcept(lib::invoke(std::declval<F>(), std::declval<Args>()...))>;
 
-/// @brief See https://en.cppreference.com/w/cpp/types/is_invocable.
-/// @ingroup meta
+/// @brief An implementation of std::is_nothrow_invocable
+/// @see std::is_nothrow_invocable
 template<typename F, typename... Args>
 struct is_nothrow_invocable : lib::is_detected<lib::nothrow_invocable, F, Args...> {};
 
 /// @brief Represents an overload set as a single value.
 ///
 /// @tparam Args The remaining overloads to represent.
-/// @ingroup functional
 template<typename... Args>
 struct overload {
 #ifdef HALCHECK_DOXYGEN
   /// @brief Construct a new overload set.
-  ///
   /// @param args The set of overloads to represent.
   /// @post <tt> overload(fs...)(xs...) = f(xs...) </tt>, where \c f is the unique element of \c fs such that
-  /// <tt> lib::is_invocable<decltype(f), decltype(xs)...>() </tt> converts to `true`.
+  /// <tt> @ref "lib::is_invocable"<decltype(f), decltype(xs)...>() </tt> is satisfied.
   explicit overload(Args... args);
 #endif
 };
@@ -97,19 +94,20 @@ struct overload<T, Args...> : private T, private overload<Args...> {
 /// @brief Constructs an overloaded functor from a set of pre-existing functors.
 /// @tparam Args The types of functors to combine.
 /// @param args The functors to combine.
-/// @return <tt> lib::overload<Args...>(std::move(args)...) </tt>
-/// @ingroup functional
+/// @return <tt> @ref "lib::overload"<Args...>(@ref "std::move"(args)...) </tt>.
 template<typename... Args>
 lib::overload<Args...> make_overload(Args... args) {
   return lib::overload<Args...>(std::move(args)...);
 }
 
 /// @brief A function object that calls the constructor of a given type.
-///
 /// @tparam T The type of value to construct.
-/// @ingroup functional
 template<typename T>
 struct constructor {
+  /// @brief Invokes a constructor of @p T.
+  /// @tparam Args The type of arguments to pass to @p T::T. Must satisfy <tt> @ref "std::is_constructible"<T, Args...>() </tt>.
+  /// @param args The arguments to pass to @p T::T.
+  /// @return The constructed object.
   template<typename... Args, HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
   T operator()(Args... args) {
     return T(std::forward<Args>(args)...);
@@ -123,15 +121,13 @@ class function_view;
 ///
 /// @tparam R The return type of the function to refer to.
 /// @tparam Args The argument types of the function to refer to.
-/// @ingroup functional
 template<typename R, typename... Args>
 class function_view<R(Args...)> {
 public:
   /// @brief Constructs a new function view from a function object.
-  ///
   /// @tparam F The type of function to refer to.
   /// @param func The function to refer to.
-  /// @post function_view(f)(xs...) == lib::invoke(f, xs...)
+  /// @post <tt> function_view(f)(xs...) == @ref "lib::invoke"(f, xs...) </tt>
   template<
       typename F,
       HALCHECK_REQUIRE(!std::is_const<F>()),
@@ -144,14 +140,12 @@ public:
                       }}) {}
 
   /// @brief Constructs a new function view from a function pointer.
-  ///
   /// @param func The function to refer to.
-  /// @post function_view(f)(xs...) == f(xs...)
+  /// @post <tt> function_view(f)(xs...) == f(xs...) </tt>
   function_view(R (*func)(Args...)) noexcept // NOLINT: implicit copy of function pointer
       : _impl(func) {}
 
   /// @brief Calls the underlying function.
-  ///
   /// @param args The arguments to pass to the function.
   /// @return The result of calling the underlying function with the given arguments.
   R operator()(Args... args) const {
@@ -175,12 +169,10 @@ private:
 ///
 /// @tparam R The return type of the function to refer to.
 /// @tparam Args The argument types of the function to refer to.
-/// @ingroup functional
 template<typename R, typename... Args>
 class function_view<R(Args...) const> {
 public:
   /// @brief Constructs a new function view from a function object.
-  ///
   /// @tparam F The type of function to refer to.
   /// @param func The function to refer to.
   /// @post function_view(f)(xs...) == lib::invoke(f, xs...)
@@ -196,14 +188,12 @@ public:
             }}) {}
 
   /// @brief Constructs a new function view from a function pointer.
-  ///
   /// @param func The function to refer to.
   /// @post function_view(f)(xs...) == f(xs...)
   function_view(R (*func)(Args...)) noexcept // NOLINT: implicit copy of function pointer
       : _impl(func) {}
 
   /// @brief Calls the underlying function.
-  ///
   /// @param args The arguments to pass to the function.
   /// @return The result of calling the underlying function with the given arguments.
   R operator()(Args... args) const {
@@ -226,8 +216,8 @@ private:
 template<typename T>
 class move_only_function;
 
-/// @brief See https://en.cppreference.com/w/cpp/utility/functional/move_only_function.
-/// @ingroup functional
+/// @brief An implementation of std::move_only_function.
+/// @see std::move_only_function
 template<typename R, typename... Args>
 class move_only_function<R(Args...) &&> {
 public:

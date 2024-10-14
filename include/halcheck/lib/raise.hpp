@@ -18,8 +18,9 @@ struct raise {
     throw value;
   }
 
-  /// @brief Produces a value of arbitrary type. Since raise cannot be
-  ///        constructed, this should never actually occur.
+  /// @brief A value of type \ref raise can be converted to any type.
+  /// @details Since \ref raise cannot be constructed, this function will never actually be run.
+  /// @tparam The type of value to convert to.
   template<typename T>
   [[noreturn]] operator T &() const { // NOLINT: raise can be converted to anything
     throw std::runtime_error("halcheck::lib::raise: impossible");

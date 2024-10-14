@@ -1,6 +1,10 @@
 #ifndef HALCHECK_LIB_OPTIONAL_HPP
 #define HALCHECK_LIB_OPTIONAL_HPP
 
+/// @file
+/// @brief An implementation of std::optional.
+/// @see https://en.cppreference.com/w/cpp/header/optional
+
 #include <halcheck/lib/tuple.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
@@ -17,13 +21,19 @@
 
 namespace halcheck { namespace lib {
 
+/// @brief An implementation of std::nullopt_t.
+/// @see std::nullopt_t
 struct nullopt_t {
   struct tag {};
   explicit constexpr nullopt_t(tag) {}
 };
 
+/// @brief An implementation of std::nullopt.
+/// @see std::nullopt
 static constexpr nullopt_t nullopt{nullopt_t::tag{}};
 
+/// @brief An implementation of std::bad_optional_access.
+/// @see std::bad_optional_access
 struct bad_optional_access : std::exception {
   bad_optional_access() = default;
   const char *what() const noexcept override { return "halcheck::lib::bad_optional_access"; }
@@ -308,6 +318,8 @@ struct optional_move_assignment_base<
 
 } // namespace detail
 
+/// @brief An implementation of std::optional.
+/// @see std::optional
 template<typename T>
 class optional : private detail::optional_move_assignment_base<T> {
 private:
@@ -595,31 +607,43 @@ private:
 };
 } // namespace detail
 
+/// @brief A specialization of @ref optional for @p "void".
+/// @details Behaves like @p bool.
 template<>
 struct optional<void> : public detail::optional_void_base<void> {
   using detail::optional_void_base<void>::optional_void_base;
 };
 
+/// @brief A specialization of @ref optional for @p "const void".
+/// @details Behaves like @p bool.
 template<>
 struct optional<const void> : public detail::optional_void_base<const void> {
   using detail::optional_void_base<const void>::optional_void_base;
 };
 
+/// @brief A specialization of @ref optional for @p "volatile void".
+/// @details Behaves like @p bool.
 template<>
 struct optional<volatile void> : public detail::optional_void_base<volatile void> {
   using detail::optional_void_base<volatile void>::optional_void_base;
 };
 
+/// @brief A specialization of @ref optional for @p "const volatile void".
+/// @details Behaves like @p bool.
 template<>
 struct optional<const volatile void> : public detail::optional_void_base<const volatile void> {
   using detail::optional_void_base<const volatile void>::optional_void_base;
 };
 
+/// @brief An implementation of std::make_optional.
+/// @see std::make_optional
 template<typename T>
 constexpr lib::optional<lib::decay_t<T>> make_optional(T &&value) {
   return lib::optional<lib::decay_t<T>>(lib::in_place, std::forward<T>(value));
 }
 
+/// @brief An implementation of std::make_optional.
+/// @see std::make_optional
 template<
     typename T,
     typename... Args,
@@ -628,6 +652,8 @@ constexpr lib::optional<T> make_optional(Args &&...args) {
   return lib::optional<T>(lib::in_place, std::forward<T>(args)...);
 }
 
+/// @brief An implementation of std::make_optional.
+/// @see std::make_optional
 template<
     typename T,
     typename U,
@@ -637,11 +663,15 @@ constexpr lib::optional<T> make_optional(const std::initializer_list<U> &ilist, 
   return lib::optional<T>(lib::in_place, ilist, std::forward<T>(args)...);
 }
 
+/// @brief An implementation of std::swap for @ref optional.
+/// @see std::swap
 template<typename T, HALCHECK_REQUIRE(std::is_move_constructible<T>() && lib::is_swappable<T>())>
 void swap(lib::optional<T> &lhs, lib::optional<T> &rhs) {
   lhs.swap(rhs);
 }
 
+/// @brief An implementation of std::optional::operator==.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U, HALCHECK_REQUIRE(!std::is_void<T>()), HALCHECK_REQUIRE(!std::is_void<U>())>
 bool operator==(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
   if (lhs && rhs)
@@ -650,26 +680,36 @@ bool operator==(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
     return !lhs && !rhs;
 }
 
+/// @brief An implementation of std::optional::operator==.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T>
 bool operator==(const lib::nullopt_t &, const lib::optional<T> &value) {
   return !value;
 }
 
+/// @brief An implementation of std::optional::operator==.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T>
 bool operator==(const lib::optional<T> &value, const lib::nullopt_t &) {
   return !value;
 }
 
+/// @brief An implementation of std::optional::operator==.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U>
 bool operator==(const U &lhs, const lib::optional<T> &rhs) {
   return rhs && lhs == *rhs;
 }
 
+/// @brief An implementation of std::optional::operator==.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U>
 bool operator==(const lib::optional<T> &lhs, const U &rhs) {
   return lhs && *lhs == rhs;
 }
 
+/// @brief An implementation of std::optional::operator!=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U, HALCHECK_REQUIRE(!std::is_void<T>()), HALCHECK_REQUIRE(!std::is_void<U>())>
 bool operator!=(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
   if (lhs && rhs)
@@ -678,26 +718,36 @@ bool operator!=(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
     return lhs || rhs;
 }
 
+/// @brief An implementation of std::optional::operator!=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T>
 bool operator!=(const lib::nullopt_t &, const lib::optional<T> &value) {
   return value;
 }
 
+/// @brief An implementation of std::optional::operator!=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T>
 bool operator!=(const lib::optional<T> &value, const lib::nullopt_t &) {
   return value;
 }
 
+/// @brief An implementation of std::optional::operator!=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U>
 bool operator!=(const U &lhs, const lib::optional<T> &rhs) {
   return !rhs || lhs != *rhs;
 }
 
+/// @brief An implementation of std::optional::operator!=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U>
 bool operator!=(const lib::optional<T> &lhs, const U &rhs) {
   return !lhs || *lhs != rhs;
 }
 
+/// @brief An implementation of std::optional::operator<.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U, HALCHECK_REQUIRE(!std::is_void<T>()), HALCHECK_REQUIRE(!std::is_void<U>())>
 bool operator<(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
   if (lhs && rhs)
@@ -706,26 +756,36 @@ bool operator<(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
     return !lhs && rhs;
 }
 
+/// @brief An implementation of std::optional::operator<.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T>
 bool operator<(const lib::nullopt_t &, const lib::optional<T> &value) {
   return value;
 }
 
+/// @brief An implementation of std::optional::operator<.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T>
 bool operator<(const lib::optional<T> &, const lib::nullopt_t &) {
   return false;
 }
 
+/// @brief An implementation of std::optional::operator<.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U>
 bool operator<(const U &lhs, const lib::optional<T> &rhs) {
   return rhs && lhs < *rhs;
 }
 
+/// @brief An implementation of std::optional::operator<.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U>
 bool operator<(const lib::optional<T> &lhs, const U &rhs) {
   return !lhs || *lhs < rhs;
 }
 
+/// @brief An implementation of std::optional::operator>.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U, HALCHECK_REQUIRE(!std::is_void<T>()), HALCHECK_REQUIRE(!std::is_void<U>())>
 bool operator>(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
   if (lhs && rhs)
@@ -734,26 +794,36 @@ bool operator>(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
     return lhs && !rhs;
 }
 
+/// @brief An implementation of std::optional::operator>.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T>
 bool operator>(const lib::nullopt_t &, const lib::optional<T> &) {
   return false;
 }
 
+/// @brief An implementation of std::optional::operator>.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T>
 bool operator>(const lib::optional<T> &value, const lib::nullopt_t &) {
   return value;
 }
 
+/// @brief An implementation of std::optional::operator>.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U>
 bool operator>(const U &lhs, const lib::optional<T> &rhs) {
   return !rhs || lhs > *rhs;
 }
 
+/// @brief An implementation of std::optional::operator>.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U>
 bool operator>(const lib::optional<T> &lhs, const U &rhs) {
   return lhs && *lhs < rhs;
 }
 
+/// @brief An implementation of std::optional::operator<=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U, HALCHECK_REQUIRE(!std::is_void<T>()), HALCHECK_REQUIRE(!std::is_void<U>())>
 bool operator<=(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
   if (lhs && rhs)
@@ -762,26 +832,36 @@ bool operator<=(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
     return !lhs;
 }
 
+/// @brief An implementation of std::optional::operator<=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T>
 bool operator<=(const lib::nullopt_t &, const lib::optional<T> &) {
   return true;
 }
 
+/// @brief An implementation of std::optional::operator<=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T>
 bool operator<=(const lib::optional<T> &value, const lib::nullopt_t &) {
   return !value;
 }
 
+/// @brief An implementation of std::optional::operator<=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U>
 bool operator<=(const U &lhs, const lib::optional<T> &rhs) {
   return rhs && lhs <= *rhs;
 }
 
+/// @brief An implementation of std::optional::operator<=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U>
 bool operator<=(const lib::optional<T> &lhs, const U &rhs) {
   return !lhs || *lhs <= rhs;
 }
 
+/// @brief An implementation of std::optional::operator>=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U, HALCHECK_REQUIRE(!std::is_void<T>()), HALCHECK_REQUIRE(!std::is_void<U>())>
 bool operator>=(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
   if (lhs && rhs)
@@ -790,51 +870,71 @@ bool operator>=(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
     return !rhs;
 }
 
+/// @brief An implementation of std::optional::operator>=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T>
 bool operator>=(const lib::nullopt_t &, const lib::optional<T> &value) {
   return !value;
 }
 
+/// @brief An implementation of std::optional::operator>=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T>
 bool operator>=(const lib::optional<T> &, const lib::nullopt_t &) {
   return true;
 }
 
+/// @brief An implementation of std::optional::operator>=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U>
 bool operator>=(const U &lhs, const lib::optional<T> &rhs) {
   return !rhs || lhs >= *rhs;
 }
 
+/// @brief An implementation of std::optional::operator>=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U>
 bool operator>=(const lib::optional<T> &lhs, const U &rhs) {
   return lhs && *lhs >= rhs;
 }
 
+/// @brief An implementation of std::optional::operator==.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U, HALCHECK_REQUIRE(std::is_void<T>()), HALCHECK_REQUIRE(std::is_void<U>())>
 bool operator==(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
   return bool(lhs) == bool(rhs);
 }
 
+/// @brief An implementation of std::optional::operator!=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U, HALCHECK_REQUIRE(std::is_void<T>()), HALCHECK_REQUIRE(std::is_void<U>())>
 bool operator!=(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
   return bool(lhs) != bool(rhs);
 }
 
+/// @brief An implementation of std::optional::operator<.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U, HALCHECK_REQUIRE(std::is_void<T>()), HALCHECK_REQUIRE(std::is_void<U>())>
 bool operator<(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
   return bool(lhs) < bool(rhs);
 }
 
+/// @brief An implementation of std::optional::operator>.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U, HALCHECK_REQUIRE(std::is_void<T>()), HALCHECK_REQUIRE(std::is_void<U>())>
 bool operator>(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
   return bool(lhs) > bool(rhs);
 }
 
+/// @brief An implementation of std::optional::operator<=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U, HALCHECK_REQUIRE(std::is_void<T>()), HALCHECK_REQUIRE(std::is_void<U>())>
 bool operator<=(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
   return bool(lhs) <= bool(rhs);
 }
 
+/// @brief An implementation of std::optional::operator>=.
+/// @see https://en.cppreference.com/w/cpp/utility/optional/operator_cmp
 template<typename T, typename U, HALCHECK_REQUIRE(std::is_void<T>()), HALCHECK_REQUIRE(std::is_void<U>())>
 bool operator>=(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
   return bool(lhs) >= bool(rhs);
@@ -843,6 +943,8 @@ bool operator>=(const lib::optional<T> &lhs, const lib::optional<U> &rhs) {
 }} // namespace halcheck::lib
 
 namespace std {
+
+/// @brief A std::hash specialization for halcheck::lib::optional.
 template<typename T>
 struct hash<halcheck::lib::optional<T>> { // NOLINT
   template<typename U = T, HALCHECK_REQUIRE(halcheck::lib::is_hashable<U>())>

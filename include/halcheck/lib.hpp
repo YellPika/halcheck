@@ -1,22 +1,8 @@
 #ifndef HALCHECK_LIB_HPP
 #define HALCHECK_LIB_HPP
 
-/// @defgroup lib Support Library
-
-/// @defgroup utility Utilities
-/// @ingroup lib
-
-/// @defgroup functional Functional Programming
-/// @ingroup lib
-
-/// @defgroup meta Metaprogramming
-/// @ingroup lib
-
-/// @defgroup numeric Numerics
-/// @ingroup lib
-
-/// @defgroup string Strings
-/// @ingroup lib
+/// @namespace halcheck::lib
+/// @brief General utilities
 
 #include <halcheck/lib/any.hpp>         // IWYU pragma: export
 #include <halcheck/lib/atom.hpp>        // IWYU pragma: export

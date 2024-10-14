@@ -2,6 +2,19 @@
 #define HALCHECK_LIB_ATOM_HPP
 
 /// @file
+/// @brief Identifier types with constant time equality comparison and hashing.
+/// @par Example
+/// @code
+/// using namespace halcheck;
+/// using namespace halcheck::lib::literals;
+/// lib::atom x = "example 1"_s;
+/// lib::atom y = "example 2"_s;
+/// lib::atom z = "example 1"_s;
+/// lib::atom w = 3;
+/// assert(x != y);
+/// assert(x == z);
+/// assert(x != w);
+/// @endcode
 
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/variant.hpp>
@@ -15,11 +28,6 @@
 
 namespace halcheck { namespace lib {
 
-/// @defgroup atom Atoms
-/// This module provides identifier types with constant time equality comparison and hashing.
-/// @ingroup lib
-/// @{
-
 /// @brief A \ref symbol is conceptually a std::string with constant time equality comparison and hashing.
 class symbol {
 public:
@@ -27,6 +35,12 @@ public:
 
   /// @brief Construct a new \ref symbol from a std::string.
   /// @post <tt> (const std::string &)symbol(x) == x </tt>
+  /// @note This constructor has O(n) complexity, where n is the length of the input string. Prefer using the string
+  /// literal version whenever possible. For example:
+  /// \code
+  /// using namespace halcheck::lib::literals;
+  /// symbol example = "my symbol"_s;
+  /// \endcode
   explicit symbol(const std::string &);
 
   /// @brief Construct a new \ref symbol from a C string.
@@ -144,8 +158,6 @@ private:
 /// @brief An atom is either a symbol or a number.
 using atom = lib::variant<lib::symbol, lib::number>;
 
-/// @}
-
 namespace literals {
 #if __cplusplus >= 201806L
 template<std::size_t N>
@@ -162,11 +174,14 @@ lib::symbol operator""_s() {
   static lib::symbol output(std::string(Value.data, Value.size()));
   return output;
 }
-#elif (__cplusplus >= 201606L || defined(__clang__)) && defined(__GNUG__)
+#elif ((__cplusplus >= 201606L || defined(__clang__)) && defined(__GNUG__)) || defined(HALCHECK_DOXYGEN)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wgnu-string-literal-operator-template"
+/// @brief String literal constructor for lib::symbol.
+/// @return A @ref symbol representing the same string as given by the string literal.
 template<typename T, T... Data>
 lib::symbol operator""_s() {
+  static_assert(std::is_same<T, char>(), "T should be char");
   static lib::symbol output(std::string{Data...});
   return output;
 }
@@ -179,15 +194,20 @@ inline lib::symbol operator""_s(const char *data, std::size_t size) { return lib
 }} // namespace halcheck::lib
 
 namespace std {
+
+/// @brief The std::hash specialization for @ref halcheck::lib::symbol.
 template<>
 struct hash<halcheck::lib::symbol> {
   std::size_t operator()(halcheck::lib::symbol value) const noexcept { return value.hash(); }
 };
+
+/// @brief The std::hash specialization for @ref halcheck::lib::number.
 template<>
 struct hash<halcheck::lib::number> {
   std::size_t operator()(halcheck::lib::number value) const noexcept {
     return std::hash<halcheck::lib::number::value_type>()(halcheck::lib::number::value_type(value));
   }
 };
+
 } // namespace std
 #endif

@@ -1,6 +1,10 @@
 #ifndef HALCHECK_LIB_UTILITY_HPP
 #define HALCHECK_LIB_UTILITY_HPP
 
+/// @file
+/// @brief General utilities
+/// @see https://en.cppreference.com/w/cpp/header/utility
+
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/variant.hpp>
@@ -11,10 +15,16 @@
 
 namespace halcheck { namespace lib {
 
+/// @brief An implementation of std::in_place_t.
+/// @see std::in_place_t
 struct in_place_t {};
 
+/// @brief An implementation of std::in_place.
+/// @see std::in_place
 static constexpr in_place_t in_place;
 
+/// @brief An implementation of std::exchange.
+/// @see std::exchange
 template<class T, class U = T>
 T exchange(T &value, U &&next) {
   T prev = std::move(value);
@@ -22,9 +32,13 @@ T exchange(T &value, U &&next) {
   return prev;
 }
 
+/// @brief An implementation of std::integer_sequence.
+/// @see std::integer_sequence
 template<typename T, T... Ints>
 struct integer_sequence {};
 
+/// @brief An implementation of std::index_sequence.
+/// @see std::index_sequence
 template<std::size_t... Ints>
 using index_sequence = integer_sequence<std::size_t, Ints...>;
 
@@ -41,9 +55,13 @@ struct make_integer_sequence<lib::enable_if_t<N != 0>, T, N, Ints...>
 
 } // namespace detail
 
+/// @brief An implementation of std::make_integer_sequence.
+/// @see std::make_integer_sequence
 template<typename T, T N>
 struct make_integer_sequence : detail::make_integer_sequence<void, T, N> {};
 
+/// @brief An implementation of std::make_index_sequence.
+/// @see std::make_index_sequence
 template<std::size_t N>
 using make_index_sequence = make_integer_sequence<std::size_t, N>;
 

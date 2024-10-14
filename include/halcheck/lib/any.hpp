@@ -2,6 +2,8 @@
 #define HALCHECK_LIB_ANY_HPP
 
 /// @file
+/// @brief An implementation of std::any.
+/// @see https://en.cppreference.com/w/cpp/header/any
 
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/typeinfo.hpp>
@@ -22,8 +24,8 @@ T *any_cast(any *operand) noexcept;
 template<typename T, HALCHECK_REQUIRE(!std::is_void<T>())>
 const T *any_cast(const any *operand) noexcept;
 
-/// @brief See https://en.cppreference.com/w/cpp/utility/any.
-/// @ingroup utility
+/// @brief An implementation of std::any.
+/// @see std::any
 class any {
 public:
   constexpr any() noexcept = default;
@@ -45,7 +47,7 @@ public:
       HALCHECK_REQUIRE(std::is_constructible<lib::decay_t<T>, Args...>()),
       HALCHECK_REQUIRE(std::is_copy_constructible<lib::decay_t<T>>())>
   explicit any(lib::in_place_type_t<T>, Args &&...args)
-      : _type(lib::type_id::make<T>()), _impl(new derived<T>(std::forward<Args>(args)...)) {}
+      : _type(lib::type_id::of<T>()), _impl(new derived<T>(std::forward<Args>(args)...)) {}
 
   template<
       typename T,
@@ -54,7 +56,7 @@ public:
       HALCHECK_REQUIRE(std::is_constructible<lib::decay_t<T>, std::initializer_list<U> &, Args...>()),
       HALCHECK_REQUIRE(std::is_copy_constructible<lib::decay_t<T>>())>
   explicit any(lib::in_place_type_t<T>, std::initializer_list<U> il, Args &&...args)
-      : _type(lib::type_id::make<T>()), _impl(new derived<T>(il, std::forward<Args>(args)...)) {}
+      : _type(lib::type_id::of<T>()), _impl(new derived<T>(il, std::forward<Args>(args)...)) {}
 
   ~any() = default;
 
@@ -97,7 +99,7 @@ public:
   }
 
   void reset() noexcept {
-    _type = lib::type_id::make<void>();
+    _type = lib::type_id::of<void>();
     _impl.reset();
   }
 
@@ -148,13 +150,15 @@ private:
   std::unique_ptr<base> _impl;
 };
 
-/// @brief See https://en.cppreference.com/w/cpp/utility/any/bad_any_cast.
+/// @brief An implementation of std::bad_any_cast.
+/// @see std::bad_any_cast
 /// @relates any
 struct bad_any_cast : std::exception {
   const char *what() const noexcept override { return "halcheck::lib::bad_any_cast"; }
 };
 
-/// @brief See https://en.cppreference.com/w/cpp/utility/any/any_cast.
+/// @brief An implementation of std::any_cast.
+/// @see std::any_cast
 /// @relates any
 template<typename T, HALCHECK_REQUIRE(std::is_constructible<T, const lib::remove_cv_t<lib::remove_reference_t<T>> &>())>
 T any_cast(const any &operand) {
@@ -164,7 +168,8 @@ T any_cast(const any &operand) {
     throw lib::bad_any_cast();
 }
 
-/// @brief See https://en.cppreference.com/w/cpp/utility/any/any_cast.
+/// @brief An implementation of std::any_cast.
+/// @see std::any_cast
 /// @relates any
 template<typename T, HALCHECK_REQUIRE(std::is_constructible<T, lib::remove_cv_t<lib::remove_reference_t<T>> &>())>
 T any_cast(any &operand) {
@@ -174,7 +179,8 @@ T any_cast(any &operand) {
     throw lib::bad_any_cast();
 }
 
-/// @brief See https://en.cppreference.com/w/cpp/utility/any/any_cast.
+/// @brief An implementation of std::any_cast.
+/// @see std::any_cast
 /// @relates any
 template<typename T, HALCHECK_REQUIRE(std::is_constructible<T, lib::remove_cv_t<lib::remove_reference_t<T>>>())>
 T any_cast(any &&operand) {
@@ -184,25 +190,30 @@ T any_cast(any &&operand) {
     throw lib::bad_any_cast();
 }
 
-/// @brief See https://en.cppreference.com/w/cpp/utility/any/any_cast.
+/// @brief An implementation of std::any_cast.
+/// @see std::any_cast
+/// @relates any
 template<typename T, HALCHECK_REQUIRE_(!std::is_void<T>())>
 const T *any_cast(const any *operand) noexcept {
-  if (operand && operand->type() == lib::type_id::make<T>())
+  if (operand && operand->type() == lib::type_id::of<T>())
     return reinterpret_cast<const T *>(operand->_impl->data());
   else
     return nullptr;
 }
 
-/// @brief See https://en.cppreference.com/w/cpp/utility/any/any_cast.
+/// @brief An implementation of std::any_cast.
+/// @see std::any_cast
+/// @relates any
 template<typename T, HALCHECK_REQUIRE_(!std::is_void<T>())>
 T *any_cast(any *operand) noexcept {
-  if (operand && operand->type() == lib::type_id::make<T>())
+  if (operand && operand->type() == lib::type_id::of<T>())
     return reinterpret_cast<T *>(operand->_impl->data());
   else
     return nullptr;
 }
 
-/// @brief See https://en.cppreference.com/w/cpp/utility/any/make_any.
+/// @brief An implementation of std::make_any.
+/// @see std::make_any
 /// @relates any
 template<typename T, typename... Args>
 any make_any(Args &&...args) {

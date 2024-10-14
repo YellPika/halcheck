@@ -26,7 +26,7 @@ void to_json(nlohmann::json &j, const lib::number &n) { j = (const lib::number::
 template<typename K, typename V>
 void to_json(nlohmann::json &j, const lib::trie<K, V> &t) {
   j = nlohmann::json{
-      {"value",    t.get()     },
+      {"value",    *t          },
       {"children", t.children()}
   };
 }
