@@ -8,27 +8,13 @@
 #include <halcheck/lib/variant.hpp>
 
 #define JSON_USE_IMPLICIT_CONVERSIONS 0
-#include <nlohmann/json.hpp> // IWYU pragma: export
+#include <nlohmann/json.hpp>     // IWYU pragma: export
+#include <nlohmann/json_fwd.hpp> // IWYU pragma: export
 
 #include <string>
 #include <unordered_map>
 
 namespace halcheck { namespace lib {
-
-template<typename K, typename V>
-void to_json(nlohmann::json &j, const lib::trie<K, V> &t) {
-  j = nlohmann::json{
-      {"value",    *t          },
-      {"children", t.children()}
-  };
-}
-
-template<typename K, typename V>
-void from_json(const nlohmann::json &j, lib::trie<K, V> &t) {
-  auto value = j.at("value").get<V>();
-  auto children = j.at("children").get<std::unordered_map<K, lib::trie<K, V>>>();
-  t = lib::trie<K, V>(std::move(value), std::move(children));
-}
 
 void to_json(nlohmann::json &j, const lib::atom &t) {
   lib::visit(
@@ -48,6 +34,23 @@ void from_json(const nlohmann::json &j, lib::atom &t) {
 }} // namespace halcheck::lib
 
 namespace nlohmann {
+template<typename K, typename V, typename Hash>
+struct adl_serializer<halcheck::lib::trie<K, V, Hash>> {
+  static void to_json(nlohmann::json &j, const halcheck::lib::trie<K, V, Hash> &t) {
+    using namespace halcheck;
+    nlohmann::json::object_t object;
+    object["value"] = *t;
+    object["children"] = std::unordered_map<K, lib::trie<K, V, Hash>, Hash>(t.begin(), t.end());
+    j = std::move(object);
+  }
+
+  static void from_json(const nlohmann::json &j, halcheck::lib::trie<K, V, Hash> &t) {
+    auto value = j.at("value").get<V>();
+    auto children = j.at("children").get<std::unordered_map<K, halcheck::lib::trie<K, V>>>();
+    t = halcheck::lib::trie<K, V>(std::move(value), std::move(children));
+  }
+};
+
 template<typename T>
 struct adl_serializer<halcheck::lib::optional<T>> {
   static void to_json(nlohmann::json &j, const halcheck::lib::optional<T> &opt) {

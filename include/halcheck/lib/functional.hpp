@@ -20,14 +20,14 @@ namespace halcheck { namespace lib {
 /// @see std::invoke
 static const struct {
   template<typename F, typename... Args, HALCHECK_REQUIRE(std::is_member_pointer<lib::decay_t<F>>())>
-  auto operator()(F &&f, Args &&...args) const noexcept(
-      noexcept(std::mem_fn(f)(std::forward<Args>(args)...))) -> decltype(std::mem_fn(f)(std::forward<Args>(args)...)) {
+  auto operator()(F &&f, Args &&...args) const noexcept(noexcept(std::mem_fn(f)(std::forward<Args>(args)...)))
+      -> decltype(std::mem_fn(f)(std::forward<Args>(args)...)) {
     return std::mem_fn(f)(std::forward<Args>(args)...);
   }
 
   template<typename F, typename... Args, HALCHECK_REQUIRE(!std::is_member_pointer<lib::decay_t<F>>())>
-  auto operator()(F &&f, Args &&...args) const noexcept(noexcept(
-      std::forward<F>(f)(std::forward<Args>(args)...))) -> decltype(std::forward<F>(f)(std::forward<Args>(args)...)) {
+  auto operator()(F &&f, Args &&...args) const noexcept(noexcept(std::forward<F>(f)(std::forward<Args>(args)...)))
+      -> decltype(std::forward<F>(f)(std::forward<Args>(args)...)) {
     return std::forward<F>(f)(std::forward<Args>(args)...);
   }
 } invoke;

@@ -20,6 +20,7 @@ struct enable_borrowed_range : std::false_type {};
 
 // See https://en.cppreference.com/w/cpp/ranges/begin
 
+inline namespace begin_cpo {
 static const struct {
 private:
   template<typename T>
@@ -66,6 +67,7 @@ public:
     return begin(value);
   }
 } begin;
+} // namespace begin_cpo
 
 // See https://en.cppreference.com/w/cpp/ranges/iterator_t
 
@@ -74,6 +76,7 @@ using iterator_t = decltype(lib::begin(std::declval<T &>()));
 
 // See https://en.cppreference.com/w/cpp/ranges/end
 
+inline namespace end_cpo {
 static const class {
 private:
   template<typename T>
@@ -110,6 +113,7 @@ public:
     return end(value);
   }
 } end;
+} // namespace end_cpo
 
 // See https://en.cppreference.com/w/cpp/ranges/range
 
@@ -220,8 +224,8 @@ public:
       HALCHECK_REQUIRE(lib::is_detected<
                        lib::make_unsigned_t,
                        decltype(lib::end(std::declval<T &>()) - lib::begin(std::declval<T &>()))>())>
-  constexpr auto operator()(T &&value) const
-      noexcept(noexcept(lib::end(value) - lib::begin(value))) -> decltype(lib::end(value) - lib::begin(value)) {
+  constexpr auto operator()(T &&value) const noexcept(noexcept(lib::end(value) - lib::begin(value)))
+      -> decltype(lib::end(value) - lib::begin(value)) {
     return lib::end(value) - lib::begin(value);
   }
 } size;
@@ -264,8 +268,8 @@ public:
   }
 
   template<typename T, HALCHECK_REQUIRE(!lib::is_detected<member, T>()), HALCHECK_REQUIRE(lib::is_sized_range<T>())>
-  constexpr auto operator()(T &&value) const
-      noexcept(noexcept(lib::size(value) == 0)) -> decltype(lib::size(value) == 0) {
+  constexpr auto operator()(T &&value) const noexcept(noexcept(lib::size(value) == 0))
+      -> decltype(lib::size(value) == 0) {
     return lib::size(value) == 0;
   }
 
