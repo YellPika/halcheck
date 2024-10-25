@@ -18,7 +18,7 @@ inline std::uintmax_t size() { return lib::effect::invoke<size_effect>(); }
 static const struct {
   struct handler : lib::effect::handler<handler, gen::size_effect> {
     explicit handler(double amount) : amount(amount) {}
-    std::uintmax_t operator()(size_effect) override { return std::uintmax_t(gen::size() * amount); }
+    std::uintmax_t operator()(size_effect) final { return std::uintmax_t(gen::size() * amount); }
     double amount;
   };
 

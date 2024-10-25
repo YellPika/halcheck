@@ -36,7 +36,7 @@ struct entry {
 struct handler : lib::effect::handler<handler, test::read_effect, test::write_effect, gen::succeed_effect> {
   explicit handler(entry config) : config(std::move(config)) {}
 
-  lib::optional<std::string> operator()(test::read_effect args) {
+  lib::optional<std::string> operator()(test::read_effect args) final {
     auto it = config.data.find(args.key);
     if (it != config.data.end())
       return it->second;
@@ -44,12 +44,12 @@ struct handler : lib::effect::handler<handler, test::read_effect, test::write_ef
       return test::read(std::move(args.key));
   }
 
-  void operator()(test::write_effect args) {
+  void operator()(test::write_effect args) final {
     config.data[args.key] = std::move(args.value);
     std::ofstream(config.filename, std::ios::trunc) << json(config.data);
   }
 
-  void operator()(gen::succeed_effect) {}
+  void operator()(gen::succeed_effect) final {}
 
   entry config;
 };

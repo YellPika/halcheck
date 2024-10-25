@@ -92,6 +92,7 @@ public:
   /// @tparam T The type of effect to invoke.
   /// @param args The arguments to the effect.
   /// @return The result of invoking the effect.
+  /// @post If called before any handler has been installed, `lib::effect::invoke(args) == lib::fallback(args)`.
   template<typename T, HALCHECK_REQUIRE(lib::is_effect<T>())>
   static lib::effect_result_t<T> invoke(T args) {
     const std::size_t i = index<T>();

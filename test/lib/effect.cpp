@@ -45,7 +45,7 @@ void handle(lib::atom id, const std::map<int, int> &ref) {
   struct handler : lib::effect::handler<handler, example<I>> {
     explicit handler(std::map<int, int> ref) : ref(std::move(ref)), result(gen::arbitrary<int>("result"_s)) {}
 
-    int operator()(example<I>) override {
+    int operator()(example<I>) final {
       auto _ = gen::scale(0.3);
       seq("seq"_s, ref);
       return result;
@@ -97,7 +97,7 @@ TEST(Effect, Example) {
   EXPECT_THROW(lib::effect::invoke<example<2>>(), std::runtime_error);
 
   struct handler1 : lib::effect::handler<handler1, example<1>> {
-    int operator()(example<1>) override {
+    int operator()(example<1>) final {
       EXPECT_THROW(lib::effect::invoke<example<1>>(), std::runtime_error);
       EXPECT_THROW(lib::effect::invoke<example<2>>(), std::runtime_error);
       return 1;
@@ -106,7 +106,7 @@ TEST(Effect, Example) {
 
   handler1.handle([&] {
     struct handler2 : lib::effect::handler<handler2, example<2>> {
-      int operator()(example<2>) override {
+      int operator()(example<2>) final {
         EXPECT_EQ(lib::effect::invoke<example<1>>(), 1);
         EXPECT_THROW(lib::effect::invoke<example<2>>(), std::runtime_error);
         throw std::logic_error("OH NO");

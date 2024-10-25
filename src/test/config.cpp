@@ -18,7 +18,7 @@ test::strategy test::config(const std::initializer_list<test::set> &config) {
     struct handler : lib::effect::handler<handler, test::read_effect> {
       explicit handler(std::unordered_map<std::string, std::string> config) : config(std::move(config)) {}
 
-      lib::optional<std::string> operator()(test::read_effect args) {
+      lib::optional<std::string> operator()(test::read_effect args) final {
         auto it = config.find(args.key);
         if (it != config.end())
           return it->second;

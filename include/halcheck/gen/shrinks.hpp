@@ -69,7 +69,7 @@ struct shrink_handler : lib::effect::handler<shrink_handler, gen::shrink_effect,
       std::weak_ptr<shrink_calls> calls)
       : input(std::move(input)), path(std::move(path)), calls(std::move(calls)) {}
 
-  lib::optional<std::uintmax_t> operator()(gen::shrink_effect args) {
+  lib::optional<std::uintmax_t> operator()(gen::shrink_effect args) final {
     auto output = *input;
     if (!output && args.size > 0) {
       if (auto locked = calls.lock()) {
@@ -84,7 +84,7 @@ struct shrink_handler : lib::effect::handler<shrink_handler, gen::shrink_effect,
       return std::min(*output, args.size - 1);
   }
 
-  lib::finally_t<> operator()(gen::label_effect args) {
+  lib::finally_t<> operator()(gen::label_effect args) final {
     auto prev = input;
     input = input.drop(args.value);
     path.push_back(args.value);

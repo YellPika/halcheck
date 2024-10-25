@@ -41,7 +41,7 @@ struct forward_shrink_handler : lib::effect::handler<forward_shrink_handler, gen
   explicit forward_shrink_handler(std::vector<std::uintmax_t> input)
       : data(new data_t{std::move(input), 0, 0}), origin(std::this_thread::get_id()) {}
 
-  lib::optional<std::uintmax_t> operator()(gen::shrink_effect args) {
+  lib::optional<std::uintmax_t> operator()(gen::shrink_effect args) final {
     if (std::this_thread::get_id() != origin)
       throw std::runtime_error("cannot use forward shrinking with multiple threads");
 

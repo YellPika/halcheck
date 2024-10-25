@@ -144,7 +144,7 @@ static const struct {
 
 static const struct {
   struct handler : lib::effect::handler<handler, gen::shrink_effect> {
-    lib::optional<std::uintmax_t> operator()(gen::shrink_effect) override { return lib::nullopt; }
+    lib::optional<std::uintmax_t> operator()(gen::shrink_effect) final { return lib::nullopt; }
   };
 
   handler::owning_scope operator()() const { return handler().handle(); }
