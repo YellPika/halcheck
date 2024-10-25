@@ -100,15 +100,13 @@ public:
       : _value(value) {}
 
   /// @brief Casts the underlying number to a value.
-  ///
-  /// This overload participates in overload resolution only if
-  /// + <tt> std::is_integral<T>() </tt> holds,
-  /// + <tt> std::is_signed<T>() </tt> holds, and
-  /// + <tt> sizeof(T) >= sizeof(\ref value_type) </tt>
-  ///
   /// @tparam T The type of value to cast to.
   /// @return The underlying number reference casted to \p T.
   /// @post <tt> (T)x == (T)(const value_type &)x </tt>
+  /// @details This overload participates in overload resolution only if
+  /// - <tt> std::is_integral<T>() </tt> holds,
+  /// - <tt> std::is_signed<T>() </tt> holds, and
+  /// - <tt> sizeof(T) >= sizeof(\ref value_type) </tt>
   template<
       typename T,
       HALCHECK_REQUIRE(std::is_integral<T>()),
@@ -119,14 +117,12 @@ public:
   }
 
   /// @brief Casts the underlying number to a value.
-  ///
-  /// This overload participates in overload resolution only if
-  /// + <tt> std::is_integral<T>() </tt> does not hold, and
-  /// + <tt> std::is_constructible<T, \ref value_type>() </tt> holds.
-  ///
   /// @tparam T The type of value to cast to.
   /// @return The underlying number reference casted to \p T.
   /// @post <tt> (T)x == T((const value_type &)x) </tt>
+  /// @details This overload participates in overload resolution only if
+  /// - <tt> std::is_integral<T>() </tt> does not hold, and
+  /// - <tt> std::is_constructible<T, \ref value_type>() </tt> holds.
   template<
       typename T,
       HALCHECK_REQUIRE(!std::is_integral<T>()),

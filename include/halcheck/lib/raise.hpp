@@ -2,6 +2,7 @@
 #define HALCHECK_LIB_RAISE_HPP
 
 /// @file
+/// @brief A type for values that do not exist.
 
 #include <stdexcept>
 

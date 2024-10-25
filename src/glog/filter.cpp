@@ -67,12 +67,13 @@ struct strategy {
           succeeded++;
 
         LOG(INFO) << "Test Case (" << i << "): SUCCESS";
-      } catch (const gen::succeed &) {
-        LOG(INFO) << "Test Case (" << i << "): COMPLETE";
-        throw;
-      } catch (const gen::discard &) {
+      } catch (const gen::discard_exception &) {
         LOG(INFO) << "Test Case (" << i << "): DISCARD";
         discarded++;
+        throw;
+      } catch (const gen::result_exception &e) {
+        // TODO: handle succeed_effect and check if it was really called.
+        LOG(INFO) << "Test Case (" << i << "): COMPLETE";
         throw;
       } catch (...) {
         if (failed)

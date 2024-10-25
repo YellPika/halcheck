@@ -4,8 +4,10 @@
 #include <halcheck/gen/label.hpp>
 #include <halcheck/gen/sample.hpp>
 #include <halcheck/lib/atom.hpp>
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/optional.hpp>
+#include <halcheck/lib/raise.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <cstdint>
@@ -13,19 +15,23 @@
 
 namespace halcheck { namespace gen {
 
-/// @brief Calls gen::discard if the condition is false.
+/// @brief Throws a gen::discard_exception if the condition is false.
 /// @param cond The condition to check.
 void guard(bool cond);
 
-struct result : std::exception {};
+/// @brief A special exception type used to indicate an abnormal but non-failing result.
+/// @details Test strategies should not treat the presence of such exceptions as an error.
+struct result_exception : std::exception {};
 
-struct discard : gen::result {
-  const char *what() const noexcept override { return "halcheck::gen::discard"; }
+struct discard_exception : gen::result_exception {
+  const char *what() const noexcept override { return "halcheck::gen::discard_exception"; }
 };
 
-struct succeed : gen::result {
-  const char *what() const noexcept override { return "halcheck::gen::succeed"; }
+struct succeed_effect {
+  void fallback() const {}
 };
+
+inline void succeed() { lib::effect::invoke<succeed_effect>(); }
 
 /// @brief Executes a function. If the function calls discard, then it is
 ///        retried, up to a certain number of times.
@@ -39,7 +45,7 @@ lib::invoke_result_t<F, lib::atom> retry(lib::atom id, std::uintmax_t max, F fun
   for (std::uintmax_t i = 0;; i++) {
     try {
       return lib::invoke(func, i);
-    } catch (const gen::discard &) {
+    } catch (const gen::discard_exception &) {
       if (max > 0 && i >= max)
         throw;
     }

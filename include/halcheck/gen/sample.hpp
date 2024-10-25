@@ -1,9 +1,9 @@
 #ifndef HALCHECK_GEN_SAMPLE_HPP
 #define HALCHECK_GEN_SAMPLE_HPP
 
-#include <halcheck/eff/api.hpp>
 #include <halcheck/gen/label.hpp>
 #include <halcheck/lib/atom.hpp>
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
 
 #include <cstdint>
@@ -20,7 +20,7 @@ struct sample_effect {
 static const struct {
   std::uintmax_t operator()(lib::atom id, std::uintmax_t max = std::numeric_limits<std::uintmax_t>::max()) const {
     auto _ = gen::label(id);
-    return eff::invoke<sample_effect>(max);
+    return lib::effect::invoke<sample_effect>(max);
   }
 
   bool operator()(lib::atom id, std::uintmax_t w0, std::uintmax_t w1) const { return (*this)(id, w0 + w1 - 1) >= w0; }

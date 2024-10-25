@@ -2,6 +2,7 @@
 #define HALCHECK_LIB_STRING_HPP
 
 /// @file
+/// @brief Additional string utilities.
 /// @see https://en.cppreference.com/w/cpp/header/string
 
 #include <halcheck/lib/optional.hpp>

@@ -1,8 +1,8 @@
 #ifndef HALCHECK_GEN_LABEL_HPP
 #define HALCHECK_GEN_LABEL_HPP
 
-#include <halcheck/eff/api.hpp>
 #include <halcheck/lib/atom.hpp>
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/scope.hpp>
@@ -18,11 +18,11 @@ struct label_effect {
 };
 
 static struct {
-  lib::finally_t<> operator()(lib::atom value) const { return eff::invoke<label_effect>(value); }
+  lib::finally_t<> operator()(lib::atom value) const { return lib::effect::invoke<label_effect>(value); }
 
   template<typename F, typename... Args, HALCHECK_REQUIRE(lib::is_invocable<F, Args...>())>
   lib::invoke_result_t<F, Args...> operator()(lib::atom value, F func, Args &&...args) const {
-    auto _ = eff::invoke<label_effect>(value);
+    auto _ = lib::effect::invoke<label_effect>(value);
     return lib::invoke(func, std::forward<Args>(args)...);
   }
 } label;

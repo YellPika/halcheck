@@ -11,7 +11,7 @@
 #include <ostream>
 #include <string>
 #include <tuple>
-#include <type_traits>
+#include <type_traits> // IWYU pragma: export
 
 #ifdef HALCHECK_DOXYGEN
 /// @brief Expands to a template argument that is only valid if the given argument evaluates to `true`.
@@ -140,6 +140,11 @@ using add_lvalue_reference_t = typename std::add_lvalue_reference<T>::type;
 template<typename T>
 using add_rvalue_reference_t = typename std::add_rvalue_reference<T>::type;
 
+/// @brief An implementation of std::add_const_t.
+/// @see std::add_const_t
+template<typename T>
+using add_const_t = typename std::add_const<T>::type;
+
 /// @brief An implementation of std::add_pointer_t.
 /// @see std::add_pointer_t
 template<typename T>
@@ -206,14 +211,13 @@ template<typename T>
 using nothrow_swappable = lib::enable_if_t<noexcept(swap(std::declval<T &>(), std::declval<T &>()))>;
 } // namespace detail
 
-using detail::swappable;
 using detail::nothrow_swappable;
+using detail::swappable;
 
 /// @brief An implementation of std::is_swappable.
 /// @see std::is_swappable
 template<typename T>
 struct is_swappable : lib::is_detected<lib::swappable, T> {};
-
 
 /// @brief An implementation of std::is_nothrow_swappable.
 /// @see std::is_nothrow_swappable

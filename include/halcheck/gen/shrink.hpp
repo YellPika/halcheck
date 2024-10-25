@@ -1,9 +1,9 @@
 #ifndef HALCHECK_GEN_SHRINK_HPP
 #define HALCHECK_GEN_SHRINK_HPP
 
-#include <halcheck/eff/api.hpp>
 #include <halcheck/gen/label.hpp>
 #include <halcheck/lib/atom.hpp>
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/numeric.hpp>
@@ -29,7 +29,7 @@ struct shrink_effect {
 static const struct {
   lib::optional<std::uintmax_t> operator()(lib::atom id, std::uintmax_t size = 1) const {
     auto _ = gen::label(id);
-    return eff::invoke<shrink_effect>(size);
+    return lib::effect::invoke<shrink_effect>(size);
   }
 
   template<
@@ -143,18 +143,16 @@ static const struct {
 } shrink_to;
 
 static const struct {
-  struct handler : eff::handler<handler, gen::shrink_effect> {
+  struct handler : lib::effect::handler<handler, gen::shrink_effect> {
     lib::optional<std::uintmax_t> operator()(gen::shrink_effect) override { return lib::nullopt; }
   };
 
+  handler::owning_scope operator()() const { return handler().handle(); }
+
   template<typename F, typename... Args, HALCHECK_REQUIRE(lib::is_invocable<F, Args...>())>
   lib::invoke_result_t<F, Args...> operator()(F func, Args &&...args) const {
-    return eff::handle(
-        [&]() -> lib::invoke_result_t<F, Args...> { return lib::invoke(std::move(func), std::forward<Args>(args)...); },
-        handler());
+    return handler().handle(std::move(func), std::forward<Args>(args)...);
   }
-
-  lib::finally_t<> operator()() const { return eff::handle(handler()); }
 } noshrink;
 
 }} // namespace halcheck::gen

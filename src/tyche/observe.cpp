@@ -8,6 +8,7 @@
 #include <halcheck/test/strategy.hpp>
 
 #include <ghc/filesystem.hpp>
+#include <nlohmann/json_fwd.hpp>
 
 #include <chrono>
 #include <exception>
@@ -49,9 +50,10 @@ struct strategy {
 
     try {
       func();
-    } catch (const gen::discard &) {
+    } catch (const gen::discard_exception &) {
       object["status"] = "gave_up";
       throw;
+    } catch (const gen::result_exception &) {
     } catch (const std::exception &e) {
       object["status_reason"] = e.what();
       object["status"] = "failed";

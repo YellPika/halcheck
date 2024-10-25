@@ -1,6 +1,0 @@
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS *.cpp)
-add_library(${PROJECT_NAME}-eff ${SOURCES})
-add_library(${PROJECT_NAME}::eff ALIAS ${PROJECT_NAME}-eff)
-target_link_libraries(${PROJECT_NAME}-eff ${PROJECT_NAME}::lib)
-target_link_libraries(${PROJECT_NAME} INTERFACE ${PROJECT_NAME}::eff)
-clang_format(eff "${SOURCES}")

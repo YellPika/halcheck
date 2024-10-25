@@ -1,11 +1,11 @@
 #include "halcheck/test/random.hpp"
 
-#include <halcheck/eff/api.hpp>
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/gen/label.hpp>
 #include <halcheck/gen/sample.hpp>
 #include <halcheck/gen/size.hpp>
 #include <halcheck/lib/atom.hpp>
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/scope.hpp>
@@ -22,21 +22,28 @@
 using namespace halcheck;
 
 namespace {
-struct handler : eff::handler<handler, gen::label_effect, gen::sample_effect, gen::size_effect> {
+struct succeed_exception : gen::result_exception {
+  const char *what() const noexcept override { return "random.cpp:succeed_exception"; }
+};
+
+struct handler
+    : lib::effect::handler<handler, gen::label_effect, gen::sample_effect, gen::size_effect, gen::succeed_effect> {
   explicit handler(std::mt19937_64 engine, std::uintmax_t size) : engine(engine), size(size) {}
 
-  lib::finally_t<> operator()(gen::label_effect args) override {
+  lib::finally_t<> operator()(gen::label_effect args) final {
     auto previous = engine;
     engine.seed(engine() + std::hash<lib::atom>()(args.value));
     return gen::label(args.value) + lib::finally([&, previous] { engine = previous; });
   }
 
-  std::uintmax_t operator()(gen::sample_effect args) override {
+  std::uintmax_t operator()(gen::sample_effect args) final {
     auto copy = engine;
     return std::uniform_int_distribution<std::uintmax_t>(0, args.max)(copy);
   }
 
-  std::uintmax_t operator()(gen::size_effect) override { return size; }
+  std::uintmax_t operator()(gen::size_effect) final { return size; }
+
+  void operator()(gen::succeed_effect) final { throw succeed_exception(); }
 
   std::mt19937_64 engine;
   std::uintmax_t size;
@@ -59,12 +66,12 @@ test::strategy test::random() {
       test::write("SIZE", size);
 
       try {
-        eff::handle(func, handler(engine, size));
+        handler(engine, size).handle(func);
         ++successes;
-      } catch (const gen::discard &) {
+      } catch (const gen::discard_exception &) {
         if (discard_ratio > 0 && ++discarded / discard_ratio >= max_success)
           throw test::discard_limit_exception();
-      } catch (const gen::succeed &) {
+      } catch (const succeed_exception &) {
         return;
       }
 

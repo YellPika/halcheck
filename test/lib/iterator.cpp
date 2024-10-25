@@ -1,13 +1,12 @@
 #include <halcheck.hpp>
 #include <halcheck/gtest.hpp>
-#include <halcheck/lib/iterator.hpp>
 
 #include <vector>
 
 TEST(Filter, Example1) {
   using namespace halcheck;
 
-  auto input = {0, 1, 3, 4, 6, 9};
+  std::vector<int> input = {0, 1, 3, 4, 6, 9};
   auto is_even = [](int i) { return i % 2 == 0; };
   auto begin = lib::make_filter_iterator(input.begin(), input.end(), is_even);
   auto end = lib::make_filter_iterator(input.end(), input.end(), is_even);

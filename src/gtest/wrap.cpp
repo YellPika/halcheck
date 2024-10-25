@@ -31,7 +31,8 @@ struct strategy {
           for (int i = 0; i < results.size(); i++) {
             if (results.GetTestPartResult(i).skipped()) {
               [] { GTEST_SKIP(); }();
-              throw gen::succeed();
+              gen::succeed();
+              throw gen::discard_exception();
             }
           }
         };

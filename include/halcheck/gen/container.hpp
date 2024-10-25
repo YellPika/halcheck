@@ -1,13 +1,13 @@
 #ifndef HALCHECK_GEN_CONTAINER_HPP
 #define HALCHECK_GEN_CONTAINER_HPP
 
-#include <halcheck/eff/api.hpp>
 #include <halcheck/gen/label.hpp>
 #include <halcheck/gen/range.hpp>
 #include <halcheck/gen/sample.hpp>
 #include <halcheck/gen/shrink.hpp>
 #include <halcheck/gen/size.hpp>
 #include <halcheck/lib/atom.hpp>
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/optional.hpp>
@@ -27,12 +27,8 @@ static const struct {
 private:
   template<typename F>
   struct to_label {
-    lib::invoke_result_t<const F &, lib::atom> operator()(std::uintmax_t i) const {
-      auto _ = context();
-      return lib::invoke(func, i);
-    }
-
-    std::function<lib::finally_t<>()> context;
+    lib::invoke_result_t<const F &, lib::atom> operator()(std::uintmax_t i) const { return context.handle(func, i); }
+    lib::effect::state context;
     F func;
   };
 
@@ -50,7 +46,7 @@ public:
     using namespace lib::literals;
 
     auto _ = gen::label(id);
-    auto context = eff::clone();
+    auto context = lib::effect::save();
 
     auto size = gen::sample("size"_s, gen::size());
 

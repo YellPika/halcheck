@@ -1,12 +1,12 @@
 #include "halcheck/clang/fuzz.hpp"
 
 #ifdef __clang__
-#include <halcheck/eff/api.hpp>
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/gen/label.hpp>
 #include <halcheck/gen/sample.hpp>
 #include <halcheck/gen/size.hpp>
 #include <halcheck/lib/atom.hpp>
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/scope.hpp>
@@ -25,11 +25,11 @@ using namespace halcheck;
 
 namespace {
 
-struct handler : eff::handler<handler, gen::sample_effect, gen::label_effect, gen::size_effect> {
+struct handler : lib::effect::handler<handler, gen::sample_effect, gen::label_effect, gen::size_effect> {
   handler(std::uintmax_t max_size, std::uintmax_t max_length, const uint8_t *data, size_t len)
       : data(data), len(len), size(len * max_size / max_length) {}
 
-  std::uintmax_t operator()(gen::sample_effect args) override {
+  std::uintmax_t operator()(gen::sample_effect args) final {
     auto clamp = [&](std::uintmax_t output) { return std::min(output, args.max); };
     if (auto output = **current)
       return clamp(*output);
@@ -45,14 +45,14 @@ struct handler : eff::handler<handler, gen::sample_effect, gen::label_effect, ge
       return 0;
   }
 
-  lib::finally_t<> operator()(gen::label_effect args) override {
+  lib::finally_t<> operator()(gen::label_effect args) final {
     auto prev = current;
     current = &(*current)[args.value];
     auto self = this;
     return lib::finally([=] { self->current = prev; });
   }
 
-  std::uintmax_t operator()(gen::size_effect) override { return size; }
+  std::uintmax_t operator()(gen::size_effect) final { return size; }
 
   template<typename T>
   T read() {
@@ -78,12 +78,10 @@ static std::uintmax_t max_length;
 static lib::function_view<void()> func(dummy);
 
 static int entry(const std::uint8_t *data, std::size_t len) {
-  ::handler handler(max_size, max_length, data, len);
-
   try {
-    eff::handle(func, handler);
+    handler(max_size, max_length, data, len).handle(func);
     return 0;
-  } catch (const gen::discard &) {
+  } catch (const gen::discard_exception &) {
     return -1;
   }
 };
@@ -118,10 +116,7 @@ test::strategy clang::fuzz(
     ::func = func;
     ::max_size = max_size;
     ::max_length = max_length;
-    try {
-      LLVMFuzzerRunDriver(&argc, &argv, entry);
-    } catch (const gen::succeed &) {
-    }
+    LLVMFuzzerRunDriver(&argc, &argv, entry);
   };
 }
 

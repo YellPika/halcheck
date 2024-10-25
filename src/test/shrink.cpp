@@ -2,16 +2,13 @@
 
 #include "json.hpp"
 
-#include <halcheck/eff/api.hpp>
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/gen/forward_shrinks.hpp>
-#include <halcheck/gen/shrink.hpp>
 #include <halcheck/gen/shrinks.hpp>
 #include <halcheck/lib/atom.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/optional.hpp>
-#include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/string.hpp>
 #include <halcheck/lib/trie.hpp>
 #include <halcheck/lib/utility.hpp>
@@ -20,7 +17,10 @@
 #include <halcheck/test/serialize.hpp>
 #include <halcheck/test/strategy.hpp>
 
+#include <nlohmann/json_fwd.hpp>
+
 #include <cstdint>
+#include <map>
 #include <vector>
 
 using namespace halcheck;
@@ -29,6 +29,7 @@ using json = nlohmann::json;
 test::strategy test::shrink() {
   return [](lib::function_view<void()> func) {
     auto repetitions = test::read<std::uintmax_t>("REPETITIONS").value_or(1);
+    auto max_shrinks = test::read<std::uintmax_t>("MAX_SHRINKS").value_or(std::uintmax_t(-1));
 
     bool non_default = false;
     lib::trie<lib::atom, lib::optional<std::uintmax_t>> input;
@@ -37,7 +38,7 @@ test::strategy test::shrink() {
         try {
           input = input_json->get<lib::trie<lib::atom, lib::optional<std::uintmax_t>>>();
           non_default = true;
-        } catch (const json::parse_error &) {
+        } catch (const json::parse_error &) { // NOLINT
         }
       }
     }
@@ -50,11 +51,11 @@ test::strategy test::shrink() {
         result = gen::make_shrinks(input, func);
         result.get();
       }
-    } catch (const gen::result &) {
+    } catch (const gen::result_exception &) {
       throw;
     } catch (...) {
       auto it = result.children().begin();
-      while (it != result.children().end()) {
+      while (max_shrinks > 0 && it != result.children().end()) {
         auto next = gen::make_shrinks(*it, func);
         test::write("INPUT", json(*it));
         try {
@@ -63,11 +64,12 @@ test::strategy test::shrink() {
             next = gen::make_shrinks(*it, func);
             next.get();
           }
-        } catch (const gen::result &) {
+        } catch (const gen::result_exception &) {
         } catch (...) {
           input = *it;
           result = std::move(next);
           it = result.children().begin();
+          --max_shrinks;
           continue;
         }
 
@@ -91,7 +93,7 @@ test::strategy test::forward_shrink() {
         try {
           input = input_json->get<std::vector<std::uintmax_t>>();
           non_default = true;
-        } catch (const json::parse_error &) {
+        } catch (const json::parse_error &) { // NOLINT
         }
       }
     }
@@ -104,7 +106,7 @@ test::strategy test::forward_shrink() {
         result = gen::make_forward_shrinks(input, func);
         result.get();
       }
-    } catch (const gen::result &) {
+    } catch (const gen::result_exception &) {
       throw;
     } catch (...) {
       auto it = result.children().begin();
@@ -117,7 +119,7 @@ test::strategy test::forward_shrink() {
             next = gen::make_forward_shrinks(*it, func);
             next.get();
           }
-        } catch (const gen::result &) {
+        } catch (const gen::result_exception &) {
         } catch (...) {
           input = *it;
           result = std::move(next);

@@ -11,7 +11,7 @@ clang_format(base "${HEADERS}")
 if(HALCHECK_DEVELOPMENT)
   target_compile_options(${PROJECT_NAME}-base INTERFACE
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
-    $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>
+    $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic -Wno-dangling-pointer>
     $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic -Wdocumentation>)
 
   if(HALCHECK_COVERAGE)

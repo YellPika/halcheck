@@ -4,5 +4,5 @@ using namespace halcheck;
 
 void gen::guard(bool cond) {
   if (!cond)
-    throw gen::discard();
+    throw gen::discard_exception();
 }

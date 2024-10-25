@@ -1,4 +1,5 @@
 #include "halcheck/gen/range.hpp" // IWYU pragma: keep
+// IWYU pragma: no_include <halcheck/lib/type_traits.hpp>
 
 using namespace halcheck;
 

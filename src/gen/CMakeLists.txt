@@ -1,6 +1,6 @@
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS *.cpp)
 add_library(${PROJECT_NAME}-gen ${SOURCES})
 add_library(${PROJECT_NAME}::gen ALIAS ${PROJECT_NAME}-gen)
-target_link_libraries(${PROJECT_NAME}-gen PUBLIC ${PROJECT_NAME}::eff)
+target_link_libraries(${PROJECT_NAME}-gen PUBLIC ${PROJECT_NAME}::lib)
 target_link_libraries(${PROJECT_NAME} INTERFACE ${PROJECT_NAME}-gen)
 clang_format(gen "${SOURCES}")

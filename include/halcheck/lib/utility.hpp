@@ -25,7 +25,7 @@ static constexpr in_place_t in_place;
 
 /// @brief An implementation of std::exchange.
 /// @see std::exchange
-template<class T, class U = T>
+template<typename T, typename U = T>
 T exchange(T &value, U &&next) {
   T prev = std::move(value);
   value = std::forward<U>(next);

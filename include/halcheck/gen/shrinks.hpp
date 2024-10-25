@@ -1,10 +1,10 @@
 #ifndef HALCHECK_GEN_SHRINKS_HPP
 #define HALCHECK_GEN_SHRINKS_HPP
 
-#include <halcheck/eff/api.hpp>
 #include <halcheck/gen/label.hpp>
 #include <halcheck/gen/shrink.hpp>
 #include <halcheck/lib/atom.hpp>
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/optional.hpp>
@@ -62,14 +62,14 @@ struct to_tries {
   std::size_t sample_index = 0;
 };
 
-struct shrink_handler : eff::handler<shrink_handler, gen::shrink_effect, gen::label_effect> {
+struct shrink_handler : lib::effect::handler<shrink_handler, gen::shrink_effect, gen::label_effect> {
   shrink_handler(
       lib::trie<lib::atom, lib::optional<std::uintmax_t>> input,
       std::vector<lib::atom> path,
       std::weak_ptr<shrink_calls> calls)
       : input(std::move(input)), path(std::move(path)), calls(std::move(calls)) {}
 
-  lib::optional<std::uintmax_t> operator()(gen::shrink_effect args) override {
+  lib::optional<std::uintmax_t> operator()(gen::shrink_effect args) {
     auto output = *input;
     if (!output && args.size > 0) {
       if (auto locked = calls.lock()) {
@@ -84,7 +84,7 @@ struct shrink_handler : eff::handler<shrink_handler, gen::shrink_effect, gen::la
       return std::min(*output, args.size - 1);
   }
 
-  lib::finally_t<> operator()(gen::label_effect args) override {
+  lib::finally_t<> operator()(gen::label_effect args) {
     auto prev = input;
     input = input.drop(args.value);
     path.push_back(args.value);
@@ -137,9 +137,9 @@ private:
       lib::trie<lib::atom, lib::optional<std::uintmax_t>> input,
       F func,
       Args &&...args)
-      : _value(eff::handle(
-            [&] { return lib::make_result_holder(func, std::forward<Args>(args)...); },
-            detail::shrink_handler(input, {}, calls))),
+      : _value(detail::shrink_handler(input, {}, calls).handle([&] {
+          return lib::make_result_holder(func, std::forward<Args>(args)...);
+        })),
         _calls([&] {
           std::lock_guard<std::mutex> _(calls->mutex);
           return std::move(calls->data);

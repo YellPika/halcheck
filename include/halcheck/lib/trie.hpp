@@ -32,16 +32,16 @@ template<
 class trie {
 public:
   /// @brief Constructs a trie where every node is assigned the same value.
-  /// @post <tt> *trie() == V() </tt>
-  /// @post <tt> trie().drop(r) == trie() </tt>
+  /// @post `*trie() == V()`
+  /// @post `trie().drop(r) == trie()`
   trie() = default;
 
   /// @brief Constructs a trie with a given value and set of children.
   /// @param value The value to assign to the root node.
   /// @param children The child tries.
-  /// @post <tt> *trie(x, xs) == x </tt>
-  /// @post <tt> trie(x, xs).drop(k) == xs[k] </tt>
-  /// @post <tt> trie(x, xs).drop({k, ...ks}) == xs[k].drop({...ks}) </tt>
+  /// @post `*trie(x, xs) == x`
+  /// @post `trie(x, xs).drop(k) == xs[k]`
+  /// @post `trie(x, xs).drop({k, ...ks}) == xs[k].drop({...ks})`
   explicit trie(V value, std::unordered_map<K, trie, Hash> children = {})
       : _value(std::make_shared<V>(std::move(value))),
         _children(std::make_shared<std::unordered_map<K, trie, Hash>>(std::move(children))) {}
@@ -109,6 +109,9 @@ public:
   /// @param key The key identifying the desired subtree.
   /// @return The subtree identified by key.
   trie drop(const K &key) const {
+    if (!_children)
+      return trie();
+
     auto it = _children->find(key);
     if (it == _children->end())
       return trie();
@@ -130,7 +133,8 @@ public:
     auto current = &output;
 
     for (auto &&key : range) {
-      current->_children = std::make_shared<std::unordered_map<K, trie, Hash>>(*current->_children);
+      current->_children = current->_children ? std::make_shared<std::unordered_map<K, trie, Hash>>(*current->_children)
+                                              : std::make_shared<std::unordered_map<K, trie, Hash>>();
       current = &(*current->_children)[key];
     }
 
@@ -139,7 +143,10 @@ public:
   }
 
   /// @private
-  const std::unordered_map<K, trie, Hash> &children() const { return *_children; }
+  const std::unordered_map<K, trie, Hash> &children() const {
+    static std::unordered_map<K, trie, Hash> empty;
+    return _children ? *_children : empty;
+  }
 
 private:
   std::shared_ptr<V> _value;

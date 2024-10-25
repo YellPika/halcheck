@@ -1,7 +1,6 @@
 #include "halcheck/lib/atom.hpp"
 
 #include <cstddef>
-#include <functional>
 #include <mutex>
 #include <string>
 #include <unordered_map>

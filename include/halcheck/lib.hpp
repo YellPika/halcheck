@@ -8,6 +8,7 @@
 #include <halcheck/lib/atom.hpp>        // IWYU pragma: export
 #include <halcheck/lib/bit.hpp>         // IWYU pragma: export
 #include <halcheck/lib/dag.hpp>         // IWYU pragma: export
+#include <halcheck/lib/effect.hpp>      // IWYU pragma: export
 #include <halcheck/lib/functional.hpp>  // IWYU pragma: export
 #include <halcheck/lib/iterator.hpp>    // IWYU pragma: export
 #include <halcheck/lib/memory.hpp>      // IWYU pragma: export

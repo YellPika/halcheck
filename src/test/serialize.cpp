@@ -1,17 +1,18 @@
 #include "halcheck/test/serialize.hpp"
 
-#include <halcheck/eff/api.hpp>
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
+#include <halcheck/lib/optional.hpp>
 #include <halcheck/test/deserialize.hpp>
 #include <halcheck/test/strategy.hpp>
 
 #include <ghc/filesystem.hpp>
 #include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 
 #include <algorithm>
 #include <cstddef>
 #include <fstream>
-#include <ios>
 #include <iterator>
 #include <random>
 #include <string>
@@ -24,13 +25,13 @@ namespace fs = ghc::filesystem;
 using json = nlohmann::json;
 
 namespace {
-struct handler : eff::handler<handler, test::write_effect> {
+struct handler : lib::effect::handler<handler, test::write_effect> {
   handler(std::unordered_map<std::string, std::string> config, std::string filename)
       : config(std::move(config)), filename(std::move(filename)) {}
 
-  void operator()(test::write_effect args) override {
-    config[args.key] = args.value;
-    std::ofstream(filename, std::ios::trunc) << json(config);
+  void operator()(test::write_effect args) final {
+    config[args.key] = std::move(args.value);
+    std::ofstream(filename, std::ios::trunc) << nlohmann::json(config);
   }
 
   std::unordered_map<std::string, std::string> config;
@@ -54,7 +55,7 @@ struct strategy {
     std::error_code code;
     fs::rename(filename, filename + ".bak", code);
 
-    eff::handle(func, handler({}, filename));
+    handler({}, filename).handle(func);
 
     if (code)
       fs::remove(filename);

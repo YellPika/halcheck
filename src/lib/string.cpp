@@ -1,9 +1,8 @@
-#include "halcheck/lib/string.hpp"
+#include "halcheck/lib/string.hpp" // IWYU pragma: keep
 
 #include <halcheck/lib/optional.hpp>
 
 #include <cstdlib>
-#include <string>
 
 using namespace halcheck;
 

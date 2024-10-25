@@ -49,7 +49,7 @@ HALCHECK_TEST(Shrink, Example) {
   LOG(INFO) << "expected: " << testing::PrintToString(expected);
 
   try {
-    eff::reset([&] {
+    lib::effect::state().handle([&] {
       (test::config(test::set("MAX_SUCCESS", 0)) | test::random() | test::shrink())([&] {
         auto xs = gen::arbitrary<std::vector<T>>("xs"_s);
         if (xs.size() >= size && xs[index] >= threshold) {
@@ -84,7 +84,7 @@ HALCHECK_TEST(ForwardShrink, Example) {
   LOG(INFO) << "expected: " << testing::PrintToString(expected);
 
   try {
-    eff::reset([&] {
+    lib::effect::state().handle([&] {
       (test::config(test::set("MAX_SUCCESS", 0)) | test::random() | test::forward_shrink())([&] {
         auto xs = gen::arbitrary<std::vector<T>>("xs"_s);
         if (xs.size() >= size && xs[index] >= threshold) {
@@ -103,14 +103,15 @@ HALCHECK_TEST(ForwardShrink, Example) {
 TEST(Test, Shrink_Concurrency) {
   using namespace lib::literals;
 
-  eff::reset([&] {
+  lib::effect::state().handle([&] {
     gtest::wrap(test::random() | test::shrink())([&] {
       auto func = [] {
         auto x = gen::shrink("x"_s);
         auto y = gen::shrink("y"_s);
         return std::make_pair(x, y);
       };
-      auto future = std::async(std::launch::async, eff::wrap(func));
+      auto context = lib::effect::save();
+      auto future = std::async(std::launch::async, [&] { return context.handle(func); });
       EXPECT_EQ(func(), future.get());
     });
   });

@@ -1,10 +1,10 @@
 #ifndef HALCHECK_GEN_FORWARD_SHRINKS_HPP
 #define HALCHECK_GEN_FORWARD_SHRINKS_HPP
 
-#include <halcheck/eff/api.hpp>
 #include <halcheck/gen/label.hpp>
 #include <halcheck/gen/shrink.hpp>
 #include <halcheck/lib/atom.hpp>
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/optional.hpp>
@@ -37,11 +37,11 @@ struct forward_shrink_append {
   std::vector<std::uintmax_t> input;
 };
 
-struct forward_shrink_handler : eff::handler<forward_shrink_handler, gen::shrink_effect> {
+struct forward_shrink_handler : lib::effect::handler<forward_shrink_handler, gen::shrink_effect> {
   explicit forward_shrink_handler(std::vector<std::uintmax_t> input)
       : data(new data_t{std::move(input), 0, 0}), origin(std::this_thread::get_id()) {}
 
-  lib::optional<std::uintmax_t> operator()(gen::shrink_effect args) override {
+  lib::optional<std::uintmax_t> operator()(gen::shrink_effect args) {
     if (std::this_thread::get_id() != origin)
       throw std::runtime_error("cannot use forward shrinking with multiple threads");
 
@@ -87,7 +87,7 @@ public:
 private:
   template<typename F, typename... Args>
   forward_shrinks(detail::forward_shrink_handler handler, std::vector<uintmax_t> input, F func, Args &&...args)
-      : _value(eff::handle([&] { return lib::make_result_holder(func, std::forward<Args>(args)...); }, handler)),
+      : _value(handler.handle([&] { return lib::make_result_holder(func, std::forward<Args>(args)...); })),
         _children(lib::transform(lib::iota(handler.data->remaining), detail::forward_shrink_append{std::move(input)})) {
   }
 

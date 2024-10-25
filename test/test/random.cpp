@@ -16,7 +16,7 @@ HALCHECK_TEST(Test, Random_Error) {
       (test::config(test::set("MAX_SUCCESS", 0)) | test::random())([&] {
         switch (gen::sample("a"_s) % 8) {
         case 0:
-          throw gen::discard();
+          throw gen::discard_exception();
           return;
         case 1:
           gen::shrink("b"_s);
@@ -39,8 +39,11 @@ HALCHECK_TEST(Test, Random_Discard) {
   auto discard_ratio = gen::range("discard_ratio"_s, 1, 20);
   auto config = test::config(test::set("MAX_SUCCESS", max_success), test::set("DISCARD_RATIO", discard_ratio));
 
-  auto _ = eff::reset();
-  ASSERT_THROW((std::move(config) | test::random())([] { throw gen::discard(); }), test::discard_limit_exception);
+  lib::effect::state().handle([&] {
+    ASSERT_THROW(
+        (std::move(config) | test::random())([] { throw gen::discard_exception(); }),
+        test::discard_limit_exception);
+  });
 }
 
 HALCHECK_TEST(Test, Random_OK) {
@@ -53,11 +56,12 @@ HALCHECK_TEST(Test, Random_OK) {
   LOG(INFO) << "max_success: " << max_success;
   LOG(INFO) << "discard_ratio: " << discard_ratio;
 
-  auto _ = eff::reset();
-  std::size_t i = 0;
-  gtest::wrap(std::move(config) | test::random())([&] {
-    LOG(INFO) << "i: " << i;
-    EXPECT_LT(i++, max_success);
+  lib::effect::state().handle([&] {
+    std::size_t i = 0;
+    gtest::wrap(std::move(config) | test::random())([&] {
+      LOG(INFO) << "i: " << i;
+      EXPECT_LT(i++, max_success);
+    });
   });
 }
 
@@ -69,12 +73,13 @@ HALCHECK_TEST(Test, Random_Infinite) {
       test::config(test::set("MAX_SUCCESS", gen::range("max_success"_s, 0, 200)), test::set("DISCARD_RATIO", 0));
   auto count = gen::range("count"_s, 0, 2000);
 
-  auto _ = eff::reset();
-  (std::move(config) | test::random())([&] {
-    if (count-- > 0)
-      throw gen::discard();
-    else
-      throw gen::succeed();
+  lib::effect::state().handle([&] {
+    (std::move(config) | test::random())([&] {
+      if (count-- > 0)
+        throw gen::discard_exception();
+      else
+        gen::succeed();
+    });
   });
 }
 
@@ -87,7 +92,8 @@ TEST(Test, Random_Concurrency) {
       auto y = gen::sample("y"_s);
       return std::make_pair(x, y);
     };
-    auto future = std::async(std::launch::async, eff::wrap(func));
+    auto context = lib::effect::save();
+    auto future = std::async(std::launch::async, [&] { return context.handle(func); });
     EXPECT_EQ(func(), future.get());
   });
 }

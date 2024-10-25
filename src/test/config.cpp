@@ -1,6 +1,6 @@
 #include "halcheck/test/config.hpp"
 
-#include <halcheck/eff/api.hpp>
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/test/deserialize.hpp>
@@ -15,10 +15,10 @@ using namespace halcheck;
 
 test::strategy test::config(const std::initializer_list<test::set> &config) {
   struct strategy {
-    struct handler : eff::handler<handler, test::read_effect> {
+    struct handler : lib::effect::handler<handler, test::read_effect> {
       explicit handler(std::unordered_map<std::string, std::string> config) : config(std::move(config)) {}
 
-      lib::optional<std::string> operator()(test::read_effect args) override {
+      lib::optional<std::string> operator()(test::read_effect args) {
         auto it = config.find(args.key);
         if (it != config.end())
           return it->second;
@@ -29,7 +29,7 @@ test::strategy test::config(const std::initializer_list<test::set> &config) {
       std::unordered_map<std::string, std::string> config;
     };
 
-    void operator()(lib::function_view<void()> func) const { eff::handle(func, handler(config)); }
+    void operator()(lib::function_view<void()> func) const { handler(config).handle(func); }
 
     std::unordered_map<std::string, std::string> config;
   };

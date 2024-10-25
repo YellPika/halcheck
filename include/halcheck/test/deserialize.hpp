@@ -1,7 +1,7 @@
 #ifndef HALCHECK_TEST_DESERIALIZE_HPP
 #define HALCHECK_TEST_DESERIALIZE_HPP
 
-#include <halcheck/eff/api.hpp>
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/string.hpp>
 #include <halcheck/lib/utility.hpp>
@@ -16,7 +16,7 @@ struct read_effect {
   lib::optional<std::string> fallback() const { return lib::getenv("HALCHECK_" + key); }
 };
 
-inline lib::optional<std::string> read(std::string key) { return eff::invoke<read_effect>(std::move(key)); }
+inline lib::optional<std::string> read(std::string key) { return lib::effect::invoke<read_effect>(std::move(key)); }
 
 template<typename T>
 inline lib::optional<T> read(std::string key) {

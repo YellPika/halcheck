@@ -2,6 +2,7 @@
 #define HALCHECK_LIB_SCOPE_HPP
 
 /// @file
+/// @brief Utilities for executing code on scope exit.
 
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/optional.hpp>
@@ -18,16 +19,13 @@ namespace halcheck { namespace lib {
 ///
 /// @tparam F The type of function to call upon destruction.
 /// @ingroup utility
-template<
-    typename F = lib::move_only_function<void() &&>,
-    HALCHECK_REQUIRE(lib::is_invocable<F &&>()),
-    HALCHECK_REQUIRE(std::is_nothrow_move_constructible<F>())>
+template<typename F = lib::move_only_function<void() &&>>
 class finally_t {
 public:
-  template<
-      typename G,
-      HALCHECK_REQUIRE_(lib::is_invocable<G &&>()),
-      HALCHECK_REQUIRE_(std::is_nothrow_move_constructible<G>())>
+  static_assert(lib::is_invocable<F &&>(), "F && should be invocable");
+  static_assert(std::is_nothrow_move_constructible<F>(), "F should be nothrow move constructible");
+
+  template<typename G>
   friend class finally_t;
 
   /// @brief A default-constructed \ref finally_t does nothing upon scope exit.
@@ -136,22 +134,6 @@ private:
 template<typename F, HALCHECK_REQUIRE(lib::is_invocable<F>())>
 lib::finally_t<F> finally(F func) {
   return lib::finally_t<F>(std::move(func));
-}
-
-template<typename T>
-struct exchange_finally_t {
-public:
-  template<typename U>
-  exchange_finally_t(T &target, U &&next) : target(&target), old(lib::exchange(target, std::forward<U>(next))) {}
-  void operator()() const { *target = old; }
-
-private:
-  T *target, old;
-};
-
-template<typename T, typename U>
-lib::finally_t<lib::exchange_finally_t<T>> tmp_exchange(T &value, U &&next) {
-  return lib::finally(exchange_finally_t<T>(value, std::forward<U>(next)));
 }
 
 }} // namespace halcheck::lib

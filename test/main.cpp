@@ -1,7 +1,6 @@
 #include <halcheck.hpp>
 #include <halcheck/glog.hpp>
 #include <halcheck/gtest.hpp>
-#include <halcheck/tyche/observe.hpp>
 
 using namespace halcheck;
 

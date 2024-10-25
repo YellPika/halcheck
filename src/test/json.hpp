@@ -15,14 +15,6 @@
 
 namespace halcheck { namespace lib {
 
-void from_json(const nlohmann::json &j, lib::symbol &s) { s = lib::symbol(j.get<std::string>()); }
-
-void from_json(const nlohmann::json &j, lib::number &n) { n = lib::number(j.get<lib::number::value_type>()); }
-
-void to_json(nlohmann::json &j, const lib::symbol &s) { j = (const std::string &)s; }
-
-void to_json(nlohmann::json &j, const lib::number &n) { j = (const lib::number::value_type &)n; }
-
 template<typename K, typename V>
 void to_json(nlohmann::json &j, const lib::trie<K, V> &t) {
   j = nlohmann::json{
@@ -39,14 +31,18 @@ void from_json(const nlohmann::json &j, lib::trie<K, V> &t) {
 }
 
 void to_json(nlohmann::json &j, const lib::atom &t) {
-  lib::visit(lib::make_overload([&](lib::number value) { j = value; }, [&](lib::symbol value) { j = value; }), t);
+  lib::visit(
+      lib::make_overload(
+          [&](lib::number value) { j = (lib::number::value_type)value; },
+          [&](lib::symbol value) { j = (lib::symbol::value_type)value; }),
+      t);
 }
 
 void from_json(const nlohmann::json &j, lib::atom &t) {
   if (j.is_string())
-    t = j.get<lib::symbol>();
+    t = lib::symbol(j.get<lib::symbol::value_type>());
   else
-    t = j.get<lib::number>();
+    t = lib::number(j.get<lib::number::value_type>());
 }
 
 }} // namespace halcheck::lib
