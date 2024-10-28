@@ -8,7 +8,6 @@
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
-#include <halcheck/lib/variant.hpp>
 
 #include <cstddef>
 #include <type_traits>

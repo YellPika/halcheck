@@ -2,6 +2,7 @@
 #include <halcheck/gtest.hpp>
 
 #include <set>
+#include <utility>
 
 HALCHECK_TEST(DAG, Consistency) {
   using namespace halcheck;
@@ -27,7 +28,7 @@ HALCHECK_TEST(DAG, Consistency) {
     auto parents = dag.empty() ? set() : gen::container<set>("parents"_s, [&](lib::atom id) {
       return gen::range(id, dag.begin(), dag.end());
     });
-    auto j = dag.emplace(std::move(parents), gen::arbitrary<int>("label"_s));
+    auto j = dag.emplace(parents, gen::arbitrary<int>("label"_s));
     if (parents.count(it) > 0)
       children.insert(j);
   }

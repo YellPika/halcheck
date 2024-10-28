@@ -30,9 +30,7 @@ public:
   ~counter() = default;
 
   void inc() {
-    static thread_local std::random_device random;
-
-    int i = value.load();
+    const int i = value.load();
     delay();
     value.store(i + 1 < 10 ? i + 1 : 0);
   }

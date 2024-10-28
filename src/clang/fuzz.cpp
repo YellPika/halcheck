@@ -11,7 +11,6 @@
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/tree.hpp>
-#include <halcheck/lib/variant.hpp>
 #include <halcheck/test/strategy.hpp>
 
 #include <algorithm>
@@ -70,14 +69,13 @@ struct handler : lib::effect::handler<handler, gen::sample_effect, gen::label_ef
   lib::tree<lib::atom, lib::optional<std::uintmax_t>> state;
   lib::tree<lib::atom, lib::optional<std::uintmax_t>> *current = &state;
 };
-} // namespace
 
-static void dummy() {}
-static std::uintmax_t max_size;
-static std::uintmax_t max_length;
-static lib::function_view<void()> func(dummy);
+void dummy() {}
+std::uintmax_t max_size;
+std::uintmax_t max_length;
+lib::function_view<void()> func(dummy);
 
-static int entry(const std::uint8_t *data, std::size_t len) {
+int entry(const std::uint8_t *data, std::size_t len) {
   try {
     handler(max_size, max_length, data, len).handle(func);
     return 0;
@@ -86,11 +84,12 @@ static int entry(const std::uint8_t *data, std::size_t len) {
   }
 };
 
-static std::vector<char> to_vector(const std::string &str) {
+std::vector<char> to_vector(const std::string &str) {
   std::vector<char> output(str.begin(), str.end());
   output.push_back('\0');
   return output;
 }
+} // namespace
 
 extern "C" int LLVMFuzzerRunDriver(int *, char ***, int (*)(const std::uint8_t *, std::size_t));
 

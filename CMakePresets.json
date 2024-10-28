@@ -20,8 +20,7 @@
       "hidden": true,
       "inherits": "common",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_CXX_INCLUDE_WHAT_YOU_USE": "include-what-you-use;-Xiwyu;--no_fwd_decls;-Xiwyu;--transitive_includes_only;-Xiwyu;--mapping_file=${sourceDir}/extra/iwyu.imp"
+        "CMAKE_CXX_COMPILER": "clang++"
       }
     },
     {

@@ -3,10 +3,8 @@
 
 // IWYU pragma: private, include <halcheck/lib/iterator.hpp>
 
-#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator/base.hpp>
 #include <halcheck/lib/iterator/type_traits.hpp>
-#include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <cstddef>

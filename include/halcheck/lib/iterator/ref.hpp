@@ -5,7 +5,6 @@
 
 #include <halcheck/lib/iterator/interface.hpp>
 #include <halcheck/lib/iterator/range.hpp>
-#include <halcheck/lib/numeric.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <memory>

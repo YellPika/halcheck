@@ -6,6 +6,7 @@
 #include <future>
 #include <ostream>
 #include <stdexcept>
+#include <utility>
 
 using namespace halcheck;
 

@@ -2,7 +2,6 @@
 #define HALCHECK_LIB_TREE_HPP
 
 #include <halcheck/lib/iterator.hpp>
-#include <halcheck/lib/memory.hpp>
 
 #include <unordered_map>
 #include <utility>

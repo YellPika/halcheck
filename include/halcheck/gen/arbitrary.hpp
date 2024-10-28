@@ -8,7 +8,6 @@
 #include <halcheck/gen/shrink.hpp>
 #include <halcheck/gen/variant.hpp>
 #include <halcheck/lib/atom.hpp>
-#include <halcheck/lib/bit.hpp>
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/scope.hpp>
@@ -86,9 +85,9 @@ inline bool arbitrary(gen::tag<bool>, lib::atom id) { return gen::sample(id, 1) 
 template<typename T, HALCHECK_REQUIRE_(std::is_integral<T>())>
 T arbitrary(gen::tag<T>, lib::atom id) {
   auto src = gen::sample(id);
-  T dest;
-  std::memcpy(&dest, &src, sizeof(T));
-  return gen::shrink_to(id, T(0), dest);
+  T dst;
+  std::memcpy(&dst, &src, sizeof(dst));
+  return gen::shrink_to(id, T(0), dst);
 }
 
 template<typename T, HALCHECK_REQUIRE_(std::is_floating_point<T>())>

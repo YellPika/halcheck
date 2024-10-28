@@ -2,7 +2,6 @@
 #define HALCHECK_TYCHE_OBSERVE_HPP
 
 #include <halcheck/lib/string.hpp>
-#include <halcheck/lib/utility.hpp>
 #include <halcheck/test/strategy.hpp>
 
 #include <string>

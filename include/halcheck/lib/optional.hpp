@@ -5,7 +5,6 @@
 /// @brief An implementation of std::optional.
 /// @see https://en.cppreference.com/w/cpp/header/optional
 
-#include <halcheck/lib/tuple.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
 
@@ -574,6 +573,15 @@ public:
     return *this ? std::optional<T>(std::in_place, std::move(**this)) : std::optional<T>();
   }
 #endif
+
+private:
+  /// @brief An implementation of std::swap for @ref optional.
+  /// @see std::swap
+  template<bool _ = true, HALCHECK_REQUIRE(std::is_move_constructible<T>() && lib::is_swappable<T>() && _)>
+  friend void swap(lib::optional<T> &lhs, lib::optional<T> &rhs) noexcept(
+      std::is_nothrow_move_constructible<T>() && lib::is_nothrow_swappable<T>()) {
+    lhs.swap(rhs);
+  }
 };
 
 namespace detail {
@@ -585,7 +593,7 @@ struct optional_void_base {
   explicit constexpr optional_void_base(lib::nullopt_t) noexcept : _has_value(false) {}
   explicit constexpr optional_void_base(lib::in_place_t) noexcept : _has_value(true) {}
 
-  lib::optional<T> &operator=(lib::nullopt_t) noexcept {
+  lib::optional<T> &operator=(lib::nullopt_t) noexcept { // NOLINT: returning reference to subclass
     _has_value = false;
     return *static_cast<lib::optional<T> *>(this);
   }
@@ -603,6 +611,10 @@ struct optional_void_base {
   void emplace() noexcept { _has_value = true; }
 
 private:
+  /// @brief An implementation of std::swap for @ref optional.
+  /// @see std::swap
+  friend void swap(lib::optional<T> &lhs, lib::optional<T> &rhs) noexcept { lhs.swap(rhs); }
+
   bool _has_value;
 };
 } // namespace detail
@@ -661,13 +673,6 @@ template<
     HALCHECK_REQUIRE(std::is_constructible<T, std::initializer_list<U>, Args...>())>
 constexpr lib::optional<T> make_optional(const std::initializer_list<U> &ilist, Args &&...args) {
   return lib::optional<T>(lib::in_place, ilist, std::forward<T>(args)...);
-}
-
-/// @brief An implementation of std::swap for @ref optional.
-/// @see std::swap
-template<typename T, HALCHECK_REQUIRE(std::is_move_constructible<T>() && lib::is_swappable<T>())>
-void swap(lib::optional<T> &lhs, lib::optional<T> &rhs) {
-  lhs.swap(rhs);
 }
 
 /// @brief An implementation of std::optional::operator==.

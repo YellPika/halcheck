@@ -10,7 +10,6 @@
 #include <halcheck/lib/tuple.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
-#include <halcheck/lib/variant.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -64,7 +63,7 @@ private:
 
   template<typename T>
   static std::size_t index() {
-    static std::size_t output = next();
+    static const std::size_t output = next();
     return output;
   }
 

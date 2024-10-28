@@ -4,6 +4,7 @@ project(halcheck VERSION 1.0 LANGUAGES CXX)
 #[[ Configuration ]]
 
 include(cmake/CPM.cmake)
+include(cmake/target-link-system-libraries.cmake)
 include(CMakeDependentOption)
 
 if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})

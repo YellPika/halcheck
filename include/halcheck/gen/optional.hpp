@@ -5,6 +5,7 @@
 #include <halcheck/gen/sample.hpp>
 #include <halcheck/gen/shrink.hpp>
 #include <halcheck/gen/size.hpp>
+#include <halcheck/lib/atom.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/type_traits.hpp>

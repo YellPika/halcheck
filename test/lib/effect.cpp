@@ -7,6 +7,7 @@
 #include <map>
 #include <ostream>
 #include <stdexcept>
+#include <utility>
 
 using namespace halcheck;
 using namespace halcheck::lib::literals;

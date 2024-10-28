@@ -9,14 +9,13 @@
 
 #define JSON_USE_IMPLICIT_CONVERSIONS 0
 #include <nlohmann/json.hpp>     // IWYU pragma: export
-#include <nlohmann/json_fwd.hpp> // IWYU pragma: export
 
-#include <string>
 #include <unordered_map>
+#include <utility>
 
 namespace halcheck { namespace lib {
 
-void to_json(nlohmann::json &j, const lib::atom &t) {
+inline void to_json(nlohmann::json &j, const lib::atom &t) {
   lib::visit(
       lib::make_overload(
           [&](lib::number value) { j = (lib::number::value_type)value; },
@@ -24,7 +23,7 @@ void to_json(nlohmann::json &j, const lib::atom &t) {
       t);
 }
 
-void from_json(const nlohmann::json &j, lib::atom &t) {
+inline void from_json(const nlohmann::json &j, lib::atom &t) {
   if (j.is_string())
     t = lib::symbol(j.get<lib::symbol::value_type>());
   else

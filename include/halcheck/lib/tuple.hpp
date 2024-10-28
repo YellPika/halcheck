@@ -14,12 +14,12 @@ namespace halcheck { namespace lib {
 /// @see std::ignore
 struct ignore_t {
   template<typename T>
-  const ignore_t &operator=(T &&) const noexcept {
+  const ignore_t &operator=(T &&) const noexcept { // NOLINT: ignore_t cannot be modified
     return *this;
   }
 
   template<typename T>
-  const ignore_t &operator=(const std::initializer_list<T> &) const noexcept {
+  const ignore_t &operator=(const std::initializer_list<T> &) const noexcept { // NOLINT: ignore_t cannot be modified
     return *this;
   }
 };

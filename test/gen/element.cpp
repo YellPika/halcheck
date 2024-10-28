@@ -7,7 +7,8 @@
 
 using namespace halcheck;
 
-static void check_reference() {
+namespace {
+void check_reference() {
   using namespace lib::literals;
   auto xs = gen::arbitrary<std::vector<char>>("xs"_s);
   auto &x = gen::element_of("x"_s, xs);
@@ -15,6 +16,7 @@ static void check_reference() {
       << "xs: " << ::testing::PrintToString(xs) << "\n"
       << "x: " << ::testing::PrintToString(x);
 }
+} // namespace
 
 HALCHECK_TEST(ElementOf, Reference_Shrinks) {
   auto value = gen::make_shrinks(check_reference);

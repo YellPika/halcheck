@@ -7,7 +7,6 @@
 #include <atomic>
 #include <cassert>
 #include <cstddef>
-#include <vector>
 
 using namespace halcheck;
 

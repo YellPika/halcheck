@@ -2,12 +2,9 @@
 #define HALCHECK_GEN_DISCARD_HPP
 
 #include <halcheck/gen/label.hpp>
-#include <halcheck/gen/sample.hpp>
 #include <halcheck/lib/atom.hpp>
 #include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
-#include <halcheck/lib/optional.hpp>
-#include <halcheck/lib/raise.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <cstdint>

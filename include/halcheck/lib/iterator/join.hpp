@@ -3,7 +3,6 @@
 
 // IWYU pragma: private, include <halcheck/lib/iterator.hpp>
 
-#include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator/base.hpp>
 #include <halcheck/lib/iterator/interface.hpp>
 #include <halcheck/lib/iterator/range.hpp>

@@ -4,7 +4,6 @@
 #include <halcheck/gen/label.hpp>
 #include <halcheck/lib/atom.hpp>
 #include <halcheck/lib/effect.hpp>
-#include <halcheck/lib/functional.hpp>
 
 #include <cstdint>
 #include <limits>

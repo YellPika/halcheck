@@ -1,7 +1,6 @@
 #ifndef HALCHECK_GTEST_PP_HPP
 #define HALCHECK_GTEST_PP_HPP
 
-#include <halcheck/gtest/wrap.hpp>
 #include <halcheck/lib/pp.hpp>
 #include <halcheck/test/strategy.hpp>
 

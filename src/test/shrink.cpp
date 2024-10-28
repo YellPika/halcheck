@@ -12,7 +12,6 @@
 #include <halcheck/lib/string.hpp>
 #include <halcheck/lib/trie.hpp>
 #include <halcheck/lib/utility.hpp>
-#include <halcheck/lib/variant.hpp>
 #include <halcheck/test/deserialize.hpp>
 #include <halcheck/test/serialize.hpp>
 #include <halcheck/test/strategy.hpp>
@@ -20,7 +19,6 @@
 #include <nlohmann/json_fwd.hpp>
 
 #include <cstdint>
-#include <map>
 #include <vector>
 
 using namespace halcheck;
@@ -64,7 +62,7 @@ test::strategy test::shrink() {
             next = gen::make_shrinks(*it, func);
             next.get();
           }
-        } catch (const gen::result_exception &) {
+        } catch (const gen::result_exception &) { // NOLINT: non-failing exception
         } catch (...) {
           input = *it;
           result = std::move(next);
@@ -119,7 +117,7 @@ test::strategy test::forward_shrink() {
             next = gen::make_forward_shrinks(*it, func);
             next.get();
           }
-        } catch (const gen::result_exception &) {
+        } catch (const gen::result_exception &) { // NOLINT: non-failing exception
         } catch (...) {
           input = *it;
           result = std::move(next);

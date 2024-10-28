@@ -13,5 +13,6 @@ CPMAddPackage(
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS *.cpp)
 add_library(${PROJECT_NAME}-glog ${SOURCES})
 add_library(${PROJECT_NAME}::glog ALIAS ${PROJECT_NAME}-glog)
-target_link_libraries(${PROJECT_NAME}-glog PUBLIC ${PROJECT_NAME}::gen glog)
+target_link_libraries(${PROJECT_NAME}-glog PUBLIC ${PROJECT_NAME}::gen)
+target_link_system_libraries(${PROJECT_NAME}-glog PUBLIC glog)
 clang_format(glog "${SOURCES}")

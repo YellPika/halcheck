@@ -1,7 +1,8 @@
 ---
-Checks: "-*,bugprone-*,clang-analyzer-*,modernize-*,-modernize-use-trailing-return-type,-modernize-concat-nested-namespaces,concurrency-*,cert-*,-cert-dcl21-cpp,hicpp-*,-hicpp-braces-around-statements,-hicpp-named-parameter,performance-*,portability-*"
+Checks: "-*,bugprone-*,clang-analyzer-*,modernize-*,-modernize-use-trailing-return-type,-modernize-concat-nested-namespaces,concurrency-*,cert-*,-cert-dcl21-cpp,hicpp-*,-hicpp-braces-around-statements,-hicpp-named-parameter,performance-*,portability-*,misc-*"
 HeaderFilterRegex: ".*include/halcheck.*"
 FormatStyle: file
 UseColor: true
 CheckOptions:
   hicpp-special-member-functions.AllowSoleDefaultDtor: true
+  misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: true

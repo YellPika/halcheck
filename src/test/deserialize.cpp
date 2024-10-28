@@ -12,9 +12,8 @@
 #include <nlohmann/json_fwd.hpp>
 
 #include <algorithm>
-#include <chrono>
 #include <fstream>
-#include <map>
+#include <ios>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -84,8 +83,7 @@ struct strategy {
     for (auto &&config : entries) {
       try {
         handler(config).handle(func);
-      } catch (const gen::result_exception &) {
-        // NOLINT: no error
+      } catch (const gen::result_exception &) { // NOLINT: no error
       }
     }
   }

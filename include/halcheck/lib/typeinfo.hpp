@@ -63,7 +63,7 @@ public:
   /// @details This overload only participates in overload resolution if @p T is not `void`.
   template<typename T, HALCHECK_REQUIRE(!std::is_same<T, void>())>
   static type_id of() {
-    static type_id output(next());
+    static const type_id output(next());
     return output;
   }
 
@@ -74,7 +74,7 @@ public:
   /// @details This overload only participates in overload resolution if @p T is `void`.
   template<typename T, HALCHECK_REQUIRE(std::is_same<T, void>())>
   static type_id of() {
-    return type_id();
+    return {};
   }
 
 private:

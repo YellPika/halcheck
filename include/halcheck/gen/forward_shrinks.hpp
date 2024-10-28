@@ -1,18 +1,13 @@
 #ifndef HALCHECK_GEN_FORWARD_SHRINKS_HPP
 #define HALCHECK_GEN_FORWARD_SHRINKS_HPP
 
-#include <halcheck/gen/label.hpp>
 #include <halcheck/gen/shrink.hpp>
-#include <halcheck/lib/atom.hpp>
 #include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/optional.hpp>
-#include <halcheck/lib/scope.hpp>
-#include <halcheck/lib/trie.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
-#include <halcheck/lib/variant.hpp>
 
 #include <algorithm>
 #include <cstddef>

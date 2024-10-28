@@ -9,7 +9,6 @@
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/memory.hpp>
 #include <halcheck/lib/type_traits.hpp>
-#include <halcheck/lib/variant.hpp>
 
 #include <cstddef>
 #include <functional>

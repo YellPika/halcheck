@@ -53,7 +53,8 @@ struct strategy {
     } catch (const gen::discard_exception &) {
       object["status"] = "gave_up";
       throw;
-    } catch (const gen::result_exception &) {
+    } catch (const gen::result_exception &) { // NOLINT: non-failing exception
+      // TODO: check if gen::succeed was called
     } catch (const std::exception &e) {
       object["status_reason"] = e.what();
       object["status"] = "failed";

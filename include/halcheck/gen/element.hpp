@@ -2,13 +2,11 @@
 #define HALCHECK_GEN_ELEMENT_HPP
 
 #include <halcheck/gen/discard.hpp>
-#include <halcheck/gen/label.hpp>
 #include <halcheck/gen/range.hpp>
 #include <halcheck/gen/sample.hpp>
 #include <halcheck/gen/shrink.hpp>
 #include <halcheck/lib/atom.hpp>
 #include <halcheck/lib/iterator.hpp>
-#include <halcheck/lib/numeric.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <array>

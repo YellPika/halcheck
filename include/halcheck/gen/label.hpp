@@ -4,7 +4,6 @@
 #include <halcheck/lib/atom.hpp>
 #include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
-#include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
@@ -14,7 +13,7 @@ namespace halcheck { namespace gen {
 
 struct label_effect {
   lib::atom value;
-  lib::finally_t<> fallback() const { return lib::finally_t<>(); }
+  lib::finally_t<> fallback() const { return {}; }
 };
 
 static struct {

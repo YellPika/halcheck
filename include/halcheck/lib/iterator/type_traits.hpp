@@ -4,7 +4,6 @@
 // IWYU pragma: private, include <halcheck/lib/iterator.hpp>
 
 #include <halcheck/lib/iterator/base.hpp>
-#include <halcheck/lib/memory.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <iterator>

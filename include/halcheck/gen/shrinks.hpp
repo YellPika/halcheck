@@ -12,7 +12,6 @@
 #include <halcheck/lib/trie.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
-#include <halcheck/lib/variant.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -73,7 +72,7 @@ struct shrink_handler : lib::effect::handler<shrink_handler, gen::shrink_effect,
     auto output = *input;
     if (!output && args.size > 0) {
       if (auto locked = calls.lock()) {
-        std::lock_guard<std::mutex> _(locked->mutex);
+        const std::lock_guard<std::mutex> _(locked->mutex);
         locked->data.push_back({path, args.size});
         locked->size += args.size;
       }
@@ -120,7 +119,7 @@ public:
       return lib::make_generate_iterator(detail::to_tries{&_parent->_calls, &_parent->_input});
     }
 
-    lib::generate_iterator<detail::to_tries> end() const { return lib::generate_iterator<detail::to_tries>(); }
+    lib::generate_iterator<detail::to_tries> end() const { return {}; }
 
     std::size_t size() const { return _parent->_size; }
 
@@ -141,7 +140,7 @@ private:
           return lib::make_result_holder(func, std::forward<Args>(args)...);
         })),
         _calls([&] {
-          std::lock_guard<std::mutex> _(calls->mutex);
+          const std::lock_guard<std::mutex> _(calls->mutex);
           return std::move(calls->data);
         }()),
         _input(std::move(input)), _size(calls->size) {}

@@ -40,7 +40,9 @@ struct strategy {
         try {
           auto old = lib::exchange(GTEST_FLAG(throw_on_failure), true);
           auto _ = lib::finally([&] { GTEST_FLAG(throw_on_failure) = old; });
-          ScopedFakeTestPartResultReporter reporter(ScopedFakeTestPartResultReporter::INTERCEPT_ALL_THREADS, &results);
+          const ScopedFakeTestPartResultReporter reporter(
+              ScopedFakeTestPartResultReporter::INTERCEPT_ALL_THREADS,
+              &results);
           func();
         } catch (...) {
           check_skip();

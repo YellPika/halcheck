@@ -10,8 +10,6 @@
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/string.hpp>
-#include <halcheck/lib/utility.hpp>
-#include <halcheck/lib/variant.hpp>
 #include <halcheck/test/deserialize.hpp>
 #include <halcheck/test/serialize.hpp>
 #include <halcheck/test/strategy.hpp>

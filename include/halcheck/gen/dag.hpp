@@ -1,21 +1,21 @@
 #ifndef HALCHECK_GEN_DAG_HPP
 #define HALCHECK_GEN_DAG_HPP
 
-#include <halcheck/gen/container.hpp>
-#include <halcheck/gen/label.hpp>
-#include <halcheck/gen/range.hpp>
-#include <halcheck/gen/sample.hpp>
-#include <halcheck/gen/shrink.hpp>
-#include <halcheck/gen/size.hpp>
-#include <halcheck/lib/dag.hpp>
-#include <halcheck/lib/functional.hpp>
-#include <halcheck/lib/iterator.hpp>
-#include <halcheck/lib/type_traits.hpp>
+// #include <halcheck/gen/container.hpp>
+// #include <halcheck/gen/label.hpp>
+// #include <halcheck/gen/range.hpp>
+// #include <halcheck/gen/sample.hpp>
+// #include <halcheck/gen/shrink.hpp>
+// #include <halcheck/gen/size.hpp>
+// #include <halcheck/lib/dag.hpp>
+// #include <halcheck/lib/functional.hpp>
+// #include <halcheck/lib/iterator.hpp>
+// #include <halcheck/lib/type_traits.hpp>
 
-#include <cstdint>
-#include <tuple>
-#include <unordered_map>
-#include <vector>
+// #include <cstdint>
+// #include <tuple>
+// #include <unordered_map>
+// #include <vector>
 
 namespace halcheck { namespace gen {
 

@@ -4,6 +4,8 @@ CPMAddPackage(
   VERSION 3.11.3
   GITHUB_REPOSITORY nlohmann/json
   OPTIONS "JSON_SystemInclude ON"
+          "JSON_MultipleHeaders OFF"
+          "JSON_ImplicitConversions OFF"
   EXCLUDE_FROM_ALL
   SYSTEM)
 

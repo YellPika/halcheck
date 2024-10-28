@@ -5,7 +5,6 @@
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/test/strategy.hpp>
 
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 
 #include <cstddef>
@@ -26,7 +25,7 @@ struct sink : google::LogSink {
       const google::LogMessageTime &time,
       const char *message,
       std::size_t size) override {
-    std::lock_guard<std::mutex> lock(mutex);
+    const std::lock_guard<std::mutex> lock(mutex);
     output += ToString(severity, filename, line, time, message, size) + "\n";
   }
 

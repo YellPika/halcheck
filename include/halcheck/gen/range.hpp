@@ -4,8 +4,8 @@
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/gen/sample.hpp>
 #include <halcheck/gen/shrink.hpp>
+#include <halcheck/lib/atom.hpp>
 #include <halcheck/lib/iterator/type_traits.hpp>
-#include <halcheck/lib/numeric.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <cstdint>
