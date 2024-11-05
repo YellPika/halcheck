@@ -115,6 +115,7 @@ public:
 /// @brief Generates a random container value.
 /// @tparam T The type of container to generate.
 /// @tparam F A nullary function type.
+/// @param id A unique identifier for the generated value.
 /// @param gen A function producing random values for the container.
 /// @return A random container whose elements are drawn from gen.
 template<
@@ -134,6 +135,7 @@ T container(lib::atom id, F gen) {
 /// @brief Generates a random container value.
 /// @tparam T The type of container to generate.
 /// @tparam F A nullary function type.
+/// @param id A unique identifier for the generated value.
 /// @param size The number of elements to generate.
 /// @param gen A function producing random values for the container.
 /// @return A random container whose elements are drawn from gen.

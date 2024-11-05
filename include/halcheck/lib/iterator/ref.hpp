@@ -13,10 +13,13 @@ namespace halcheck { namespace lib {
 
 // See https://en.cppreference.com/w/cpp/ranges/ref_view
 
-template<typename R, HALCHECK_REQUIRE(std::is_object<R>()), HALCHECK_REQUIRE(lib::is_range<R>())>
+template<typename R>
 class ref_view : public lib::view_interface<ref_view<R>> {
 private:
-  template<typename T, HALCHECK_REQUIRE_(std::is_object<T>()), HALCHECK_REQUIRE_(lib::is_range<T>())>
+  static_assert(std::is_object<R>(), "R must be an object type");
+  static_assert(lib::is_range<R>(), "R must be a range type");
+
+  template<typename>
   friend class ref_view;
 
   static std::true_type FUN(R &);

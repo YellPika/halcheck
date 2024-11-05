@@ -1,9 +1,12 @@
 #ifndef HALCHECK_LIB_TRIE_HPP
 #define HALCHECK_LIB_TRIE_HPP
 
-/// @file
-/// @brief An implementation of a trie.
-/// @see https://en.wikipedia.org/wiki/Trie
+/**
+ * @defgroup lib-trie lib/trie
+ * @brief An implementation of a trie.
+ * @see https://en.wikipedia.org/wiki/Trie
+ * @ingroup lib
+ */
 
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
@@ -20,10 +23,13 @@
 
 namespace halcheck { namespace lib {
 
-/// @brief An implementation of a trie. Semantically, this corresponds to a function @f$K* \to V@f$.
-/// @see https://en.wikipedia.org/wiki/Trie
-/// @tparam K The type used to index child nodes.
-/// @tparam V The type of value stored in each node.
+/**
+ * @brief An implementation of a trie. Semantically, this corresponds to a function @f$K^* \to V@f$.
+ * @see https://en.wikipedia.org/wiki/Trie
+ * @tparam K The type used to index child nodes.
+ * @tparam V The type of value stored in each node.
+ * @ingroup lib-trie
+ */
 template<typename K, typename V, typename Hash = std::hash<K>>
 class trie {
 private:
@@ -34,33 +40,46 @@ private:
   std::shared_ptr<std::unordered_map<K, trie>> _children;
 
 public:
-  /// @brief Constructs a trie where every node is assigned the same value.
-  /// @post `*trie() == V()`
-  /// @post `trie().drop(r) == trie()`
+  /**
+   * @brief Constructs a trie where every node is assigned the same value.
+   * @post `*trie() == V()`
+   * @post `trie().drop(r) == trie()`
+   */
   trie() = default;
 
-  /// @brief Constructs a trie with a given value and set of children.
-  /// @param value The value to assign to the root node.
-  /// @param begin A pointer to the beginning of a range of child trees.
-  /// @param end A pointer to the end of a range of child trees.
-  /// @post `*trie(x, xs) == x`
-  /// @post `trie(x, xs).drop(k) == xs[k]`
-  /// @post `trie(x, xs).drop({k, ...ks}) == xs[k].drop({...ks})`
+  /**
+   * @brief Constructs a trie with a given value and set of children.
+   * @param value The value to assign to the root node.
+   * @param first A pointer to the beginning of a range of child trees.
+   * @param last A pointer to the end of a range of child trees.
+   * @post `trie(x, i, j) == trie(x, lib::subrange(i, j))`
+   */
   template<
       typename I,
       HALCHECK_REQUIRE(lib::is_input_iterator<I>()),
       HALCHECK_REQUIRE(std::is_convertible<lib::iter_reference_t<I>, std::pair<const K, trie>>())>
-  explicit trie(V value, I begin, I end)
-      : _value(new V(std::move(value))), _children(new std::unordered_map<K, trie>(std::move(begin), std::move(end))) {}
+  explicit trie(V value, I first, I last)
+      : _value(new V(std::move(value))), _children(new std::unordered_map<K, trie>(std::move(first), std::move(last))) {
+  }
 
+  /**
+   * @brief Constructs a trie with a given value and set of children.
+   * @param value The value to assign to the root node.
+   * @param range The set of children.
+   * @post `*trie(x, xs) == x`
+   * @post `trie(x, xs).drop(k) == y` where `{k, y}` is in `xs`
+   * @post `trie(x, xs).drop({k, ...ks}) == y.drop({...ks})` where `{k, y}` is in `xs`
+   */
   template<
       typename R,
       HALCHECK_REQUIRE(lib::is_input_range<R>()),
       HALCHECK_REQUIRE(std::is_convertible<lib::range_reference_t<R>, std::pair<const K, trie>>())>
   explicit trie(V value, R &&range) : trie(std::move(value), lib::begin(range), lib::end(range)) {}
 
-  /// @brief Gets the value associated with the root node of this trie.
-  /// @return A reference to the value associated with the root node.
+  /**
+   * @brief Gets the value associated with the root node of this trie.
+   * @return A reference to the value associated with the root node.
+   */
   const V &operator*() const {
     static const V fallback;
     if (_value)
@@ -69,10 +88,12 @@ public:
       return fallback;
   }
 
-  /// @brief Gets the value associated with a specific node.
-  /// @tparam R The type of range holding a sequence of lookup keys.
-  /// @param range A sequence of keys to look up.
-  /// @return The value located at the node identified @p range.
+  /**
+   * @brief Gets the value associated with a specific node.
+   * @tparam R The type of range holding a sequence of lookup keys.
+   * @param range A sequence of keys to look up.
+   * @return The value located at the node identified @p range.
+   */
   template<
       typename R,
       HALCHECK_REQUIRE(lib::is_range<R>()),
@@ -81,10 +102,12 @@ public:
     return *drop(range);
   }
 
-  /// @brief Gets a specific subtree.
-  /// @tparam R The type of range holding a sequence of keys.
-  /// @param range A sequence of keys.
-  /// @return The subtree identified by @p range.
+  /**
+   * @brief Gets a specific subtree.
+   * @tparam R The type of range holding a sequence of keys.
+   * @param range A sequence of keys.
+   * @return The subtree identified by @p range.
+   */
   template<
       typename R,
       HALCHECK_REQUIRE(lib::is_range<R>()),
@@ -93,19 +116,21 @@ public:
     return drop(lib::begin(range), lib::end(range));
   }
 
-  /// @brief Gets a specific subtree.
-  /// @tparam I The type of iterator pointing to a sequence of keys.
-  /// @param begin An iterator pointing to the beginning of a sequence of keys.
-  /// @param end An iterator pointing one-past-the-end of a sequence of keys.
-  /// @return The subtree identified by the range (@p begin, @p end].
+  /**
+   * @brief Gets a specific subtree.
+   * @tparam I The type of iterator pointing to a sequence of keys.
+   * @param first An iterator pointing to the beginning of a sequence of keys.
+   * @param last An iterator pointing one-past-the-end of a sequence of keys.
+   * @return The subtree identified by the range (@p begin, @p end].
+   */
   template<
       typename I,
       HALCHECK_REQUIRE(lib::is_input_iterator<I>()),
       HALCHECK_REQUIRE(std::is_convertible<lib::iter_reference_t<I>, K>())>
-  trie drop(I begin, I end) const {
+  trie drop(I first, I last) const {
     auto output = *this;
-    for (; begin != end; ++begin) {
-      auto it = output.find(*begin);
+    for (; first != last; ++first) {
+      auto it = output.find(*first);
       if (it == output.end())
         return trie();
       else
@@ -115,9 +140,11 @@ public:
     return output;
   }
 
-  /// @brief Gets a specific subtree.
-  /// @param key The key identifying the desired subtree.
-  /// @return The subtree identified by key.
+  /**
+   * @brief Gets a specific subtree.
+   * @param key The key identifying the desired subtree.
+   * @return The subtree identified by key.
+   */
   trie drop(const K &key) const {
     auto it = find(key);
     if (it == end())
@@ -126,34 +153,39 @@ public:
       return it->second;
   }
 
-  /// @brief Constructs a new trie with a specific value replaced.
-  /// @tparam R The type of range holding a sequence of keys.
-  /// @param range A sequence of keys.
-  /// @param value The value to assign.
-  /// @return A new trie with the value of the node identified by @p range changed to @p value.
+  /**
+   * @brief Constructs a new trie with a specific value replaced.
+   * @tparam I The type of iterator pointing into a sequence of keys.
+   * @param first An iterator pointing to the first element of a sequence of keys.
+   * @param last An iterator pointing past the last element of a sequence of keys.
+   * @param value The value to assign.
+   * @return A new trie with the value of the node identified by @p range changed to @p value.
+   */
   template<
       typename I,
       HALCHECK_REQUIRE(lib::is_input_iterator<I>()),
       HALCHECK_REQUIRE(std::is_convertible<lib::iter_reference_t<I>, K>())>
-  trie set(I begin, I end, V value) const {
+  trie set(I first, I last, V value) const {
     auto output = *this;
     auto current = &output;
 
-    for (; begin != end; ++begin) {
+    for (; first != last; ++first) {
       current->_children = current->_children ? std::make_shared<std::unordered_map<K, trie, Hash>>(*current->_children)
                                               : std::make_shared<std::unordered_map<K, trie, Hash>>();
-      current = &(*current->_children)[*begin];
+      current = &(*current->_children)[*first];
     }
 
     current->_value = std::make_shared<V>(std::move(value));
     return output;
   }
 
-  /// @brief Constructs a new trie with a specific value replaced.
-  /// @tparam R The type of range holding a sequence of keys.
-  /// @param range A sequence of keys.
-  /// @param value The value to assign.
-  /// @return A new trie with the value of the node identified by @p range changed to @p value.
+  /**
+   * @brief Constructs a new trie with a specific value replaced.
+   * @tparam R The type of range holding a sequence of keys.
+   * @param range A sequence of keys.
+   * @param value The value to assign.
+   * @return A new trie with the value of the node identified by @p range changed to @p value.
+   */
   template<
       typename R,
       HALCHECK_REQUIRE(lib::is_input_range<R>()),
@@ -162,6 +194,9 @@ public:
     return set(lib::begin(range), lib::end(range), std::move(value));
   }
 
+  /**
+   * @brief Represents a pointer to a child @ref trie.
+   */
   class iterator : public lib::iterator_interface<iterator> {
   public:
     using value_type = typename std::unordered_map<K, trie, Hash>::value_type;
@@ -191,22 +226,35 @@ public:
     typename std::unordered_map<K, trie, Hash>::const_iterator _base;
   };
 
-  /// @brief Returns an iterator to the first child.
-  /// @return An iterator to the first child.
+  /**
+   * @brief Returns an iterator to the first child.
+   * @return An iterator to the first child.
+   */
   iterator begin() const { return _children ? iterator(_children->begin()) : iterator(); }
 
-  /// @brief Returns an iterator to one past the last child.
-  /// @return An iterator to one past the last child.
+  /**
+   * @brief Returns an iterator to one past the last child.
+   * @return An iterator to one past the last child.
+   */
   iterator end() const { return _children ? iterator(_children->end()) : iterator(); }
 
-  /// @brief Returns the number of children in this trie.
-  /// @return The number of children in this trie.
+  /**
+   * @brief Returns the number of children in this trie.
+   * @return The number of children in this trie.
+   */
   std::size_t size() const { return _children.size(); }
 
-  /// @brief Determines whether this trie has any children.
-  /// @return `true` if and only if this trie has no children.
+  /**
+   * @brief Determines whether this trie has any children.
+   * @return `true` if and only if this trie has no children.
+   */
   bool empty() const { return _children.empty(); }
 
+  /**
+   * @brief Gets an iterator to the child indicated by the given key.
+   * @param key The key indicating which child to retrieve.
+   * @return An iterator to the desired child. If such a child does not exist, returns a default iterator.
+   */
   iterator find(const K &key) const {
     if (_children)
       return iterator(_children->find(key));

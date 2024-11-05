@@ -2,7 +2,6 @@
 #include <halcheck/gtest.hpp>
 
 #include <set>
-#include <utility>
 
 HALCHECK_TEST(DAG, Consistency) {
   using namespace halcheck;

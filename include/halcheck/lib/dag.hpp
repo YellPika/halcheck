@@ -1,6 +1,12 @@
 #ifndef HALCHECK_LIB_DAG_HPP
 #define HALCHECK_LIB_DAG_HPP
 
+/**
+ * @defgroup lib-dag lib/dag
+ * @brief Labelled directed acyclic graphs.
+ * @ingroup lib
+ */
+
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/scope.hpp>
@@ -15,8 +21,11 @@
 
 namespace halcheck { namespace lib {
 
-/// @brief Directed acyclic graphs with T-labelled nodes.
-/// @tparam T The type of node label.
+/**
+ * @brief Directed acyclic graphs with labelled nodes.
+ * @tparam T The type of node label.
+ * @ingroup lib-dag
+ */
 template<typename T>
 class dag {
 private:
@@ -30,38 +39,87 @@ private:
   std::vector<std::size_t> _roots;
 
 public:
+  /**
+   * @brief The type of node labels.
+   */
+  using value_type = T;
+
+  /**
+   * @brief A iterator to @p T. These are also referred to as "nodes".
+   */
   using iterator = lib::index_iterator<std::vector<T>>;
+
+  /**
+   * @brief An iterator to `const` @p T. These are also referred to as "nodes".
+   */
   using const_iterator = lib::index_iterator<const std::vector<T>>;
+
   static_assert(std::is_convertible<iterator, const_iterator>(), "");
 
+  /**
+   * @brief Gets an @ref dag<T>::iterator "iterator" pointing to the first node in this @ref dag.
+   * @return The @ref dag<T>::iterator "iterator" pointing to the first node in this @ref dag.
+   */
   iterator begin() { return iterator(_labels); }
+
+  /**
+   * @brief Gets an @ref const_iterator pointing to the first node in this @ref dag.
+   * @return The @ref const_iterator pointing to the first node in this @ref dag.
+   */
   const_iterator begin() const { return const_iterator(_labels); }
 
+  /**
+   * @brief Gets an @ref dag<T>::iterator "iterator" pointing past the last node in this @ref dag.
+   * @return The @ref dag<T>::iterator "iterator" pointing past the last node in this @ref dag.
+   */
   iterator end() { return iterator(_labels, size()); }
+
+  /**
+   * @brief Gets an @ref const_iterator pointing past the last node in this @ref dag.
+   * @return The @ref const_iterator pointing past the last node in this @ref dag.
+   */
   const_iterator end() const { return const_iterator(_labels, size()); }
 
+  /**
+   * @brief Determines whether this @ref dag is empty.
+   * @retval true This @ref dag contains no nodes.
+   * @retval false This @ref dag contains at least one node.
+   */
   bool empty() const { return _labels.empty(); }
 
+  /**
+   * @brief Gets the number of nodes in this @ref dag.
+   * @return The number of nodes in this @ref dag.
+   */
   std::size_t size() const { return _labels.size(); }
 
+  /**
+   * @brief Adds a node to this @ref dag with its label constructed in place.
+   * @tparam I The type of iterator pointing within a collection of parent nodes.
+   * @tparam Args The type of arguments used to construct the node's label.
+   * @param first An iterator pointing to the first parent node.
+   * @param last An iterator pointing past the last parent node.
+   * @param args The arguments used to construct the node's label.
+   * @return An iterator pointing to the newly constructed node.
+   */
   template<
       typename I,
       typename... Args,
       HALCHECK_REQUIRE(lib::is_input_iterator<I>()),
       HALCHECK_REQUIRE(std::is_convertible<lib::iter_reference_t<I>, const_iterator>()),
       HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
-  iterator emplace(I begin, I end, Args &&...args) {
+  iterator emplace(I first, I last, Args &&...args) {
     auto index = size();
     _labels.emplace_back(std::forward<Args>(args)...);
     _edges.emplace_back();
     auto &parents = _edges.back().parents;
 
     try {
-      if (begin == end)
+      if (first == last)
         _roots.push_back(index);
 
-      while (begin != end) {
-        const_iterator i = *begin++;
+      while (first != last) {
+        const_iterator i = *first++;
         if (_edges[i.index()].children.empty() || _edges[i.index()].children.back() != index)
           _edges[i.index()].children.push_back(index);
         parents.push_back(i.index());
@@ -86,6 +144,14 @@ public:
     return iterator(_labels, index);
   }
 
+  /**
+   * @brief Adds a node to this @ref dag with its label constructed in place.
+   * @tparam R The type of range containing a collection of parent nodes.
+   * @tparam Args The type of arguments used to construct the node's label.
+   * @param range The range containing a collection of parent nodes.
+   * @param args The arguments used to construct the node's label.
+   * @return An iterator pointing to the newly constructed node.
+   */
   template<
       typename R,
       typename... Args,
@@ -96,11 +162,22 @@ public:
     return emplace(lib::begin(range), lib::end(range), std::forward<Args>(args)...);
   }
 
+  /**
+   * @brief Adds a node to this @ref dag with its label constructed in place.
+   * @tparam Args The type of arguments used to construct the node's label.
+   * @param range The range containing a collection of parent nodes.
+   * @param args The arguments used to construct the node's label.
+   * @return An iterator pointing to the newly constructed node.
+   */
   template<typename... Args, HALCHECK_REQUIRE(std::is_constructible<T, Args...>())>
   iterator emplace(const std::initializer_list<const_iterator> &range, Args &&...args) {
     return emplace(range.begin(), range.end(), std::forward<Args>(args)...);
   }
 
+  /**
+   * @brief Removes all nodes from this @ref dag.
+   * @note This invalidates all @ref iterator "iterator"s belonging to this @ref dag.
+   */
   void clear() {
     _labels.clear();
     _edges.clear();
@@ -122,104 +199,77 @@ private:
   };
 
 public:
+  /**
+   * @brief A collection of @ref iterator "iterator"s.
+   */
   using view = lib::transform_view<lib::ref_view<const std::vector<std::size_t>>, to_iterator>;
+
+  /**
+   * @brief A collection of @ref const_iterator "const_iterator"s.
+   */
   using const_view = lib::transform_view<lib::ref_view<const std::vector<std::size_t>>, to_const_iterator>;
 
+  /**
+   * @brief Obtains a node's children.
+   * @param it The node whose children should be queried.
+   * @return The set of nodes that have @p it as a parent.
+   */
   const_view children(const_iterator it) const {
     auto &&data = _edges[it.index()].children;
     return lib::transform(lib::ref(data), to_const_iterator{this});
   }
 
+  /**
+   * @brief Obtains a node's children.
+   * @param it The node whose children should be queried.
+   * @return The set of nodes that have @p it as a parent.
+   */
   view children(const_iterator it) {
     auto &&data = _edges[it.index()].children;
     return lib::transform(lib::ref(data), to_iterator{this});
   }
 
+  /**
+   * @brief Obtains a node's parents.
+   * @param it The node whose parents should be queried.
+   * @return The set of nodes that have @p it as a child.
+   */
   const_view parents(const_iterator it) const {
     auto &&data = _edges[it.index()].parents;
     return lib::transform(lib::ref(data), to_const_iterator{this});
   }
 
+  /**
+   * @brief Obtains a node's parents.
+   * @param it The node whose parents should be queried.
+   * @return The set of nodes that have @p it as a child.
+   */
   view parents(const_iterator it) {
     auto &&data = _edges[it.index()].parents;
     return lib::transform(lib::ref(data), to_iterator{this});
   }
 
+  /**
+   * @brief Obtains the root nodes of this @ref dag.
+   * @return The set of root nodes.
+   */
   const_view roots() const { return lib::transform(lib::ref(_roots), to_const_iterator{this}); }
 
+  /**
+   * @brief Obtains the root nodes of this @ref dag.
+   * @return The set of root nodes.
+   */
   view roots() { return lib::transform(lib::ref(_roots), to_iterator{this}); }
 
+  /**
+   * @brief Reserves enough memory to contain the specified number of nodes.
+   * @param size The number of nodes to reserve space for.
+   */
   void reserve(std::size_t size) {
     _labels.reserve(size);
     _edges.reserve(size);
   }
 };
-
-/// @brief Executes a function on each value in a given graph and stores the
-///        results in a graph with the same structure. Functions from unrelated
-///        nodes are executed in parallel.
-///
-/// @tparam F The type of function to execute.
-/// @tparam T The type of value stored in the graph.
-/// @param graph The graph of functions to execute.
-/// @param func The function to execute.
-/// @return A graph with the same structure as the input graph.
-template<typename F, typename T, HALCHECK_REQUIRE(lib::is_invocable<F, T &>())>
-lib::dag<lib::invoke_result_t<F, T &>> async(lib::dag<T> &graph, F func) {
-  std::vector<std::shared_future<void>> futures;
-  futures.reserve(graph.size());
-
-  std::vector<std::future<lib::invoke_result_t<F, T &>>> results;
-  results.reserve(graph.size());
-
-  for (auto i = graph.begin(); i != graph.end(); ++i) {
-    std::vector<std::shared_future<void>> parents;
-    for (auto j : graph.parents(i))
-      parents.push_back(futures[j - graph.begin()]);
-
-    std::promise<void> promise;
-    futures.push_back(promise.get_future().share());
-    results.push_back(std::async(
-        std::launch::async,
-        [&func, i](const std::vector<std::shared_future<void>> &parents, std::promise<void> promise) {
-          auto _ = lib::finally([&] { promise.set_value(); });
-
-          for (const auto &parent : parents)
-            parent.wait();
-
-          return lib::invoke(func, *i);
-        },
-        std::move(parents),
-        std::move(promise)));
-  }
-
-  lib::dag<lib::invoke_result_t<F, T &>> output;
-  output.reserve(graph.size());
-
-  for (auto i = graph.begin(); i != graph.end(); ++i) {
-    auto f = [&](lib::iterator_t<lib::dag<T>> j) { return output.begin() + (j - graph.begin()); };
-    auto parents = graph.parents(i);
-    output.emplace(
-        lib::make_transform_iterator(parents.begin(), f),
-        lib::make_transform_iterator(parents.end(), f),
-        results[i - graph.begin()].get());
-  }
-  return output;
-}
-
-/// @brief Executes a function on each value in a given graph and stores the
-///        results in a graph with the same structure. Functions from unrelated
-///        nodes are executed in parallel.
-///
-/// @tparam F The type of function to execute.
-/// @tparam T The type of value stored in the graph.
-/// @param graph The graph of functions to execute.
-/// @param func The function to execute.
-/// @return A graph with the same structure as the input graph.
-template<typename F, typename T, HALCHECK_REQUIRE(lib::is_invocable<F, const T &>())>
-lib::dag<lib::invoke_result_t<F, T &>> async(const lib::dag<T> &graph, F func) {
-  return lib::async(const_cast<lib::dag<T> &>(graph), [&](const T &value) { return lib::invoke(func, value); });
-}
 
 }} // namespace halcheck::lib
 

@@ -1,8 +1,15 @@
 #ifndef HALCHECK_LIB_HPP
 #define HALCHECK_LIB_HPP
 
-/// @namespace halcheck::lib
-/// @brief General utilities
+/**
+ * @defgroup lib lib
+ * @brief General utility library
+ * @ingroup ref
+ *
+ * @namespace halcheck::lib
+ * @brief General utility library
+ * @ingroup lib
+ */
 
 #include <halcheck/lib/any.hpp>         // IWYU pragma: export
 #include <halcheck/lib/atom.hpp>        // IWYU pragma: export
@@ -17,6 +24,7 @@
 #include <halcheck/lib/pp.hpp>          // IWYU pragma: export
 #include <halcheck/lib/raise.hpp>       // IWYU pragma: export
 #include <halcheck/lib/scope.hpp>       // IWYU pragma: export
+#include <halcheck/lib/span.hpp>        // IWYU pragma: export
 #include <halcheck/lib/string.hpp>      // IWYU pragma: export
 #include <halcheck/lib/thread.hpp>      // IWYU pragma: export
 #include <halcheck/lib/tree.hpp>        // IWYU pragma: export

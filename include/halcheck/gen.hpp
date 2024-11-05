@@ -1,7 +1,16 @@
 #ifndef HALCHECK_GEN_HPP
 #define HALCHECK_GEN_HPP
 
-/// @defgroup gen Generator Library
+/**
+ * @defgroup gen gen
+ * @brief Random generation library
+ * @details The @ref gen library contains classes and functions for generating random data.
+ * @ingroup ref
+ *
+ * @namespace halcheck::gen
+ * @brief Random generation library
+ * @ingroup gen
+ */
 
 #include <halcheck/gen/arbitrary.hpp>       // IWYU pragma: export
 #include <halcheck/gen/container.hpp>       // IWYU pragma: export

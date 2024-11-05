@@ -43,6 +43,7 @@ lib::variant<std::integral_constant<std::size_t, Ints>...> index(lib::atom id, l
 
 /// @brief Constructs a random variant.
 /// @tparam Fs The generator function types for each variant element type.
+/// @param id A unique identifier for the generated value.
 /// @param gens The generators for each variant element type.
 /// @return A variant whose value is drawn from a randomly selected element of
 /// gens.
@@ -87,8 +88,8 @@ T one(lib::atom id, lib::in_place_type_t<T>, Fs... gens) {
 ///
 /// @tparam Fs The type of generators to use.
 /// @param id A unique identifier for the generated value.
-/// @param gens The generators to invoke.
-/// @return A value produced by one of gens.
+/// @param args The generators to invoke.
+/// @return A value produced by one of args.
 template<typename... Args, HALCHECK_REQUIRE(lib::conjunction<lib::is_invocable<Args, lib::atom>...>())>
 lib::common_type_t<lib::invoke_result_t<Args, lib::atom>...> one(lib::atom id, Args... args) {
   return gen::one(

@@ -1,7 +1,15 @@
 #ifndef HALCHECK_TEST_HPP
 #define HALCHECK_TEST_HPP
 
-/// @defgroup test Test Strategy Library
+/**
+ * @defgroup test test
+ * @brief Test strategy library
+ * @ingroup ref
+ *
+ * @namespace halcheck::test
+ * @brief Test strategy library
+ * @ingroup test
+ */
 
 #include <halcheck/test/check.hpp>       // IWYU pragma: export
 #include <halcheck/test/config.hpp>      // IWYU pragma: export

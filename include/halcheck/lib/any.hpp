@@ -1,9 +1,12 @@
 #ifndef HALCHECK_LIB_ANY_HPP
 #define HALCHECK_LIB_ANY_HPP
 
-/// @file
-/// @brief An implementation of std::any.
-/// @see https://en.cppreference.com/w/cpp/header/any
+/**
+ * @defgroup lib-any lib/any
+ * @brief An implementation of std::any.
+ * @see https://en.cppreference.com/w/cpp/header/any
+ * @ingroup lib
+ */
 
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/typeinfo.hpp>
@@ -24,8 +27,11 @@ T *any_cast(any *operand) noexcept;
 template<typename T, HALCHECK_REQUIRE(!std::is_void<T>())>
 const T *any_cast(const any *operand) noexcept;
 
-/// @brief An implementation of std::any.
-/// @see std::any
+/**
+ * @brief An implemenetation of std::any.
+ * @see std::any
+ * @ingroup lib-any
+ */
 class any {
 public:
   constexpr any() noexcept = default;
@@ -150,16 +156,22 @@ private:
   std::unique_ptr<base> _impl;
 };
 
-/// @brief An implementation of std::bad_any_cast.
-/// @see std::bad_any_cast
-/// @relates any
+/**
+ * @brief An implementation of std::bad_any_cast.
+ * @see std::bad_any_cast
+ * @relates any
+ * @ingroup lib-any
+ */
 struct bad_any_cast : std::exception {
   const char *what() const noexcept override { return "halcheck::lib::bad_any_cast"; }
 };
 
-/// @brief An implementation of std::any_cast.
-/// @see std::any_cast
-/// @relates any
+/**
+ * @brief An implementation of std::any_cast.
+ * @see std::any_cast
+ * @relates any
+ * @ingroup lib-any
+ */
 template<typename T, HALCHECK_REQUIRE(std::is_constructible<T, const lib::remove_cv_t<lib::remove_reference_t<T>> &>())>
 T any_cast(const any &operand) {
   if (auto output = lib::any_cast<lib::remove_cv_t<lib::remove_reference_t<T>>>(&operand))
@@ -168,9 +180,12 @@ T any_cast(const any &operand) {
     throw lib::bad_any_cast();
 }
 
-/// @brief An implementation of std::any_cast.
-/// @see std::any_cast
-/// @relates any
+/**
+ * @brief An implementation of std::any_cast.
+ * @see std::any_cast
+ * @relates any
+ * @ingroup lib-any
+ */
 template<typename T, HALCHECK_REQUIRE(std::is_constructible<T, lib::remove_cv_t<lib::remove_reference_t<T>> &>())>
 T any_cast(any &operand) {
   if (auto output = lib::any_cast<lib::remove_cv_t<lib::remove_reference_t<T>>>(&operand))
@@ -179,9 +194,12 @@ T any_cast(any &operand) {
     throw lib::bad_any_cast();
 }
 
-/// @brief An implementation of std::any_cast.
-/// @see std::any_cast
-/// @relates any
+/**
+ * @brief An implementation of std::any_cast.
+ * @see std::any_cast
+ * @relates any
+ * @ingroup lib-any
+ */
 template<typename T, HALCHECK_REQUIRE(std::is_constructible<T, lib::remove_cv_t<lib::remove_reference_t<T>>>())>
 T any_cast(any &&operand) {
   if (auto output = lib::any_cast<lib::remove_cv_t<lib::remove_reference_t<T>>>(&operand))
@@ -190,9 +208,12 @@ T any_cast(any &&operand) {
     throw lib::bad_any_cast();
 }
 
-/// @brief An implementation of std::any_cast.
-/// @see std::any_cast
-/// @relates any
+/**
+ * @brief An implementation of std::any_cast.
+ * @see std::any_cast
+ * @relates any
+ * @ingroup lib-any
+ */
 template<typename T, HALCHECK_REQUIRE_(!std::is_void<T>())>
 const T *any_cast(const any *operand) noexcept {
   if (operand && operand->type() == lib::type_id::of<T>())
@@ -201,9 +222,12 @@ const T *any_cast(const any *operand) noexcept {
     return nullptr;
 }
 
-/// @brief An implementation of std::any_cast.
-/// @see std::any_cast
-/// @relates any
+/**
+ * @brief An implementation of std::any_cast.
+ * @see std::any_cast
+ * @relates any
+ * @ingroup lib-any
+ */
 template<typename T, HALCHECK_REQUIRE_(!std::is_void<T>())>
 T *any_cast(any *operand) noexcept {
   if (operand && operand->type() == lib::type_id::of<T>())
@@ -212,9 +236,12 @@ T *any_cast(any *operand) noexcept {
     return nullptr;
 }
 
-/// @brief An implementation of std::make_any.
-/// @see std::make_any
-/// @relates any
+/**
+ * @brief An implementation of std::make_any.
+ * @see std::make_any
+ * @relates any
+ * @ingroup lib-any
+ */
 template<typename T, typename... Args>
 any make_any(Args &&...args) {
   return any(lib::in_place_type_t<T>(), std::forward<Args>(args)...);

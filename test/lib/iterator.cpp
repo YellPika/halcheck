@@ -26,7 +26,7 @@ TEST(Filter, Example2) {
   auto fend = lib::make_filter_iterator(iend, iend, is_even);
   auto begin = lib::make_transform_iterator(fbegin, add_one);
   auto end = lib::make_transform_iterator(fend, add_one);
-  std::vector<int> actual(begin, end);
-  std::vector<int> expected = {1, 3, 5, 7, 9};
+  const std::vector<int> actual(begin, end);
+  const std::vector<int> expected = {1, 3, 5, 7, 9};
   EXPECT_EQ(actual, expected);
 }

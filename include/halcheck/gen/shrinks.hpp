@@ -3,6 +3,7 @@
 
 #include <halcheck/gen/label.hpp>
 #include <halcheck/gen/shrink.hpp>
+#include <halcheck/lib/any.hpp>
 #include <halcheck/lib/atom.hpp>
 #include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>

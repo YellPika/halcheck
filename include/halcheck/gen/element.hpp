@@ -1,6 +1,12 @@
 #ifndef HALCHECK_GEN_ELEMENT_HPP
 #define HALCHECK_GEN_ELEMENT_HPP
 
+/**
+ * @defgroup gen-element gen/element
+ * @brief Generating values in a range.
+ * @ingroup gen
+ */
+
 #include <halcheck/gen/discard.hpp>
 #include <halcheck/gen/range.hpp>
 #include <halcheck/gen/sample.hpp>
@@ -17,16 +23,32 @@
 
 namespace halcheck { namespace gen {
 
+/**
+ * @brief Generates a random element of a range.
+ * @par Signature
+ * @code
+ * template<typename T>
+ * lib::range_reference_t<T> element_of(lib::atom id, T &&range) // (1)
+ *
+ * template<typename T>
+ * lib::range_value_t<T> element_of(lib::atom id, T &&range)     // (2)
+ * @endcode
+ * @tparam T The type of range to generate an element from.
+ * @param id A unique id for the generated element.
+ * @param range The range to generate an element from.
+ * @return A random element of @p range.
+ * @details A call to this function is well-formed only if one of the following is true:
+ * - `lib::is_input_range<T>()` and `lib::is_sized_range<T>()` hold.
+ * - `lib::is_forward_range<T>()` holds.
+ *
+ * Overload (1) is invoked if @p T is an l-value reference and `lib::is_forward_range<T>` holds. Otherwise, overload (2)
+ * is invoked.
+ *
+ * @note Overload (1) is called if @p T is an l-value reference and `lib::is_forward_range<T>` does not hold because the
+ * value obtained from an input iterator is not guaranteed to exist once the iterator is modified or destroyed.
+ * @ingroup gen-element
+ */
 static const struct {
-  /// @brief Generates a random element of a range.
-  /// @tparam T The type of range to draw elements from.
-  /// @param range The range to draw elements from.
-  /// @return A random element in the given range.
-  /// @note This overload expects an l-value reference to a non-temporary value.
-  ///       Thus, it returns a reference to a value in the range.
-  /// @note This overload returns a value instead of a reference if the given range is not a forward range. This is
-  ///       because the element referred to by a (non-forward) input iterator is not guaranteed to exist once the
-  ///       iterator is destroyed.
   template<typename T, HALCHECK_REQUIRE(lib::is_input_range<T>()), HALCHECK_REQUIRE(lib::is_sized_range<T>())>
   lib::conditional_t<lib::is_forward_range<T>{}, lib::range_reference_t<T>, lib::range_value_t<T>>
   operator()(lib::atom id, T &range) const {
@@ -36,23 +58,11 @@ static const struct {
     return *it;
   }
 
-  /// @brief Generates a random element of a range.
-  /// @tparam T The type of range to draw elements from.
-  /// @param range The range to draw elements from.
-  /// @return A random element in the given range.
-  /// @note This overload expects an l-value reference to a non-temporary value.
-  ///       Thus, it returns a reference to a value in the range.
   template<typename T, HALCHECK_REQUIRE(lib::is_forward_range<T>()), HALCHECK_REQUIRE(!lib::is_sized_range<T>())>
   lib::range_reference_t<T> operator()(lib::atom id, T &range) const {
     return *gen::range(id, lib::begin(range), lib::end(range));
   }
 
-  /// @brief Generates a random element of a range.
-  /// @tparam T The type of range to draw elements from.
-  /// @param id A unique identifier for this generated value.
-  /// @param range The range to draw elements from.
-  /// @note This overload expects an r-value reference to a temporary. Thus,
-  ///       it returns a (non-reference) value moved out of the range.
   template<
       typename T,
       HALCHECK_REQUIRE(
@@ -64,10 +74,20 @@ static const struct {
   }
 } element_of;
 
+/**
+ * @brief Generates a random value from a fixed list of elements.
+ * @par Signature
+ * @code
+ * template<typename... Args>
+ * lib::common_type_t<Args...> element(lib::atom id, Args &&...args)
+ * @endcode
+ * @tparam Args The types of elements to draw values from.
+ * @param id A unique identifier for the generated value.
+ * @param args The elements to draw values from.
+ * @return A random element of @p args.
+ * @ingroup gen-element
+ */
 static const struct {
-  /// @brief Generates a random element of a std::initializer_list.
-  /// @param args The elements to draw arguments from.
-  /// @return A random element in the given std::initializer_list.
   template<typename... Args>
   lib::common_type_t<Args...> operator()(lib::atom id, Args &&...args) const {
     std::array<lib::common_type_t<Args...>, sizeof...(Args)> range{std::forward<Args>(args)...};
@@ -75,40 +95,7 @@ static const struct {
   }
 } element;
 
-static const struct {
-  /// @brief Generates a random element of a container according to a weighted
-  ///        distribution.
-  /// @tparam T The type of container to draw elements from.
-  /// @param container The container to draw elements from. The container should
-  ///                  contain pairs, where every pair consists of a weight
-  ///                  followed by a value.
-  /// @return A random element in the given container.
-  template<typename T, HALCHECK_REQUIRE(lib::is_forward_range<T>())>
-  auto operator()(lib::atom id, T &&container) const -> decltype(std::get<1>(*lib::begin(container))) {
-    std::uintmax_t total = 0;
-    for (auto &&pair : container)
-      total += std::get<0>(pair);
-    gen::guard(total > 0);
-
-    auto random = gen::sample(id, total - 1);
-    std::uintmax_t index = 0;
-    for (auto &&pair : container) {
-      auto weight = std::get<0>(pair);
-      if (random < weight)
-        break;
-
-      random -= weight;
-      ++index;
-    }
-
-    return std::get<1>(*std::next(lib::begin(container), gen::shrink_to(id, 0U, index)));
-  }
-} weighted_element_of;
-
-// template<typename T>
-// T weighted(const std::initializer_list<std::pair<std::uintmax_t, T>> &list) {
-//   return gen::weighted<const std::initializer_list<std::pair<std::uintmax_t, T>> &>(list);
-// }
+// TODO: weighted_element_of, weighted_element
 
 }} // namespace halcheck::gen
 

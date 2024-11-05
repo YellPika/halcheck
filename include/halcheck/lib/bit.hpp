@@ -1,9 +1,12 @@
 #ifndef HALCHECK_LIB_BIT_HPP
 #define HALCHECK_LIB_BIT_HPP
 
-/// @file
-/// @brief Bit-level operations.
-/// @see https://en.cppreference.com/w/cpp/header/bit
+/**
+ * @defgroup lib-bit lib/bit
+ * @brief Bit-level operations.
+ * @see https://en.cppreference.com/w/cpp/header/bit
+ * @ingroup lib
+ */
 
 #include <halcheck/lib/type_traits.hpp>
 
@@ -11,8 +14,11 @@
 
 namespace halcheck { namespace lib {
 
-/// @brief Performs a bit-level conversion from one type to another.
-/// @see std::bit_cast
+/**
+ * @brief Performs a bit-level conversion from one type to another.
+ * @see std::bit_cast
+ * @ingroup lib-bit
+ */
 template<
     typename T,
     typename U,

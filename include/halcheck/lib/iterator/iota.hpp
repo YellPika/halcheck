@@ -12,6 +12,11 @@
 
 namespace halcheck { namespace lib {
 
+/**
+ * @brief Computes a type large enough to contain the difference between two instances of an iterator.
+ * @tparam I The iterator type to compute a difference type for.
+ * @ingroup lib-iterator
+ */
 template<typename I, typename = void>
 struct iota_diff {};
 
@@ -50,39 +55,94 @@ struct iota_diff<I, lib::enable_if_t<std::is_integral<I>() && sizeof(I) >= sizeo
   using type = std::intmax_t;
 };
 
+/**
+ * @brief Computes a type large enough to contain the difference between two instances of an iterator.
+ * @tparam I The iterator type to compute a difference type for.
+ * @ingroup lib-iterator
+ */
 template<typename I>
 using iota_diff_t = typename iota_diff<I>::type;
 
-template<typename T, HALCHECK_REQUIRE(std::is_integral<T>())>
+/**
+ * @brief An iterator pointing to an integral value.
+ * @tparam T The type of value to point to.
+ * @ingroup lib-iterator
+ */
+template<typename T>
 class iota_iterator : private lib::iterator_interface<iota_iterator<T>> {
 public:
+  static_assert(std::is_integral<T>(), "T must be an integral type");
+
   using lib::iterator_interface<iota_iterator>::operator++;
   using lib::iterator_interface<iota_iterator>::operator--;
   using lib::iterator_interface<iota_iterator>::operator-=;
   using lib::iterator_interface<iota_iterator>::operator[];
 
+  /**
+   * @brief The type of value pointed to by this iterator.
+   */
   using value_type = T;
+
+  /**
+   * @brief The return type of `operator*`.
+   */
   using reference = T;
+
+  /**
+   * @brief This type does not support `operator->`.
+   */
   using pointer = void;
+
+  /**
+   * @brief The return type of `operator-`.
+   */
   using difference_type = lib::iota_diff_t<T>;
+
+  /**
+   * @brief This iterator is an @ref lib::is_input_iterator "input iterator".
+   */
   using iterator_category = std::input_iterator_tag;
 
+  /**
+   * @brief Constructs a default @ref iota_iterator.
+   */
   constexpr iota_iterator() = default;
 
+  /**
+   * @brief Constructs an @ref iota_iterator pointing to the specified value.
+   * @param value The value to point to.
+   */
   constexpr explicit iota_iterator(T value) : _value(std::move(value)) {}
 
+  /**
+   * @brief Obtains the value pointed to by this iterator.
+   * @return The value pointed to by this iterator.
+   */
   constexpr value_type operator*() const noexcept { return _value; }
 
+  /**
+   * @brief Advances this iterator.
+   * @return A reference to `this`.
+   */
   iota_iterator &operator++() {
     ++_value;
     return *this;
   }
 
+  /**
+   * @brief Advances this iterator backwards.
+   * @return A reference to `this`.
+   */
   iota_iterator &operator--() {
     --_value;
     return *this;
   }
 
+  /**
+   * @brief Advances this iterator by the specified amount.
+   * @param n The amount to advance by.
+   * @return A reference to `this`.
+   */
   template<typename U = T, HALCHECK_REQUIRE(std::is_unsigned<U>())>
   iota_iterator &operator+=(difference_type n) {
     if (n >= 0)
@@ -91,6 +151,11 @@ public:
       _value -= static_cast<U>(-n);
   }
 
+  /**
+   * @brief Advances this iterator by the specified amount.
+   * @param n The amount to advance by.
+   * @return A reference to `this`.
+   */
   template<typename U = T, HALCHECK_REQUIRE(!std::is_unsigned<U>())>
   iota_iterator &operator+=(difference_type n) {
     _value += n;
@@ -99,8 +164,18 @@ public:
 private:
   friend class lib::iterator_interface<iota_iterator>;
 
+  /**
+   * @brief Determines if two iterators are equal.
+   * @param lhs, rhs The iterators to compare.
+   * @return `*lhs == *rhs`
+   */
   friend bool operator==(const iota_iterator &lhs, const iota_iterator &rhs) { return lhs._value == rhs._value; }
 
+  /**
+   * @brief Determines the distance between two iterators.
+   * @param lhs, rhs The iterators to compare.
+   * @return `*lhs - *rhs`
+   */
   friend difference_type operator-(const iota_iterator &lhs, const iota_iterator &rhs) {
     using D = difference_type;
 
@@ -115,10 +190,23 @@ private:
   T _value;
 };
 
-template<typename T>
-lib::iota_iterator<T> make_iota_iterator(T value) {
-  return lib::iota_iterator<T>(std::move(value));
-}
+/**
+ * @brief Constructs an @ref iota_iterator.
+ * @par Signature
+ * @code
+ *   template<typename T>
+ *   lib::iota_iterator<T> make_iota_iterator(T value)
+ * @endcode
+ * @tparam T The type of value to point to.
+ * @param value The value to point to.
+ * @ingroup lib-iterator
+ */
+static const struct {
+  template<typename T>
+  lib::iota_iterator<T> operator()(T value) const {
+    return lib::iota_iterator<T>(std::move(value));
+  }
+} make_iota_iterator;
 
 template<typename T, HALCHECK_REQUIRE(std::is_integral<T>())>
 class iota_view : public lib::view_interface<iota_view<T>> {

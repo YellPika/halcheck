@@ -16,45 +16,78 @@
 
 namespace halcheck { namespace lib {
 
-// See https://en.cppreference.com/w/cpp/ranges/filter_view/iterator
-
-template<
-    typename I,
-    typename F,
-    HALCHECK_REQUIRE(lib::is_input_iterator<I>()),
-    HALCHECK_REQUIRE(std::is_copy_constructible<F>()),
-    HALCHECK_REQUIRE(std::is_object<F>()),
-    HALCHECK_REQUIRE(lib::is_boolean_testable<lib::invoke_result_t<const F &, lib::iter_reference_t<I>>>())>
-class filter_iterator : private lib::iterator_interface<filter_iterator<I, F>> {
-private:
-  template<
-      typename J,
-      typename G,
-      HALCHECK_REQUIRE_(lib::is_input_iterator<J>()),
-      HALCHECK_REQUIRE_(std::is_copy_constructible<G>()),
-      HALCHECK_REQUIRE_(std::is_object<G>()),
-      HALCHECK_REQUIRE_(lib::is_boolean_testable<lib::invoke_result_t<const G &, lib::iter_reference_t<J>>>())>
-  friend class filter_iterator;
-  friend class lib::iterator_interface<filter_iterator<I, F>>;
-
+/**
+ * @brief An iterator adaptor that skips elements that do not satisfy user-defined predicate.
+ * @tparam I The base iterator type.
+ * @tparam F The type of predicate.
+ * @ingroup lib-iterator
+ */
+template<typename I, typename F>
+class filter_iterator : public lib::iterator_interface<filter_iterator<I, F>> {
 public:
-  using lib::iterator_interface<filter_iterator<I, F>>::operator++;
-  using lib::iterator_interface<filter_iterator<I, F>>::operator--;
+  static_assert(lib::is_input_iterator<I>(), "I must be an input iterator");
+  static_assert(std::is_copy_constructible<F>(), "F must be copy constructible");
+  static_assert(std::is_object<F>(), "F must be an object");
+  static_assert(
+      lib::is_boolean_testable<lib::invoke_result_t<const F &, lib::iter_reference_t<I>>>(),
+      "F must be invocable and return a boolean-testable value");
 
-  using reference = lib::iter_reference_t<I>;
-  using iterator_category =
-      lib::conditional_t<lib::is_random_access_iterator<I>{}, std::bidirectional_iterator_tag, lib::iter_category_t<I>>;
+  template<typename, typename>
+  friend class filter_iterator;
+
+  using lib::iterator_interface<filter_iterator>::operator++;
+  using lib::iterator_interface<filter_iterator>::operator--;
+
+  /**
+   * @brief The type of value pointed to by this type of iterator.
+   */
   using value_type = lib::iter_value_t<I>;
-  using difference_type = lib::iter_difference_t<I>;
+
+  /**
+   * @brief The return type of `operator*`.
+   */
+  using reference = lib::iter_reference_t<I>;
+
+  /**
+   * @brief This iterator type does not support `operator->`.
+   */
   using pointer = void;
 
+  /**
+   * @brief The return type of `operator-`.
+   */
+  using difference_type = lib::iter_difference_t<I>;
+
+  /**
+   * @brief Indicates the level of supported iterator operations this type provides.
+   */
+  using iterator_category =
+      lib::conditional_t<lib::is_random_access_iterator<I>{}, std::bidirectional_iterator_tag, lib::iter_category_t<I>>;
+
+  /**
+   * @brief Constructs a default @ref filter_iterator.
+   */
   constexpr filter_iterator() = default;
 
+  /**
+   * @brief Constructs a @ref filter_iterator from a (begin, end] pair of iterators and a predicate.
+   * @param base The base iterator, which determines what the constructed @ref filter_iterator points at.
+   * @param end The end iterator, which indicates where there are no further elements.
+   * @param fun The predicate.
+   */
   filter_iterator(I base, I end, F fun) : _base(std::move(base)), _end(std::move(end)), _func(std::move(fun)) {
     while (_base != _end && !lib::invoke(*_func, *_base))
       ++_base;
   }
 
+  /**
+   * @brief Performs a conversion on a @ref filter_iterator with compatible type parameters.
+   * @tparam J The type of base iterator to convert from.
+   * @tparam G The type of predicate to convert from.
+   * @param other The iterator to copy.
+   * @details This overload only participates in overload resolution if `std::is_convertible<J, I>()` and
+   * `std::is_convertible<G, F>()` hold.
+   */
   template<
       typename I2,
       typename F2,
@@ -63,6 +96,15 @@ public:
   constexpr filter_iterator(filter_iterator<I2, F2> other) // NOLINT
       : _base(std::move(other._base)), _end(std::move(other._end)), _func(std::move(*other._func)) {}
 
+  /**
+   * @brief Performs a conversion on a @ref filter_iterator with compatible type parameters.
+   * @tparam J The type of base iterator to convert from.
+   * @tparam G The type of predicate to convert from.
+   * @param other The iterator to copy.
+   * @details This overload only participates in overload resolution if `std::is_constructible<I, J>()` and
+   * `std::is_constructible<F, G>()` hold, but one of `std::is_convertible<J, I>()` or `std::is_convertible<G, F>()`
+   * does not.
+   */
   template<
       typename I2,
       typename F2,
@@ -72,12 +114,28 @@ public:
   explicit constexpr filter_iterator(filter_iterator<I2, F2> other) // NOLINT
       : _base(std::move(other._base)), _end(std::move(other._end)), _func(*std::move(other._func)) {}
 
+  /**
+   * @brief Get a reference to the base iterator of this @ref filter_iterator.
+   * @return A reference to the base iterator.
+   */
   constexpr const I &base() const & noexcept { return _base; }
 
+  /**
+   * @brief Get the base iterator of this @ref filter_iterator.
+   * @return The base iterator.
+   */
   I base() && { return std::move(_base); }
 
+  /**
+   * @brief Dereferences the base iterator.
+   * @return The result of dereferencing the base iterator.
+   */
   constexpr reference operator*() const noexcept(noexcept(*std::declval<const I &>())) { return *_base; }
 
+  /**
+   * @brief Advances the base iterator to the next element that satisfies the predicate.
+   * @return A reference to `this`.
+   */
   filter_iterator &operator++() {
     do {
       ++_base;
@@ -85,6 +143,10 @@ public:
     return *this;
   }
 
+  /**
+   * @brief Advances the base iterator backwards to the previous element that satisfies the predicate.
+   * @return A reference to `this`.
+   */
   template<bool _ = true, HALCHECK_REQUIRE(lib::is_bidirectional_iterator<I>() && _)>
   filter_iterator &operator--() {
     do {
@@ -94,12 +156,34 @@ public:
   }
 
 private:
-  friend constexpr bool operator==(const filter_iterator &x, const filter_iterator &y) { return x._base == y._base; }
+  /**
+   * @brief Compares two @ref filter_iterator "filter_iterator"s for equality.
+   * @param lhs, rhs The iterators to compare.
+   * @return The result of `lhs.base() == rhs.base()`.
+   */
+  friend constexpr bool operator==(const filter_iterator &lhs, const filter_iterator &rhs) {
+    return lhs._base == rhs._base;
+  }
 
   I _base, _end;
   lib::optional<F> _func;
 };
 
+/**
+ * @brief Constructs a @ref filter_iterator.
+ * @par Signature
+ * @code
+ *   template<typename I, typename F>
+ *   lib::filter_iterator<I, F> make_filter_iterator(I base, I end, F func)
+ * @endcode
+ * @tparam I The base iterator type.
+ * @tparam F The type of predicate.
+ * @param base The base iterator, which determines what the constructed @ref filter_iterator points at.
+ * @param end The end iterator, which indicates where there are no further elements.
+ * @param fun The predicate.
+ * @return The constructed @ref filter_iterator.
+ * @ingroup lib-iterator
+ */
 static const struct {
   template<typename I, typename F>
   lib::filter_iterator<I, F> operator()(I base, I end, F func) const {

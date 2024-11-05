@@ -1,8 +1,11 @@
 #ifndef HALCHECK_LIB_EFFECT_HPP
 #define HALCHECK_LIB_EFFECT_HPP
 
-/// @file
-/// @brief Scoped algebraic effects
+/**
+ * @defgroup lib-effect lib/effect
+ * @brief Scoped algebraic effects (a.k.a. resumable exceptions.)
+ * @ingroup lib
+ */
 
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/optional.hpp>
@@ -19,9 +22,16 @@
 
 namespace halcheck { namespace lib {
 
-/// @brief Invokes the fallback behaviour for an effect.
-/// @tparam T The type of effect to invoke.
-/// @param args The arguments to the effect.
+#ifdef HALCHECK_DOXYGEN
+/**
+ * @brief Invokes the fallback behaviour for an effect.
+ * @tparam T The type of effect to invoke.
+ * @param args The arguments to the effect.
+ * @ingroup lib-effect
+ */
+lib::effect_result_t<T> fallback(T args);
+#endif
+
 static const class {
 private:
   template<typename T>
@@ -42,21 +52,30 @@ public:
   }
 } fallback;
 
-/// @brief Evaluates to the result type of the given effect.
-/// @tparam T The type to query.
+/**
+ * @brief Evaluates to the result type of the given effect.
+ * @tparam T The type to query.
+ * @ingroup lib-effect
+ */
 template<typename T>
 using effect_result_t = lib::invoke_result_t<decltype(lib::fallback), const T &>;
 
-/// @brief Determines if a given type is an effect.
-/// @tparam T The type to query.
-/// @details The type @p T is an effect if and only if one of the following conditions hold:
-/// - The expression ` std::declval<const T &>().fallback() ` is valid.
-/// - The expression ` fallback(std::declval<const T &>()) ` is valid, where `fallback` can be found via
-/// [argument-dependent lookup](https://en.cppreference.com/w/cpp/language/adl).
+/**
+ * @brief Determines if a given type is an effect.
+ * @tparam T The type to query.
+ * @details The type @p T is an effect if and only if one of the following conditions hold:
+ * - The expression ` std::declval<const T &>().fallback() ` is valid.
+ * - The expression ` fallback(std::declval<const T &>()) ` is valid, where `fallback` can be found via
+ * [argument-dependent lookup](https://en.cppreference.com/w/cpp/language/adl).
+ * @ingroup lib-effect
+ */
 template<typename T>
 struct is_effect : lib::is_detected<lib::effect_result_t, T> {};
 
-/// @brief Provides operations for simulating scoped-algebraic effects (a.k.a. resumable exceptions.)
+/**
+ * @brief Provides operations for simulating scoped-algebraic effects (a.k.a. resumable exceptions.)
+ * @ingroup lib-effect
+ */
 class effect {
 private:
   static std::size_t next();
@@ -83,15 +102,18 @@ private:
 
   template<typename Effect>
   struct base {
+    static_assert(lib::is_effect<Effect>(), "Effect must satisfy is_effect");
     virtual lib::effect_result_t<Effect> operator()(Effect args) = 0;
   };
 
 public:
-  /// @brief Invokes an effect.
-  /// @tparam T The type of effect to invoke.
-  /// @param args The arguments to the effect.
-  /// @return The result of invoking the effect.
-  /// @post If called before any handler has been installed, `lib::effect::invoke(args) == lib::fallback(args)`.
+  /**
+   * @brief Invokes an effect.
+   * @tparam T The type of effect to invoke.
+   * @param args The arguments to the effect.
+   * @return The result of invoking the effect.
+   * @post If called before any handler has been installed, `lib::effect::invoke(args) == lib::fallback(args)`.
+   */
   template<typename T, HALCHECK_REQUIRE(lib::is_effect<T>())>
   static lib::effect_result_t<T> invoke(T args) {
     const std::size_t i = index<T>();
@@ -109,12 +131,14 @@ public:
     }
   }
 
-  /// @brief Invokes an effect.
-  /// @tparam T The type of effect to invoke.
-  /// @tparam Args The types of arguments to pass to the effect.
-  /// @param args The arguments to pass to the effect.
-  /// @return The result of invoking the effect.
-  /// @post `effect::invoke<T>(args...) == effect::invoke(T{args...})`
+  /**
+   * @brief Invokes an effect.
+   * @tparam T The type of effect to invoke.
+   * @tparam Args The types of arguments to pass to the effect.
+   * @param args The arguments to pass to the effect.
+   * @return The result of invoking the effect.
+   * @post `effect::invoke<T>(args...) == effect::invoke(T{args...})`
+   */
   template<
       typename T,
       typename... Args,
@@ -124,10 +148,12 @@ public:
     return invoke(T{std::forward<Args>(args)...});
   }
 
-  /// @brief An effect @ref handler defines the behaviour of a set of effects.
-  /// @tparam Self The derived type (as used in
-  /// [CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern)).
-  /// @tparam Effects The set of effects to handle.
+  /**
+   * @brief An effect @ref handler defines the behaviour of a set of effects.
+   * @tparam Self The derived type (as used in
+   * [CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern)).
+   * @tparam Effects The set of effects to handle.
+   */
   template<typename Self, typename... Effects>
   class handler : private base<clone_effect>, private base<Effects>... {
   private:
@@ -247,41 +273,53 @@ public:
     }
   };
 
-  /// A @ref state determines the behaviour of all effects.
+  /**
+   * @brief A @ref state determines the behaviour of all effects.
+   */
   class state {
   public:
-    /// @brief Constructs the default state object.
-    /// @post <tt>
-    /// { auto _ = lib::effect::state().handle(); lib::effect::invoke(args); } ==
-    /// { auto _ = lib::effect::state().handle(); lib::fallback(args); }
-    /// </tt>
+    /**
+     * @brief Constructs the default state object.
+     * @post <tt>
+     * { auto _ = lib::effect::state().handle(); lib::effect::invoke(args); } ==
+     * { auto _ = lib::effect::state().handle(); lib::fallback(args); }
+     * </tt>
+     */
     state() = default;
 
-    /// @brief Copies the current set of effect handlers.
-    /// @post Let `st` be a value of type @ref state constructed via `lib::effect::state(lib::in_place)`.
-    /// Then `{ auto _ = st; lib::effect::invoke(args); }` behaves as if `lib::effect::invoke(args)` is called at the
-    /// time `st` is constructed.
+    /**
+     * @brief Copies the current set of effect handlers.
+     * @post Let `st` be a value of type @ref state constructed via `lib::effect::state(lib::in_place)`.
+     * Then `{ auto _ = st; lib::effect::invoke(args); }` behaves as if `lib::effect::invoke(args)` is called at the
+     * time `st` is constructed.
+     */
     explicit state(lib::in_place_t);
 
-    /// @brief Overrides the current set of effect handlers.
-    /// @return A value whose lifetime determines how long the set of effect handlers are overriden.
+    /**
+     * @brief Overrides the current set of effect handlers.
+     * @return A value whose lifetime determines how long the set of effect handlers are overriden.
+     */
     lib::finally_t<> handle() &;
 
-    /// @brief Overrides the current set of effect handlers.
-    /// @return A value whose lifetime determines how long the set of effect handlers are overriden.
+    /**
+     * @brief Overrides the current set of effect handlers.
+     * @return A value whose lifetime determines how long the set of effect handlers are overriden.
+     */
     lib::finally_t<> handle() &&;
 
-    /// @brief Invokes a function, handling any effects using this @ref state.
-    /// @tparam F The type of function to execute.
-    /// @tparam Args The type of arguments to pass to the function.
-    /// @param func The function to execute.
-    /// @param args The arguments to pass to the function.
-    /// @return The result of invoking the function.
-    /// @details This overload participates in overload resolution only if
-    /// - `lib::is_invocable<F, Args...>()` holds, and
-    /// - `lib::is_effect<T>()` holds for all types `T` in @p Effects.
-    ///
-    /// @post `this->handle(func, args...) == { auto _ = this->handle(); lib::invoke(func, args...); }`
+    /**
+     * @brief Invokes a function, handling any effects using this @ref state.
+     * @tparam F The type of function to execute.
+     * @tparam Args The type of arguments to pass to the function.
+     * @param func The function to execute.
+     * @param args The arguments to pass to the function.
+     * @return The result of invoking the function.
+     * @details This overload participates in overload resolution only if
+     * - `lib::is_invocable<F, Args...>()` holds, and
+     * - `lib::is_effect<T>()` holds for all types `T` in @p Effects.
+     *
+     * @post `this->handle(func, args...) == { auto _ = this->handle(); lib::invoke(func, args...); }`
+     */
     template<typename F, typename... Args, HALCHECK_REQUIRE(lib::is_invocable<F, Args...>())>
     lib::invoke_result_t<F, Args...> handle(F func, Args &&...args) {
       auto _ = handle();
@@ -292,8 +330,10 @@ public:
     lib::move_only_function<lib::finally_t<>(bool)> _impl;
   };
 
-  /// @brief Copies the current set of effect handlers.
-  /// @return `lib::effect::state(lib::in_place)`
+  /**
+   * @brief Copies the current set of effect handlers.
+   * @return `lib::effect::state(lib::in_place)`
+   */
   static state save() { return state(lib::in_place); }
 };
 

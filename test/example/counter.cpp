@@ -6,7 +6,6 @@
 
 #include <atomic>
 #include <ostream>
-#include <random>
 #include <vector>
 
 using namespace halcheck;

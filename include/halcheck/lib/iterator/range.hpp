@@ -11,14 +11,28 @@
 
 namespace halcheck { namespace lib {
 
-// See https://en.cppreference.com/w/cpp/ranges/borrowed_range
-
+/**
+ * @brief An implementation of std::ranges::enable_borrowed_range.
+ * @see std::ranges::enable_borrowed_range
+ * @ingroup lib-iterator
+ */
 template<class R>
 struct enable_borrowed_range : std::false_type {};
 
-// See https://en.cppreference.com/w/cpp/ranges/begin
-
 inline namespace begin_cpo {
+
+/**
+ * @brief Gets an iterator to the first element of a range.
+ * @par Signature
+ * @code
+ *   template<typename T>
+ *   lib::iterator_t<T> begin(T &&value);
+ * @endcode
+ * @tparam T The type of range to query.
+ * @param value The range to query.
+ * @return An iterator to the first element of @p range.
+ * @ingroup lib-iterator
+ */
 static const struct {
 private:
   template<typename T>
@@ -65,17 +79,32 @@ public:
     return begin(value);
   }
 } begin;
+
 } // namespace begin_cpo
 
-// See https://en.cppreference.com/w/cpp/ranges/iterator_t
-
+/**
+ * @brief Obtains the iterator type of a range type.
+ * @tparam T The type of range to query.
+ * @ingroup lib-iterator
+ */
 template<typename T>
 using iterator_t = decltype(lib::begin(std::declval<T &>()));
 
-// See https://en.cppreference.com/w/cpp/ranges/end
-
 inline namespace end_cpo {
-static const class {
+
+/**
+ * @brief Gets an iterator to past the end of a range.
+ * @par Signature
+ * @code
+ *   template<typename T>
+ *   lib::iterator_t<T> end(T &&value);
+ * @endcode
+ * @tparam T The type of range to query.
+ * @param value The range to query.
+ * @return An iterator to past the end of @p range.
+ * @ingroup lib-iterator
+ */
+static const struct {
 private:
   template<typename T>
   using member = lib::iterator<decltype(std::declval<T &&>().end())>;
@@ -111,17 +140,21 @@ public:
     return end(value);
   }
 } end;
+
 } // namespace end_cpo
 
-// See https://en.cppreference.com/w/cpp/ranges/range
-
+/** @private */
 template<typename T>
 using range = lib::same<lib::iterator_t<T>, decltype(lib::end(std::declval<T &>()))>;
 
+/**
+ * @brief Determines whether the given type is a range.
+ * @tparam T The type to query.
+ * @see std::ranges::range
+ * @ingroup lib-iterator
+ */
 template<typename T>
 struct is_range : lib::is_detected<lib::range, T> {};
-
-// See https://en.cppreference.com/w/cpp/ranges/view
 
 struct view_base {};
 
@@ -136,43 +169,76 @@ struct is_view : lib::is_detected<lib::view, T> {};
 
 // See https://en.cppreference.com/w/cpp/ranges/input_range
 
+/** @private */
 template<typename T>
 using input_range = lib::void_t<lib::range<T>, lib::input_iterator<lib::iterator_t<T>>>;
 
+/**
+ * @brief Determines whether a type is a range whose iterators satisfy lib::is_input_iterator.
+ * @tparam T The type to query.
+ * @ingroup lib-iterator
+ */
 template<typename T>
 struct is_input_range : lib::is_detected<lib::input_range, T> {};
 
-// See https://en.cppreference.com/w/cpp/ranges/forward_range
-
+/** @private */
 template<typename T>
-using forward_range = lib::void_t<lib::input_range<T>, lib::forward_iterator<lib::iterator_t<T>>>;
+using forward_range = lib::void_t<lib::range<T>, lib::forward_iterator<lib::iterator_t<T>>>;
 
+/**
+ * @brief Determines whether a type is a range whose iterators satisfy lib::is_forward_iterator.
+ * @tparam T The type to query.
+ * @ingroup lib-iterator
+ */
 template<typename T>
 struct is_forward_range : lib::is_detected<lib::forward_range, T> {};
 
-// See https://en.cppreference.com/w/cpp/ranges/bidirectional_range
-
+/** @private */
 template<typename T>
-using bidirectional_range = lib::void_t<lib::input_range<T>, lib::bidirectional_iterator<lib::iterator_t<T>>>;
+using bidirectional_range = lib::void_t<lib::range<T>, lib::bidirectional_iterator<lib::iterator_t<T>>>;
 
+/**
+ * @brief Determines whether a type is a range whose iterators satisfy lib::is_bidirectional_iterator.
+ * @tparam T The type to query.
+ * @ingroup lib-iterator
+ */
 template<typename T>
 struct is_bidirectional_range : lib::is_detected<lib::bidirectional_range, T> {};
 
-// See https://en.cppreference.com/w/cpp/ranges/random_access_range
-
+/** @private */
 template<typename T>
-using random_access_range = lib::void_t<lib::input_range<T>, lib::random_access_iterator<lib::iterator_t<T>>>;
+using random_access_range = lib::void_t<lib::range<T>, lib::random_access_iterator<lib::iterator_t<T>>>;
 
+/**
+ * @brief Determines whether a type is a range whose iterators satisfy lib::is_random_access_iterator.
+ * @tparam T The type to query.
+ * @ingroup lib-iterator
+ */
 template<typename T>
 struct is_random_access_range : lib::is_detected<lib::random_access_range, T> {};
 
-// See https://en.cppreference.com/w/cpp/ranges/sized_range
-
-template<typename>
+/**
+ * @brief Indicates whether lib::size should be disabled for a type.
+ * @tparam T The type to query.
+ * @details This type may be specialized to inherit from std::true_type in order to disable lib::size for a particular
+ * type.
+ * @ingroup lib-iterator
+ */
+template<typename T>
 struct disable_sized_range : std::false_type {};
 
-// See https://en.cppreference.com/w/cpp/ranges/size
-
+/**
+ * @brief Obtains the size of a range.
+ * @par Signature
+ * @code
+ *   template<typename R>
+ *   lib::range_size_t<R> lib::size(R &&range);
+ * @endcode
+ * @tparam R The type of range to query.
+ * @param range The range to query.
+ * @return The number of elements in @p range.
+ * @ingroup lib-iterator
+ */
 static const struct {
 private:
   template<typename T>
@@ -228,32 +294,62 @@ public:
   }
 } size;
 
-// See https://en.cppreference.com/w/cpp/ranges/sized_range
+/** @private */
+template<typename R>
+using sized_range = lib::void_t<lib::range<R>, decltype(lib::size(std::declval<R &>()))>;
 
-template<typename T>
-using sized_range = lib::void_t<lib::range<T>, decltype(lib::size(std::declval<T &>()))>;
+/**
+ * @brief Determines whether a range type supports the lib::size operation.
+ * @tparam R The type to query.
+ * @ingroup lib-iterator
+ */
+template<typename R>
+struct is_sized_range : lib::is_detected<lib::sized_range, R> {};
 
-template<typename T>
-struct is_sized_range : lib::is_detected<lib::sized_range, T> {};
-
-// See https://en.cppreference.com/w/cpp/ranges/range_size_t
-
+/**
+ * @brief The type of value returned by lib::size.
+ * @tparam R The type to query.
+ * @ingroup lib-iterator
+ */
 template<typename R, HALCHECK_REQUIRE(lib::is_sized_range<R>())>
 using range_size_t = decltype(lib::size(std::declval<R &>()));
 
+/**
+ * @brief The type of value returned by `operator-` for a range type's iterators.
+ * @tparam R The type to query.
+ * @ingroup lib-iterator
+ */
 template<typename R, HALCHECK_REQUIRE(lib::is_range<R>())>
 using range_difference_t = lib::iter_difference_t<lib::iterator_t<R>>;
 
+/**
+ * @brief The type of element contained in a range.
+ * @tparam R The type to query.
+ * @ingroup lib-iterator
+ */
 template<typename R, HALCHECK_REQUIRE(lib::is_range<R>())>
 using range_value_t = lib::iter_value_t<lib::iterator_t<R>>;
 
-// See https://en.cppreference.com/w/cpp/ranges/range_reference_t
-
+/**
+ * @brief The type returned by `operator*` for a range type's iterators.
+ * @tparam R The type to query.
+ * @ingroup lib-iterator
+ */
 template<typename R, HALCHECK_REQUIRE(lib::is_range<R>())>
 using range_reference_t = lib::iter_reference_t<lib::iterator_t<R>>;
 
-// See https://en.cppreference.com/w/cpp/ranges/empty
-
+/**
+ * @brief Determines if a range is empty.
+ * @par Signature
+ * @code
+ *   template<typename R>
+ *   bool lib::empty(R &&range);
+ * @endcode
+ * @tparam R The type of range to query.
+ * @param range The range to query.
+ * @return A `bool` indicating whether the range is empty.
+ * @ingroup lib-iterator
+ */
 static const struct {
 private:
   template<typename T>
@@ -281,16 +377,27 @@ public:
   }
 } empty;
 
-template<typename T>
+/** @private */
+template<typename R>
 using insertable_range = lib::void_t<
-    lib::range<T>,
+    lib::range<R>,
     lib::same<
-        decltype(std::declval<T &>().insert(
-            std::declval<lib::iterator_t<const T &>>(), std::declval<lib::range_value_t<T>>())),
-        lib::iterator_t<T>>>;
+        decltype(std::declval<R &>().insert(
+            std::declval<lib::iterator_t<const R &>>(), std::declval<lib::range_value_t<R>>())),
+        lib::iterator_t<R>>>;
 
-template<typename T>
-struct is_insertable_range : lib::is_detected<lib::insertable_range, T> {};
+/**
+ * @brief Determines whether a range is insertable.
+ * @tparam R The type to query.
+ * @details A range is insertable if the expression `x.insert(i, y)` is valid, where
+ * - `x` is an l-value reference of type @p R,
+ * - `i` is a value of type lib::iterator_t<const R &>,
+ * - `y` is a value of type lib::range_value_t<R>, and
+ * - `x.insert(i, y)` has type lib::iterator_t<R>.
+ * @ingroup lib-iterator
+ */
+template<typename R>
+struct is_insertable_range : lib::is_detected<lib::insertable_range, R> {};
 
 }} // namespace halcheck::lib
 
