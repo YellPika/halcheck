@@ -271,6 +271,62 @@ public:
   }
 };
 
+namespace detail {
+template<typename T, typename F>
+bool check(
+    const lib::dag<F> &dag,
+    T seed,
+    std::vector<std::size_t> &references,
+    std::vector<typename lib::dag<F>::const_iterator> &queue) {
+  for (std::size_t i = 0; i < queue.size(); ++i) {
+    auto next = seed;
+    auto it = queue[i];
+    if (!lib::invoke(*it).get(), next)
+      continue;
+
+    for (auto j : dag.children(it)) {
+      if (--references[j - dag.begin()] == 0)
+        queue.push_back(j);
+    }
+
+    std::swap(queue[i], queue.back());
+    queue.pop_back();
+
+    auto _ = lib::finally([&] {
+      queue.push_back(it);
+      std::swap(queue[i], queue.back());
+
+      for (auto j : dag.children(it)) {
+        if (references[j - dag.begin()]++ == 0)
+          queue.pop_back();
+      }
+    });
+
+    if (check(next, references, queue))
+      return true;
+  }
+
+  return queue.empty();
+}
+} // namespace detail
+
+template<
+    typename T,
+    typename F,
+    HALCHECK_REQUIRE(lib::is_copyable<T>()),
+    HALCHECK_REQUIRE(lib::is_invocable_r<bool, F, T &>())>
+bool is_linearizable(const lib::dag<F> &dag, T seed) {
+  std::vector<std::size_t> references(dag.size(), 0);
+  for (auto i = dag.begin(); i != dag.end(); ++i) {
+    (*i).get();
+    for (auto j : dag.children(i))
+      ++references[j - dag.begin()];
+  }
+
+  std::vector<typename lib::dag<F>::const_iterator> queue(dag.roots().begin(), dag.roots().end());
+  return check(seed, references, queue);
+}
+
 }} // namespace halcheck::lib
 
 #endif
