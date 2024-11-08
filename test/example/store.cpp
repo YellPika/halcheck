@@ -1,6 +1,7 @@
 #include <halcheck.hpp>
 #include <halcheck/glog.hpp>
 #include <halcheck/gtest.hpp>
+#include <halcheck/lib/functional.hpp>
 
 #include <cstddef>
 #include <map>
@@ -15,7 +16,10 @@ using namespace halcheck;
 
 class store {
 public:
-  void step() { _time++; }
+  void step() {
+    std::lock_guard<std::mutex> lock(_mutex);
+    _time++;
+  }
 
   void put(std::string key, std::string value) {
     std::lock_guard<std::mutex> lock(_mutex);
@@ -64,34 +68,62 @@ HALCHECK_TEST(Store, Concurrency) {
 
   using namespace lib::literals;
 
+  // Step 0 (Types): we have a command type which may either be a get command or
+  // a put command. The get command records the expected output.
+  struct get {
+    std::string key;
+    lib::optional<std::string> value;
+  };
+
+  struct put {
+    std::string key;
+    std::string value;
+  };
+
+  using command = lib::variant<get, put>;
+
+  store sys;
+  std::map<std::string, lib::optional<std::string>> model;
+
+  // Step 1: generate a small, finite set of keys. We only generate commands
+  // that read/write to these keys to increase the chance of reading/writing to
+  // the same value.
   auto keys = gen::noshrink([] {
     auto size = gen::range("size"_s, 1, 10);
     auto output = gen::container<std::set<std::string>>("keys"_s, size, gen::arbitrary<std::string>);
     return std::vector<std::string>(output.begin(), output.end());
   });
 
-  store sys;
-  std::map<std::string, lib::optional<std::string>> model;
-  auto dag = gen::dag<std::string>(
-      "dag"_s,
-      [&](lib::atom id, lib::function_view<void(std::string)> use) -> lib::move_only_function<void() const> {
-        auto _ = gen::label(id);
+  // Step 2: generate a directed acyclic graph of commands.
+  auto dag = gen::dag<std::string>("dag"_s, [&](lib::atom id, lib::function_view<void(std::string)> use) -> command {
+    auto _ = gen::label(id);
 
-        auto key = gen::element_of("key"_s, keys);
-        use(key);
+    // We generate a random key to read/write. This command is ordered after the
+    // last command that used this key, i.e. two commands run in parallel iff
+    // they operate on different keys.
+    auto key = gen::element_of("key"_s, keys);
+    use(key);
 
-        if (gen::arbitrary<bool>("type"_s)) {
-          auto value = gen::arbitrary<std::string>("value"_s);
-          model[key] = value;
-          return [=, &sys] { sys.put(key, value); };
-        } else {
-          auto expected = model[key];
-          return [=, &sys] { EXPECT_EQ(sys.get(key, 0), expected); };
-        }
-      });
+    return gen::variant(
+        "command"_s,
+        [&](lib::atom id) {
+          auto _ = gen::label(id);
+          return get{key, model[key]};
+        },
+        [&](lib::atom id) {
+          auto _ = gen::label(id);
+          model[key] = gen::arbitrary<std::string>("value"_s);
+          return put{key, *model[key]};
+        });
+  });
 
-  lib::async(dag, [](const lib::move_only_function<void() const> &func) {
-    func();
+  // Step 3: execute the commands in parallel.
+  lib::async(dag, [&](const command &cmd) {
+    lib::visit(
+        lib::make_overload(
+            [&](const get &cmd) { EXPECT_EQ(sys.get(cmd.key, 0), cmd.value); },
+            [&](const put &cmd) { sys.put(cmd.key, cmd.value); }),
+        cmd);
     return 0;
   });
 }
