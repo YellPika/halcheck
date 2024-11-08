@@ -271,6 +271,80 @@ public:
   }
 };
 
+/**
+ * @brief Executes a function on each label in a given graph and stores the
+ *        results in a graph with the same structure. Functions processing
+ *        unrelated node labels are executed in parallel.
+ *
+ * @tparam F The type of function to execute.
+ * @tparam T The type of label stored in the graph.
+ * @param graph The graph of functions to execute.
+ * @param func The function to execute.
+ * @return A graph with the same structure as the input graph.
+ */
+template<typename F, typename T, HALCHECK_REQUIRE(lib::is_invocable<F, T &&>())>
+lib::dag<lib::invoke_result_t<F, T &&>> async(lib::dag<T> &&graph, F func) {
+  std::vector<std::shared_future<void>> futures;
+  futures.reserve(graph.size());
+
+  std::vector<std::future<lib::invoke_result_t<F, T &&>>> results;
+  results.reserve(graph.size());
+
+  for (auto i = graph.begin(); i != graph.end(); ++i) {
+    std::vector<std::shared_future<void>> parents;
+    for (auto j : graph.parents(i))
+      parents.push_back(futures[j - graph.begin()]);
+
+    std::promise<void> promise;
+    futures.push_back(promise.get_future().share());
+    results.push_back(std::async(
+        std::launch::async,
+        [&func](const std::vector<std::shared_future<void>> &parents, std::promise<void> promise, T value) {
+          auto _ = lib::finally([&] { promise.set_value(); });
+
+          for (const auto &parent : parents)
+            parent.wait();
+
+          return lib::invoke(func, std::move(value));
+        },
+        std::move(parents),
+        std::move(promise),
+        std::move(*i)));
+  }
+
+  lib::dag<lib::invoke_result_t<F, T &&>> output;
+  output.reserve(graph.size());
+
+  for (auto i = graph.begin(); i != graph.end(); ++i) {
+    auto f = [&](lib::iterator_t<lib::dag<T>> j) { return output.begin() + (j - graph.begin()); };
+    auto parents = graph.parents(i);
+    output.emplace(
+        lib::make_transform_iterator(parents.begin(), f),
+        lib::make_transform_iterator(parents.end(), f),
+        results[i - graph.begin()].get());
+  }
+
+  return output;
+}
+
+/**
+ * @brief Executes a function on each label in a given graph and stores the
+ *        results in a graph with the same structure. Functions processing
+ *        unrelated node labels are executed in parallel.
+ *
+ * @tparam F The type of function to execute.
+ * @tparam T The type of label stored in the graph.
+ * @param graph The graph of functions to execute.
+ * @param func The function to execute.
+ * @return A graph with the same structure as the input graph.
+ */
+template<typename F, typename T, HALCHECK_REQUIRE(lib::is_invocable<F, const T &>())>
+lib::dag<lib::invoke_result_t<F, const T &>> async(const lib::dag<T> &graph, F func) {
+  return lib::async(std::move(const_cast<lib::dag<T> &>(graph)), [&](const T &value) {
+    return lib::invoke(func, value);
+  });
+}
+
 namespace detail {
 template<typename T, typename F>
 bool check(

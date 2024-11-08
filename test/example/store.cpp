@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <map>
+#include <mutex>
 #include <ostream>
 #include <set>
 #include <string>
@@ -16,9 +17,14 @@ class store {
 public:
   void step() { _time++; }
 
-  void put(std::string key, std::string value) { _data[std::move(key)][_time] = std::move(value); }
+  void put(std::string key, std::string value) {
+    std::lock_guard<std::mutex> lock(_mutex);
+    _data[std::move(key)][_time] = std::move(value);
+  }
 
   lib::optional<std::string> get(const std::string &key, std::size_t time) const {
+    std::lock_guard<std::mutex> lock(_mutex);
+
     auto i = _data.find(key);
     if (i == _data.end())
       return lib::nullopt;
@@ -47,9 +53,48 @@ public:
   }
 
 private:
+  mutable std::mutex _mutex;
   std::size_t _time = 0;
   std::map<std::string, std::map<std::size_t, std::string>> _data;
 };
+
+HALCHECK_TEST(Store, Concurrency) {
+  if (!lib::getenv("HALCHECK_NOSKIP"))
+    GTEST_SKIP();
+
+  using namespace lib::literals;
+
+  auto keys = gen::noshrink([] {
+    auto size = gen::range("size"_s, 1, 10);
+    auto output = gen::container<std::set<std::string>>("keys"_s, size, gen::arbitrary<std::string>);
+    return std::vector<std::string>(output.begin(), output.end());
+  });
+
+  store sys;
+  std::map<std::string, lib::optional<std::string>> model;
+  auto dag = gen::dag<std::string>(
+      "dag"_s,
+      [&](lib::atom id, lib::function_view<void(std::string)> use) -> lib::move_only_function<void() const> {
+        auto _ = gen::label(id);
+
+        auto key = gen::element_of("key"_s, keys);
+        use(key);
+
+        if (gen::arbitrary<bool>("type"_s)) {
+          auto value = gen::arbitrary<std::string>("value"_s);
+          model[key] = value;
+          return [=, &sys] { sys.put(key, value); };
+        } else {
+          auto expected = model[key];
+          return [=, &sys] { EXPECT_EQ(sys.get(key, 0), expected); };
+        }
+      });
+
+  lib::async(dag, [](const lib::move_only_function<void() const> &func) {
+    func();
+    return 0;
+  });
+}
 
 HALCHECK_TEST(Store, Consistency) {
   if (!lib::getenv("HALCHECK_NOSKIP"))

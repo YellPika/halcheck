@@ -39,8 +39,8 @@ using input_iterator = lib::void_t<
     lib::iterator<I>,
     lib::equality_comparable<I>,
     lib::same<decltype(*std::declval<I &>()), lib::iter_reference_t<I>>,
-    lib::convertible<lib::iter_reference_t<I>, lib::iter_value_t<I>>,
-    lib::convertible<decltype(*std::declval<I &>()++), lib::iter_value_t<I>>,
+    lib::convertible<lib::iter_reference_t<I>, const lib::iter_value_t<I> &>,
+    lib::convertible<decltype(*std::declval<I &>()++), const lib::iter_value_t<I> &>,
     lib::base_of<std::input_iterator_tag, lib::iter_category_t<I>>>;
 
 /**

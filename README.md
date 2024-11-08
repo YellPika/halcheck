@@ -4,7 +4,7 @@
 
 ## Installation
 
-`halcheck` uses [CMake](https://cmake.org/) and can be integrated using standard CMake methods (e.g. via [`add_subdirectory`](https://cmake.org/cmake/help/latest/command/add_subdirectory.html)).
+`halcheck` uses [CMake](https://cmake.org/) and can be integrated using standard CMake methods (e.g. via [`add_subdirectory`](https://cmake.org/cmake/help/latest/command/add_subdirectory.html).)
 
 ```cmake
 add_subdirectory(path/to/halcheck/repository)
