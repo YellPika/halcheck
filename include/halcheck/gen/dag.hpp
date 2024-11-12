@@ -37,15 +37,22 @@ namespace halcheck { namespace gen {
  * @ingroup gen-dag
  */
 template<
-    typename T,
     typename F,
-    HALCHECK_REQUIRE(lib::is_hashable<T>()),
-    HALCHECK_REQUIRE(lib::is_equality_comparable<T>()),
-    HALCHECK_REQUIRE(lib::is_invocable<F, lib::atom, lib::function_view<void(const T &)>>())>
-lib::dag<lib::invoke_result_t<F, lib::atom, lib::function_view<void(const T &)>>> dag(lib::atom id, F func) {
+    HALCHECK_REQUIRE(lib::is_invocable<F, lib::atom>()),
+    HALCHECK_REQUIRE(std::tuple_size<lib::invoke_result_t<F, lib::atom>>() == 2),
+    HALCHECK_REQUIRE(lib::is_range<lib::tuple_element_t<0, lib::invoke_result_t<F, lib::atom>>>()),
+    HALCHECK_REQUIRE(
+        lib::is_hashable<lib::range_value_t<lib::tuple_element_t<0, lib::invoke_result_t<F, lib::atom>>>>()),
+    HALCHECK_REQUIRE(
+        lib::is_equality_comparable<lib::range_value_t<lib::tuple_element_t<0, lib::invoke_result_t<F, lib::atom>>>>())>
+lib::dag<lib::tuple_element_t<1, lib::invoke_result_t<F, lib::atom>>> dag(lib::atom id, F func) {
   using namespace lib::literals;
-  using dag = lib::dag<lib::invoke_result_t<F, lib::atom, lib::function_view<void(const T &)>>>;
-  using map = std::unordered_map<T, lib::iterator_t<dag>>;
+
+  using resource = lib::range_value_t<lib::tuple_element_t<0, lib::invoke_result_t<F, lib::atom>>>;
+  using result = lib::tuple_element_t<1, lib::invoke_result_t<F, lib::atom>>;
+
+  using dag = lib::dag<result>;
+  using map = std::unordered_map<resource, lib::iterator_t<dag>>;
 
   auto _ = gen::label(id);
 
@@ -53,18 +60,17 @@ lib::dag<lib::invoke_result_t<F, lib::atom, lib::function_view<void(const T &)>>
   dag output;
 
   for (auto _ : gen::repeat("labels"_s)) {
-    std::vector<T> keys;
-    std::vector<lib::iterator_t<dag>> parents;
+    auto pair = lib::invoke(func, "func"_s);
 
-    auto value = lib::invoke(func, "func"_s, [&](T key) {
+    std::vector<lib::iterator_t<dag>> parents;
+    for (auto &&key : std::get<0>(pair)) {
       auto it = state.find(key);
       if (it != state.end())
         parents.push_back(it->second);
-      keys.push_back(std::move(key));
-    });
+    }
 
-    auto it = output.emplace(std::move(parents), std::move(value));
-    for (auto &&key : keys)
+    auto it = output.emplace(std::move(parents), std::move(std::get<1>(pair)));
+    for (auto &&key : std::get<0>(pair))
       state[key] = it;
   }
 
