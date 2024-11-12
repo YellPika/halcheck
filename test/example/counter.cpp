@@ -3,6 +3,7 @@
 #include <halcheck.hpp>
 #include <halcheck/glog.hpp>
 #include <halcheck/gtest.hpp>
+#include <halcheck/lib/functional.hpp>
 
 #include <atomic>
 #include <ostream>
@@ -68,29 +69,47 @@ HALCHECK_TEST(Counter, Linearizability) {
   if (!lib::getenv("HALCHECK_NOSKIP"))
     GTEST_SKIP();
 
+  struct get_command {};
+  struct inc_command {};
+  using command = lib::variant<get_command, inc_command>;
+
+  auto dag = gen::dag("dag"_s, [](lib::atom id) {
+    return gen::one(
+        id,
+        [](lib::atom id) -> std::pair<std::vector<std::size_t>, command> {
+          auto _ = gen::label(id);
+          auto threads = gen_threads("threads"_s);
+          LOG(INFO) << "[gen] get @ " << testing::PrintToString(threads);
+          return std::make_pair(threads, get_command());
+        },
+        [](lib::atom id) -> std::pair<std::vector<std::size_t>, command> {
+          auto _ = gen::label(id);
+          auto threads = gen_threads("threads"_s);
+          LOG(INFO) << "[gen] inc @ " << testing::PrintToString(threads);
+          return std::make_pair(threads, inc_command());
+        });
+  });
+
   counter object;
-  lib::serializability_monitor<int, counter> monitor;
+  auto results = lib::async(dag, [&](lib::dag<command>::const_iterator it) {
+    return lib::visit(
+        lib::make_overload(
+            [&](get_command) -> lib::move_only_function<bool(counter &) const> {
+              auto expected = object.get();
+              LOG(INFO) << "[async] get(): " << expected;
+              return [=](counter &model) { return model.get() == expected; };
+            },
+            [&](inc_command) -> lib::move_only_function<bool(counter &) const> {
+              object.inc();
+              LOG(INFO) << "[async] inc()";
+              return [](counter &model) {
+                model.inc();
+                return true;
+              };
+            }),
+        *it);
+  });
 
-  auto get = [&](lib::atom id) {
-    auto threads = gen_threads(id);
-    monitor.invoke(threads, [=, &object] {
-      auto actual = object.get();
-      LOG(INFO) << "[system] get(): " << actual << " on threads " << testing::PrintToString(threads);
-      return [=](const counter &expected) { EXPECT_EQ(actual, expected.get()); };
-    });
-  };
-
-  auto inc = [&](lib::atom id) {
-    auto threads = gen_threads(id);
-    monitor.invoke(threads, [=, &object] {
-      LOG(INFO) << "[system] inc() on threads " << testing::PrintToString(threads);
-      object.inc();
-      return [=](counter &model) { model.inc(); };
-    });
-  };
-
-  for (auto _ : gen::repeat("commands"_s))
-    gen::one("command"_s, inc, get);
-
-  EXPECT_TRUE(monitor.check());
+  counter model;
+  EXPECT_TRUE(lib::linearize(results, model));
 }

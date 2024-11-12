@@ -95,36 +95,36 @@ HALCHECK_TEST(Store, Concurrency) {
   });
 
   // Step 2: generate a directed acyclic graph of commands.
-  auto dag = gen::dag<std::string>("dag"_s, [&](lib::atom id, lib::function_view<void(std::string)> use) -> command {
+  auto dag = gen::dag("dag"_s, [&](lib::atom id) -> std::pair<std::vector<std::string>, command> {
     auto _ = gen::label(id);
 
     // We generate a random key to read/write. This command is ordered after the
     // last command that used this key, i.e. two commands run in parallel iff
     // they operate on different keys.
     auto key = gen::element_of("key"_s, keys);
-    use(key);
 
-    return gen::variant(
-        "command"_s,
-        [&](lib::atom id) {
-          auto _ = gen::label(id);
-          return get{key, model[key]};
-        },
-        [&](lib::atom id) {
-          auto _ = gen::label(id);
-          model[key] = gen::arbitrary<std::string>("value"_s);
-          return put{key, *model[key]};
-        });
+    return std::make_pair(
+        std::vector<std::string>{key},
+        gen::variant(
+            "command"_s,
+            [&](lib::atom id) {
+              auto _ = gen::label(id);
+              return get{key, model[key]};
+            },
+            [&](lib::atom id) {
+              auto _ = gen::label(id);
+              model[key] = gen::arbitrary<std::string>("value"_s);
+              return put{key, *model[key]};
+            }));
   });
 
   // Step 3: execute the commands in parallel.
-  lib::async(dag, [&](const command &cmd) {
+  lib::async(dag, [&](lib::dag<command>::const_iterator it) {
     lib::visit(
         lib::make_overload(
             [&](const get &cmd) { EXPECT_EQ(sys.get(cmd.key, 0), cmd.value); },
             [&](const put &cmd) { sys.put(cmd.key, cmd.value); }),
-        cmd);
-    return 0;
+        *it);
   });
 }
 
