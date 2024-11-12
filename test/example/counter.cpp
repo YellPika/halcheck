@@ -73,7 +73,7 @@ HALCHECK_TEST(Counter, Linearizability) {
   struct inc_command {};
   using command = lib::variant<get_command, inc_command>;
 
-  auto dag = gen::dag("dag"_s, [](lib::atom id) {
+  auto dag = gen::schedule("dag"_s, [](lib::atom id) {
     return gen::one(
         id,
         [](lib::atom id) -> std::pair<std::vector<std::size_t>, command> {

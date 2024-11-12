@@ -21,19 +21,17 @@ namespace halcheck { namespace gen {
 
 /**
  * @brief Generates a random lib::dag.
- * @tparam T The type of resource identifiers.
  * @tparam F The type of function used to generate labels.
  * @param id A unique identifier for the generated value.
  * @param func A function used to generate labels.
  * @return A random lib::dag whose labels are generated via @p func.
  * @details This function participates in overload resolution only if the following conditions hold:
- * 1. `lib::is_hashable<T>()` holds.
- * 2. `lib::is_equality_comparable<T>()` holds.
- * 3. `lib::is_invocable<F, lib::atom, lib::function_view<void(const T &)>>()` holds.
- *
- * The function @p func is passed a function `use`, which is used to indicate which nodes should have edges to the node
- * being generated. Formally, let @f$N(i)@f$ be the set of values passed to `use` during the generation of the @f$i@f$th
- * node. Node @f$i@f$ is connected (possibly indirectly) to node @f$j > i@f$ if @f$N(i) \cap N(j) \ne \emptyset@f$.
+ * 1. `lib::is_invocable<F, lib::atom>()` holds.
+ * 2. `std::tuple_size<lib::invoke_result_t<F, lib::atom>>() == 2`.
+ * 3. `lib::is_range<lib::tuple_element_t<0, lib::invoke_result_t<F, lib::atom>>>()` holds.
+ * 4. `lib::is_hashable<lib::range_value_t<lib::tuple_element_t<0, lib::invoke_result_t<F, lib::atom>>>>()` holds.
+ * 5. `lib::is_equality_comparable<lib::range_value_t<lib::tuple_element_t<0, lib::invoke_result_t<F, lib::atom>>>>()`
+ *    holds.
  * @ingroup gen-dag
  */
 template<
@@ -45,7 +43,7 @@ template<
         lib::is_hashable<lib::range_value_t<lib::tuple_element_t<0, lib::invoke_result_t<F, lib::atom>>>>()),
     HALCHECK_REQUIRE(
         lib::is_equality_comparable<lib::range_value_t<lib::tuple_element_t<0, lib::invoke_result_t<F, lib::atom>>>>())>
-lib::dag<lib::tuple_element_t<1, lib::invoke_result_t<F, lib::atom>>> dag(lib::atom id, F func) {
+lib::dag<lib::tuple_element_t<1, lib::invoke_result_t<F, lib::atom>>> schedule(lib::atom id, F func) {
   using namespace lib::literals;
 
   using resource = lib::range_value_t<lib::tuple_element_t<0, lib::invoke_result_t<F, lib::atom>>>;

@@ -95,7 +95,7 @@ HALCHECK_TEST(Store, Concurrency) {
   });
 
   // Step 2: generate a directed acyclic graph of commands.
-  auto dag = gen::dag("dag"_s, [&](lib::atom id) -> std::pair<std::vector<std::string>, command> {
+  auto dag = gen::schedule("dag"_s, [&](lib::atom id) -> std::pair<std::vector<std::string>, command> {
     auto _ = gen::label(id);
 
     // We generate a random key to read/write. This command is ordered after the
