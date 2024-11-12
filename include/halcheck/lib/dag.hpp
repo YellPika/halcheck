@@ -272,90 +272,122 @@ public:
 };
 
 /**
- * @brief Executes a function on each label in a given graph and stores the
- *        results in a graph with the same structure. Functions processing
- *        unrelated node labels are executed in parallel.
- *
+ * @brief Executes a function on each label in a given graph. Calls for unrelated node labels are executed in parallel.
  * @tparam F The type of function to execute.
  * @tparam T The type of label stored in the graph.
  * @param graph The graph of functions to execute.
  * @param func The function to execute.
- * @return A graph with the same structure as the input graph.
  */
-template<typename F, typename T, HALCHECK_REQUIRE(lib::is_invocable<F, T &&>())>
-lib::dag<lib::invoke_result_t<F, T &&>> async(lib::dag<T> &&graph, F func) {
+template<
+    typename F,
+    typename T,
+    HALCHECK_REQUIRE(std::is_void<lib::invoke_result_t<F, lib::iterator_t<lib::dag<T>>>>())>
+void async(lib::dag<T> &graph, F func) {
   std::vector<std::shared_future<void>> futures;
   futures.reserve(graph.size());
-
-  std::vector<std::future<lib::invoke_result_t<F, T &&>>> results;
-  results.reserve(graph.size());
 
   for (auto i = graph.begin(); i != graph.end(); ++i) {
     std::vector<std::shared_future<void>> parents;
     for (auto j : graph.parents(i))
       parents.push_back(futures[j - graph.begin()]);
 
-    std::promise<void> promise;
-    futures.push_back(promise.get_future().share());
-    results.push_back(std::async(
+    futures.emplace_back(std::async(
         std::launch::async,
-        [&func](const std::vector<std::shared_future<void>> &parents, std::promise<void> promise, T value) {
-          auto _ = lib::finally([&] { promise.set_value(); });
-
+        [&func, i](const std::vector<std::shared_future<void>> &parents) {
           for (const auto &parent : parents)
             parent.wait();
 
-          return lib::invoke(func, std::move(value));
+          lib::invoke(func, i);
         },
-        std::move(parents),
-        std::move(promise),
-        std::move(*i)));
+        std::move(parents)));
   }
 
-  lib::dag<lib::invoke_result_t<F, T &&>> output;
-  output.reserve(graph.size());
-
-  for (auto i = graph.begin(); i != graph.end(); ++i) {
-    auto f = [&](lib::iterator_t<lib::dag<T>> j) { return output.begin() + (j - graph.begin()); };
-    auto parents = graph.parents(i);
-    output.emplace(
-        lib::make_transform_iterator(parents.begin(), f),
-        lib::make_transform_iterator(parents.end(), f),
-        results[i - graph.begin()].get());
-  }
-
-  return output;
+  for (auto &&future : futures)
+    future.get();
 }
 
 /**
- * @brief Executes a function on each label in a given graph and stores the
- *        results in a graph with the same structure. Functions processing
- *        unrelated node labels are executed in parallel.
- *
+ * @brief Executes a function on each label in a given graph. Calls for unrelated node labels are executed in parallel.
+ * @tparam F The type of function to execute.
+ * @tparam T The type of label stored in the graph.
+ * @param graph The graph of functions to execute.
+ * @param func The function to execute.
+ */
+template<
+    typename F,
+    typename T,
+    HALCHECK_REQUIRE(std::is_void<lib::invoke_result_t<F, lib::iterator_t<const lib::dag<T>>>>())>
+void async(const lib::dag<T> &graph, F func) {
+  return lib::async(const_cast<lib::dag<T> &>(graph), [&](lib::iterator_t<const lib::dag<T>> it) {
+    return lib::invoke(func, it);
+  });
+}
+
+/**
+ * @brief Executes a function on each label in a given graph and stores the results in a graph with the same structure.
+ * Calls for unrelated nodes are executed in parallel.
  * @tparam F The type of function to execute.
  * @tparam T The type of label stored in the graph.
  * @param graph The graph of functions to execute.
  * @param func The function to execute.
  * @return A graph with the same structure as the input graph.
  */
-template<typename F, typename T, HALCHECK_REQUIRE(lib::is_invocable<F, const T &>())>
-lib::dag<lib::invoke_result_t<F, const T &>> async(const lib::dag<T> &graph, F func) {
-  return lib::async(std::move(const_cast<lib::dag<T> &>(graph)), [&](const T &value) {
-    return lib::invoke(func, value);
+template<
+    typename F,
+    typename T,
+    HALCHECK_REQUIRE(!std::is_void<lib::invoke_result_t<F, lib::iterator_t<lib::dag<T>>>>())>
+lib::dag<lib::invoke_result_t<F, lib::iterator_t<lib::dag<T>>>> async(lib::dag<T> &graph, F func) {
+  using result = lib::invoke_result_t<F, lib::iterator_t<lib::dag<T>>>;
+
+  std::vector<std::promise<result>> results(graph.size());
+  lib::async(graph, [&](lib::iterator_t<lib::dag<T>> it) {
+    results[it - graph.begin()].set_value(lib::invoke(func, it));
+  });
+
+  lib::dag<result> output;
+  output.reserve(graph.size());
+
+  for (std::size_t i = 0; i < results.size(); i++) {
+    output.emplace(
+        lib::transform(
+            graph.parents(graph.begin() + i),
+            [&](lib::iterator_t<lib::dag<T>> it) { return output.begin() + (it - graph.begin()); }),
+        results[i].get_future().get());
+  }
+
+  return output;
+}
+
+/**
+ * @brief Executes a function on each label in a given graph and stores the results in a graph with the same structure.
+ * Calls for unrelated nodes are executed in parallel.
+ * @tparam F The type of function to execute.
+ * @tparam T The type of label stored in the graph.
+ * @param graph The graph of functions to execute.
+ * @param func The function to execute.
+ * @return A graph with the same structure as the input graph.
+ */
+template<
+    typename F,
+    typename T,
+    HALCHECK_REQUIRE(!std::is_void<lib::invoke_result_t<F, lib::iterator_t<const lib::dag<T>>>>())>
+lib::dag<lib::invoke_result_t<F, lib::iterator_t<const lib::dag<T>>>> async(const lib::dag<T> &graph, F func) {
+  return lib::async(const_cast<lib::dag<T> &>(graph), [&](lib::iterator_t<const lib::dag<T>> it) {
+    return lib::invoke(func, it);
   });
 }
 
 namespace detail {
 template<typename T, typename F>
-bool check(
+bool linearize(
     const lib::dag<F> &dag,
-    T seed,
+    T &seed,
     std::vector<std::size_t> &references,
     std::vector<typename lib::dag<F>::const_iterator> &queue) {
   for (std::size_t i = 0; i < queue.size(); ++i) {
     auto next = seed;
     auto it = queue[i];
-    if (!lib::invoke(*it).get(), next)
+    if (!lib::invoke(*it, next))
       continue;
 
     for (auto j : dag.children(it)) {
@@ -376,8 +408,10 @@ bool check(
       }
     });
 
-    if (check(next, references, queue))
+    if (linearize(dag, next, references, queue)) {
+      seed = std::move(next);
       return true;
+    }
   }
 
   return queue.empty();
@@ -389,16 +423,15 @@ template<
     typename F,
     HALCHECK_REQUIRE(lib::is_copyable<T>()),
     HALCHECK_REQUIRE(lib::is_invocable_r<bool, F, T &>())>
-bool is_linearizable(const lib::dag<F> &dag, T seed) {
+bool linearize(const lib::dag<F> &dag, T &seed) {
   std::vector<std::size_t> references(dag.size(), 0);
   for (auto i = dag.begin(); i != dag.end(); ++i) {
-    (*i).get();
     for (auto j : dag.children(i))
       ++references[j - dag.begin()];
   }
 
   std::vector<typename lib::dag<F>::const_iterator> queue(dag.roots().begin(), dag.roots().end());
-  return check(seed, references, queue);
+  return detail::linearize(dag, seed, references, queue);
 }
 
 }} // namespace halcheck::lib
