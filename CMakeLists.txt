@@ -134,6 +134,9 @@ if(HALCHECK_DEVELOPMENT)
 
     set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
 
-    doxygen_add_docs(doxygen ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    doxygen_add_docs(doxygen
+      ${CMAKE_CURRENT_SOURCE_DIR}/README.md
+      ${CMAKE_CURRENT_SOURCE_DIR}/doc/intro.md
+      ${CMAKE_CURRENT_SOURCE_DIR}/include)
   endif()
 endif()

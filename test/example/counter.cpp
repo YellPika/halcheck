@@ -3,7 +3,6 @@
 #include <halcheck.hpp>
 #include <halcheck/glog.hpp>
 #include <halcheck/gtest.hpp>
-#include <halcheck/lib/functional.hpp>
 
 #include <atomic>
 #include <ostream>
