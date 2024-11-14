@@ -32,7 +32,7 @@ using addition = lib::same<decltype(std::declval<I &>() += std::declval<const N 
 
 /**
  * @brief A utility class for easily defining new iterators.
- * @tparam I The derived type (as used in
+ * @tparam Self The derived type (as used in
  * [CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern)).
  * @ingroup lib-iterator
  */
