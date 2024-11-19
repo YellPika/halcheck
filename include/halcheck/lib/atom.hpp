@@ -22,6 +22,7 @@
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/variant.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <functional>

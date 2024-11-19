@@ -4,6 +4,8 @@
 #include <halcheck/lib/functional/invoke.hpp>
 #include <halcheck/lib/variant.hpp>
 
+#include <memory>
+
 namespace halcheck { namespace lib {
 
 template<typename T>
