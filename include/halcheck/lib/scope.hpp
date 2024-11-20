@@ -26,7 +26,11 @@ template<typename F = lib::move_only_function<void() &&>>
 class finally_t {
 public:
   static_assert(lib::is_invocable<F &&>(), "F && should be invocable");
+
+// TODO: fix check on MSVC
+#ifndef _MSC_VER
   static_assert(std::is_nothrow_move_constructible<F>(), "F should be nothrow move constructible");
+#endif
 
   template<typename G>
   friend class finally_t;
