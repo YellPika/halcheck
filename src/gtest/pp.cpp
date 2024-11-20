@@ -12,7 +12,7 @@
 
 using namespace halcheck;
 
-test::strategy gtest::default_strategy() {
+test::strategy gtest::default_strategy_effect::fallback() const {
   auto test = ::testing::UnitTest::GetInstance();
   auto info = test->current_test_info();
   auto name = info->test_suite_name() + std::string(".") + info->name();

@@ -1,13 +1,20 @@
 #ifndef HALCHECK_GTEST_PP_HPP
 #define HALCHECK_GTEST_PP_HPP
 
+#include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/pp.hpp>
 #include <halcheck/test/strategy.hpp>
 
 #include "gtest/gtest.h"
 
 namespace halcheck { namespace gtest {
-test::strategy __attribute__((weak)) default_strategy();
+
+struct default_strategy_effect {
+  HALCHECK_NODISCARD test::strategy fallback() const;
+};
+
+HALCHECK_NODISCARD inline test::strategy default_strategy() { return lib::effect::invoke<default_strategy_effect>(); }
+
 }} // namespace halcheck::gtest
 
 #define HALCHECK_TEST_HELPER(anon, suite, test, strategy)                                                              \
