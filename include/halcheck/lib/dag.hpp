@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <future>
 #include <initializer_list>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -55,6 +56,37 @@ public:
   using const_iterator = lib::index_iterator<const std::vector<T>>;
 
   static_assert(std::is_convertible<iterator, const_iterator>(), "");
+
+  dag() = default;
+
+  template<
+      typename R,
+      typename F,
+      HALCHECK_REQUIRE(lib::is_range<R>()),
+      HALCHECK_REQUIRE(std::is_convertible<lib::range_reference_t<R>, T>()),
+      HALCHECK_REQUIRE(lib::is_range<lib::invoke_result_t<F, lib::range_reference_t<R>>>()),
+      HALCHECK_REQUIRE(lib::is_hashable<lib::range_value_t<lib::invoke_result_t<F, lib::range_reference_t<R>>>>()),
+      HALCHECK_REQUIRE(
+          lib::is_equality_comparable<lib::range_value_t<lib::invoke_result_t<F, lib::range_reference_t<R>>>>())>
+  dag(R &&range, F func) {
+    using resource = lib::range_value_t<lib::invoke_result_t<F, lib::range_reference_t<R>>>;
+    std::unordered_map<resource, const_iterator> state;
+    for (auto &&value : range) {
+      const auto &resources = func(value);
+      std::vector<const_iterator> parents;
+      for (auto &&resource : resources) {
+        auto it = state.find(resource);
+        if (it != state.end()) {
+          parents.push_back(std::move(it->second));
+          state.erase(it);
+        }
+      }
+
+      auto it = emplace({}, value);
+      for (auto &&resource : resources)
+        state.emplace({std::move(resource), it});
+    }
+  }
 
   /**
    * @brief Gets an @ref dag<T>::iterator "iterator" pointing to the first node in this @ref dag.
