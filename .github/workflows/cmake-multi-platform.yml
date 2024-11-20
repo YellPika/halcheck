@@ -14,28 +14,24 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-latest]
-        build_type: [Debug]
-        compiler: [clang++]
-        standard: [17,20]
-        # os: [ubuntu-latest, windows-latest]
-        # build_type: [Release]
-        # compiler: [g++, clang++, cl]
-        # standard: [11,14,17,20]
-        # include:
-        #   - os: windows-latest
-        #     compiler: cl
-        #   - os: ubuntu-latest
-        #     compiler: g++
-        #   - os: ubuntu-latest
-        #     compiler: clang++
-        # exclude:
-        #   - os: windows-latest
-        #     compiler: g++
-        #   - os: windows-latest
-        #     compiler: clang++
-        #   - os: ubuntu-latest
-        #     compiler: cl
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release]
+        compiler: [g++, clang++, cl]
+        standard: [11,14,17,20]
+        include:
+          - os: windows-latest
+            compiler: cl
+          - os: ubuntu-latest
+            compiler: g++
+          - os: ubuntu-latest
+            compiler: clang++
+        exclude:
+          - os: windows-latest
+            compiler: g++
+          - os: windows-latest
+            compiler: clang++
+          - os: ubuntu-latest
+            compiler: cl
 
     steps:
     - uses: actions/checkout@v4
@@ -58,8 +54,8 @@ jobs:
         -DHALCHECK_TYCHE=OFF
         -S ${{ github.workspace }}
 
-    - name: Debug
-      uses: mxschmitt/action-tmate@v3
+    # - name: Debug
+    #   uses: mxschmitt/action-tmate@v3
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
