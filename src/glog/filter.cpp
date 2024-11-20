@@ -70,7 +70,7 @@ struct strategy {
         LOG(INFO) << "Test Case (" << i << "): DISCARD";
         discarded++;
         throw;
-      } catch (const gen::result_exception &e) {
+      } catch (const gen::result_exception &) {
         // TODO: handle succeed_effect and check if it was really called.
         LOG(INFO) << "Test Case (" << i << "): COMPLETE";
         throw;
