@@ -50,7 +50,7 @@ struct strategy {
     std::random_device device;
     std::uniform_int_distribution<std::size_t> dist(0, table.size() - 1);
     std::generate_n(std::back_inserter(id), table.size(), [&] { return table[dist(device)]; });
-    const std::string filename = directory / id;
+    const std::string filename = (directory / id).string();
 
     std::error_code code;
     fs::rename(filename, filename + ".bak", code);
