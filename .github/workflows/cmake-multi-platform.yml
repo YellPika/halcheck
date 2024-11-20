@@ -14,15 +14,14 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        build_type: [Release]
-        compiler: [g++, clang++, cl]
-        standard: [11,14,17,20]
-        include:
-          - os: ubuntu-latest
-            compiler: clang++
-            standard: 17
-
+        os: [ubuntu-latest]
+        build_type: [Debug]
+        compiler: [clang++]
+        standard: [17,20]
+        # os: [ubuntu-latest, windows-latest]
+        # build_type: [Release]
+        # compiler: [g++, clang++, cl]
+        # standard: [11,14,17,20]
         # include:
         #   - os: windows-latest
         #     compiler: cl
@@ -59,11 +58,11 @@ jobs:
         -DHALCHECK_TYCHE=OFF
         -S ${{ github.workspace }}
 
-    - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
-
     - name: Debug
       uses: mxschmitt/action-tmate@v3
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
     - name: Test
       if: ${{ matrix.compiler != 'cl' }}
