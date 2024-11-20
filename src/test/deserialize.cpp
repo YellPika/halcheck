@@ -74,8 +74,10 @@ struct strategy {
       if (!value.is_object())
         continue;
 
-      entries.push_back(
-          entry{file.last_write_time(), value.get<std::unordered_map<std::string, std::string>>(), file.path()});
+      entries.push_back(entry{
+          file.last_write_time(),
+          value.get<std::unordered_map<std::string, std::string>>(),
+          file.path().string()});
     }
 
     std::sort(entries.begin(), entries.end());

@@ -10,6 +10,7 @@
 #include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/string.hpp>
+#include <halcheck/lib/tuple.hpp>
 #include <halcheck/test/deserialize.hpp>
 #include <halcheck/test/serialize.hpp>
 #include <halcheck/test/strategy.hpp>
@@ -77,7 +78,7 @@ test::strategy test::random() {
       if (max_size != 0)
         size %= max_size;
 
-      engine();
+      lib::ignore = engine();
     }
   };
 }
