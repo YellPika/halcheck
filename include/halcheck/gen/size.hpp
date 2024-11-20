@@ -9,6 +9,7 @@
 
 #include <halcheck/lib/effect.hpp>
 #include <halcheck/lib/functional.hpp>
+#include <halcheck/lib/pp.hpp>
 
 #include <cstdint>
 
@@ -53,7 +54,7 @@ inline std::uintmax_t size() { return lib::effect::invoke<gen::size_effect>(); }
  *
  * @ingroup gen-size
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
 private:
   struct handler : lib::effect::handler<handler, gen::size_effect> {
     explicit handler(double amount) : amount(amount) {}

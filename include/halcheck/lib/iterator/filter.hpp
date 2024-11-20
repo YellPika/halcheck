@@ -9,6 +9,7 @@
 #include <halcheck/lib/iterator/range.hpp>
 #include <halcheck/lib/iterator/type_traits.hpp>
 #include <halcheck/lib/optional.hpp>
+#include <halcheck/lib/pp.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <iterator>
@@ -184,7 +185,7 @@ private:
  * @return The constructed @ref filter_iterator.
  * @ingroup lib-iterator
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   template<typename I, typename F>
   lib::filter_iterator<I, F> operator()(I base, I end, F func) const {
     return lib::filter_iterator<I, F>(std::move(base), std::move(end), std::move(func));

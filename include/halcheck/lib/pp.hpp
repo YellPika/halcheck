@@ -62,4 +62,14 @@
 #define HALCHECK_NODISCARD
 #endif
 
+#if defined(HALCHECK_DOXYGEN) || __cplusplus >= 201703L
+/**
+ * @brief A backwards-compatible substitute for `inline constexpr`.
+ * @ingroup lib-pp
+ */
+#define HALCHECK_INLINE_CONSTEXPR inline constexpr
+#else
+#define HALCHECK_INLINE_CONSTEXPR static const
+#endif
+
 #endif

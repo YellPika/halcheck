@@ -5,6 +5,7 @@
 
 #include <halcheck/lib/iterator/base.hpp>
 #include <halcheck/lib/iterator/type_traits.hpp>
+#include <halcheck/lib/pp.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <cstddef>
@@ -33,7 +34,7 @@ inline namespace begin_cpo {
  * @return An iterator to the first element of @p range.
  * @ingroup lib-iterator
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
 private:
   template<typename T>
   using member = lib::iterator<decltype(std::declval<T &>().begin())>;
@@ -104,7 +105,7 @@ inline namespace end_cpo {
  * @return An iterator to past the end of @p range.
  * @ingroup lib-iterator
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
 private:
   template<typename T>
   using member = lib::iterator<decltype(std::declval<T &&>().end())>;
@@ -239,7 +240,7 @@ struct disable_sized_range : std::false_type {};
  * @return The number of elements in @p range.
  * @ingroup lib-iterator
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
 private:
   template<typename T>
   using member = lib::enable_if_t<std::is_integral<decltype(std::declval<T>().size())>{}>;
@@ -350,7 +351,7 @@ using range_reference_t = lib::iter_reference_t<lib::iterator_t<R>>;
  * @return A `bool` indicating whether the range is empty.
  * @ingroup lib-iterator
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
 private:
   template<typename T>
   using member = lib::enable_if_t<std::is_integral<decltype(std::declval<T>().empty())>{}>;

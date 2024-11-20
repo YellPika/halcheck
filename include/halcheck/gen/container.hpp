@@ -11,6 +11,7 @@
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/optional.hpp>
+#include <halcheck/lib/pp.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
@@ -23,7 +24,7 @@
 
 namespace halcheck { namespace gen {
 
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
 private:
   template<typename F>
   struct to_label {

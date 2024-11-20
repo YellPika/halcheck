@@ -9,6 +9,7 @@
 #include <halcheck/lib/iterator/range.hpp>
 #include <halcheck/lib/iterator/type_traits.hpp>
 #include <halcheck/lib/optional.hpp>
+#include <halcheck/lib/pp.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <iterator>
@@ -201,7 +202,7 @@ private:
  * @return `lib::transform_iterator<I, F>(std::move(base), std::move(func))`
  * @ingroup lib-iterator
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   template<
       typename I,
       typename F,
@@ -380,7 +381,7 @@ private:
  * @return `lib::transform_view<R, F>(std::move(base), std::move(func))`
  * @ingroup lib-iterator
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   template<
       typename V,
       typename F,

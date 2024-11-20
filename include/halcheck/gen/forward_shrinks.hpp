@@ -6,6 +6,7 @@
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/optional.hpp>
+#include <halcheck/lib/pp.hpp>
 #include <halcheck/lib/type_traits.hpp>
 #include <halcheck/lib/utility.hpp>
 
@@ -90,7 +91,7 @@ private:
   children_view _children;
 };
 
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   template<typename F, typename... Args, HALCHECK_REQUIRE(lib::is_invocable<F, Args...>())>
   gen::forward_shrinks<lib::invoke_result_t<F, Args...>>
   operator()(std::vector<std::uintmax_t> input, F func, Args &&...args) const {

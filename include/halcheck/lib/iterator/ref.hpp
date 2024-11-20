@@ -5,6 +5,7 @@
 
 #include <halcheck/lib/iterator/interface.hpp>
 #include <halcheck/lib/iterator/range.hpp>
+#include <halcheck/lib/pp.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <memory>
@@ -61,7 +62,7 @@ private:
 template<typename R>
 struct enable_borrowed_range<lib::ref_view<R>> : std::true_type {};
 
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   template<typename R>
   constexpr lib::ref_view<R> operator()(R &range) const {
     return lib::ref_view<R>(range);

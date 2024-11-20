@@ -10,6 +10,7 @@
 #include <halcheck/gen/label.hpp>
 #include <halcheck/lib/atom.hpp>
 #include <halcheck/lib/effect.hpp>
+#include <halcheck/lib/pp.hpp>
 
 #include <cstdint>
 #include <limits>
@@ -47,7 +48,7 @@ struct sample_effect {
  * calls to gen::sample occur during the lifetime of two calls to gen::label with different `id`s.
  * @ingroup gen-sample
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   std::uintmax_t operator()(lib::atom id, std::uintmax_t max = std::numeric_limits<std::uintmax_t>::max()) const {
     auto _ = gen::label(id);
     return lib::effect::invoke<gen::sample_effect>(max);

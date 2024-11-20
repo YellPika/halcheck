@@ -9,6 +9,7 @@
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/optional.hpp>
+#include <halcheck/lib/pp.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/trie.hpp>
 #include <halcheck/lib/type_traits.hpp>
@@ -152,7 +153,7 @@ private:
   std::size_t _size;
 };
 
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   template<typename F, typename... Args, HALCHECK_REQUIRE(lib::is_invocable<F, Args...>())>
   gen::shrinks<lib::invoke_result_t<F, Args...>>
   operator()(lib::trie<lib::atom, lib::optional<std::uintmax_t>> input, F func, Args &&...args) const {

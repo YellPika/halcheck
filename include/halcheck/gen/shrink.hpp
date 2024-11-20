@@ -1,6 +1,5 @@
 #ifndef HALCHECK_GEN_SHRINK_HPP
 #define HALCHECK_GEN_SHRINK_HPP
-
 #include <halcheck/gen/label.hpp>
 #include <halcheck/lib/atom.hpp>
 #include <halcheck/lib/effect.hpp>
@@ -8,6 +7,7 @@
 #include <halcheck/lib/iterator.hpp>
 #include <halcheck/lib/numeric.hpp>
 #include <halcheck/lib/optional.hpp>
+#include <halcheck/lib/pp.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
@@ -26,7 +26,7 @@ struct shrink_effect {
   lib::optional<std::uintmax_t> fallback() const { return lib::nullopt; }
 };
 
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   lib::optional<std::uintmax_t> operator()(lib::atom id, std::uintmax_t size = 1) const {
     auto _ = gen::label(id);
     return lib::effect::invoke<shrink_effect>(size);
@@ -86,7 +86,7 @@ static const struct {
   }
 } shrink;
 
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   /// @brief Shrinks an integer via binary search towards a given value.
   /// @tparam T The type of integer to shrink.
   /// @param dst The value to shrink to.
@@ -142,7 +142,7 @@ static const struct {
   }
 } shrink_to;
 
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   struct handler : lib::effect::handler<handler, gen::shrink_effect> {
     lib::optional<std::uintmax_t> operator()(gen::shrink_effect) final { return lib::nullopt; }
   };

@@ -3,6 +3,7 @@
 
 // IWYU pragma: private, include <halcheck/lib/functional.hpp>
 
+#include <halcheck/lib/pp.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 namespace halcheck { namespace lib {
@@ -18,7 +19,7 @@ namespace halcheck { namespace lib {
  * @see std::invoke
  * @ingroup lib-functional
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   template<typename F, typename... Args, HALCHECK_REQUIRE(std::is_member_pointer<lib::decay_t<F>>())>
   auto operator()(F &&f, Args &&...args) const noexcept(noexcept(std::mem_fn(f)(std::forward<Args>(args)...)))
       -> decltype(std::mem_fn(f)(std::forward<Args>(args)...)) {

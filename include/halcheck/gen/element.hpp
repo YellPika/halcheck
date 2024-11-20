@@ -13,6 +13,7 @@
 #include <halcheck/gen/shrink.hpp>
 #include <halcheck/lib/atom.hpp>
 #include <halcheck/lib/iterator.hpp>
+#include <halcheck/lib/pp.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <array>
@@ -48,7 +49,7 @@ namespace halcheck { namespace gen {
  * value obtained from an input iterator is not guaranteed to exist once the iterator is modified or destroyed.
  * @ingroup gen-element
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   template<typename T, HALCHECK_REQUIRE(lib::is_input_range<T>()), HALCHECK_REQUIRE(lib::is_sized_range<T>())>
   lib::conditional_t<lib::is_forward_range<T>::value, lib::range_reference_t<T>, lib::range_value_t<T>>
   operator()(lib::atom id, T &range) const {
@@ -87,7 +88,7 @@ static const struct {
  * @return A random element of @p args.
  * @ingroup gen-element
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   template<typename... Args>
   lib::common_type_t<Args...> operator()(lib::atom id, Args &&...args) const {
     std::array<lib::common_type_t<Args...>, sizeof...(Args)> range{std::forward<Args>(args)...};

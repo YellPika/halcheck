@@ -5,6 +5,7 @@
 
 #include <halcheck/lib/iterator/interface.hpp>
 #include <halcheck/lib/iterator/range.hpp>
+#include <halcheck/lib/pp.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <iterator>
@@ -149,7 +150,7 @@ private:
  * @param index The offset within the range to point at.
  * @ingroup lib-iterator
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   template<typename R>
   lib::index_iterator<R> operator()(R &base, lib::range_difference_t<R> index = 0) {
     return lib::index_iterator<R>(base, std::move(index));

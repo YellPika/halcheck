@@ -5,6 +5,7 @@
 
 #include <halcheck/lib/iterator/base.hpp>
 #include <halcheck/lib/iterator/interface.hpp>
+#include <halcheck/lib/pp.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
 #include <cstdint>
@@ -201,7 +202,7 @@ private:
  * @param value The value to point to.
  * @ingroup lib-iterator
  */
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   template<typename T>
   lib::iota_iterator<T> operator()(T value) const {
     return lib::iota_iterator<T>(std::move(value));
@@ -228,7 +229,7 @@ private:
   T _end{};
 };
 
-static const struct {
+HALCHECK_INLINE_CONSTEXPR struct {
   template<typename T>
   lib::iota_view<T> operator()(T begin, T end) const {
     return lib::iota_view<T>(std::move(begin), std::move(end));
