@@ -25,28 +25,14 @@ bool binary_search(const std::vector<int> &xs, int key) {
 }
 } // namespace
 
-TEST(BinarySearch, Example0) {
+TEST(BinarySearch, Examples) {
   if (!lib::getenv("HALCHECK_NOSKIP"))
     GTEST_SKIP();
 
-  std::vector<int> xs{0};
-  EXPECT_TRUE(binary_search(xs, 0));
-}
-
-TEST(BinarySearch, Example1) {
-  if (!lib::getenv("HALCHECK_NOSKIP"))
-    GTEST_SKIP();
-
-  std::vector<int> xs{0, 1, 2};
-  EXPECT_TRUE(binary_search(xs, 2));
-}
-
-TEST(BinarySearch, Example2) {
-  if (!lib::getenv("HALCHECK_NOSKIP"))
-    GTEST_SKIP();
-
-  std::vector<int> xs{0, 1, 2, 3, 4, 5};
-  EXPECT_TRUE(binary_search(xs, 1));
+  EXPECT_FALSE(binary_search({}, 0));
+  EXPECT_TRUE(binary_search({0}, 0));
+  EXPECT_TRUE(binary_search({0, 1, 2}, 2));
+  EXPECT_TRUE(binary_search({0, 1, 2, 3, 4, 5}, 1));
 }
 
 HALCHECK_TEST(BinarySearch, Membership) {
@@ -55,9 +41,10 @@ HALCHECK_TEST(BinarySearch, Membership) {
 
   auto xs = gen::container<std::vector<int>>("xs"_s, gen::arbitrary<int>);
   std::sort(xs.begin(), xs.end());
-  LOG(INFO) << "xs: " << testing::PrintToString(xs);
 
   auto x = gen::element_of("x"_s, xs);
+
+  LOG(INFO) << "xs: " << testing::PrintToString(xs);
   LOG(INFO) << "x: " << testing::PrintToString(x);
 
   EXPECT_TRUE(binary_search(xs, x));

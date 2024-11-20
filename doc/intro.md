@@ -1,12 +1,14 @@
 # Introduction {#intro}
 
-_Property-Based Testing_ checks whether a specification holds over a wide range of inputs. Property-based testing provides the following benefits over standard testing techniques:
+_Property-Based Testing_ checks whether a system behaves correctly for wide range of automatically generated inputs. Property-based testing provides the following benefits over standard testing techniques:
 
 1. _Better coverage:_ standard example-based tests check scenarios that we think of; property-based testing allows us to check scenarios that we forgot to think about.
 
 2. _Better scalability:_ a single property-based test can replace a large number of example-based tests.
 
-For example, consider an implementation of binary search:
+## A Simple Example
+
+To illustrate the advantages of property-based testing, consider this implementation of binary search:
 
 ```cpp
 bool binary_search(const std::vector<int> &xs, int key) {
@@ -35,7 +37,7 @@ TEST(BinarySearch, Examples) {
 }
 ```
 
-Code coverage tools will confirm that the above test executes every line of code in `binary_search`. Nonetheless, `binary_search` _does_ have a bug, which is revealed with a simple property-based test:
+Code coverage tools will confirm that the above test executes every line of code in `binary_search`. Nonetheless, `binary_search` _does_ have a bug. This bug is revealed by running by a simple property-based test:
 
 ```cpp
 HALCHECK_TEST(BinarySearch, Membership) {
@@ -65,10 +67,12 @@ Property-based tests require three things:
 
 1. a _system under test_ whose correctness we would like to test,
 2. a set of _generators_ which produce inputs for the system under test, and
-3. an _oracle_ which determines if the system under test behaves correctly.
+3. a _property_ which determines if the system under test behaves correctly.
 
-In the above example, the system under test is the function `binary_search`. There are two generators, marked by `(a)` and `(b)`. Finally, the oracle is marked by `(c)`[note].
+In the above example, the system under test is the function `binary_search`. There are two generators, marked by `(a)` and `(b)`. Finally, the oracle is marked by `(c)` <sup>[1]</sup>.
 
-The system under test is usually given, so the main challenge of property-based testing lies in coming up with generators and oracles.
+The system under test is usually given, so the main challenge of property-based testing lies in devising generators and properties. Property-based testing frameworks (such as `halcheck`) primarily support test execution and writing generators (see the [generator reference](@ref gen).)
 
-[note]: . "Oracles need not be explicit. Sometimes you just want to test that a piece of code does not crash."
+---
+
+[1] Properties need not be explicit. Sometimes you just want to test that a piece of code does not crash.
