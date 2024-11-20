@@ -50,7 +50,7 @@ namespace halcheck { namespace gen {
  */
 static const struct {
   template<typename T, HALCHECK_REQUIRE(lib::is_input_range<T>()), HALCHECK_REQUIRE(lib::is_sized_range<T>())>
-  lib::conditional_t<lib::is_forward_range<T>{}, lib::range_reference_t<T>, lib::range_value_t<T>>
+  lib::conditional_t<lib::is_forward_range<T>::value, lib::range_reference_t<T>, lib::range_value_t<T>>
   operator()(lib::atom id, T &range) const {
     auto it = lib::begin(range);
     auto index = gen::range(id, 0, lib::size(range));
