@@ -18,8 +18,9 @@ set(HALCHECK_COVERAGE  OFF CACHE BOOL   "enable code coverage")
 set(HALCHECK_TYCHE     ON  CACHE BOOL   "enable tyche support")
 set(HALCHECK_LIBFUZZER ON  CACHE BOOL   "enable libfuzzer support")
 
-cmake_dependent_option(HALCHECK_GTEST     "enable gtest support"      ON "NOT HALCHECK_DEVELOPMENT" ON)
-cmake_dependent_option(HALCHECK_GLOG      "enable glog support"       ON "NOT HALCHECK_DEVELOPMENT" ON)
+cmake_dependent_option(HALCHECK_GTEST  "enable gtest support"       ON "NOT HALCHECK_DEVELOPMENT" ON)
+cmake_dependent_option(HALCHECK_GLOG   "enable glog support"        ON "NOT HALCHECK_DEVELOPMENT" ON)
+cmake_dependent_option(HALCHECK_FORMAT "enable clang-format checks" ON "HALCHECK_DEVELOPMENT"     OFF)
 
 if(HALCHECK_DEVELOPMENT)
   set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
@@ -39,13 +40,13 @@ endif()
 
 #[[ Formatting ]]
 
-if(HALCHECK_DEVELOPMENT)
+if(HALCHECK_FORMAT)
   find_program(CLANG_FORMAT_EXE NAMES clang-format)
   add_custom_target(format ALL)
 endif()
 
 function(clang_format NAME SOURCES)
-  if(NOT HALCHECK_DEVELOPMENT OR NOT CLANG_FORMAT_EXE OR NOT SOURCES)
+  if(NOT HALCHECK_FORMAT OR NOT CLANG_FORMAT_EXE OR NOT SOURCES)
     return()
   endif()
 
