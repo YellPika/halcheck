@@ -67,7 +67,7 @@ test::strategy test::random() {
         handler(engine, size).handle(func);
         ++successes;
       } catch (const gen::discard_exception &) {
-        if (discard_ratio > 0 && ++discarded / discard_ratio >= max_success)
+        if (max_success > 0 && discard_ratio > 0 && ++discarded / discard_ratio >= max_success)
           throw test::discard_limit_exception();
       } catch (const succeed_exception &) {
         return;

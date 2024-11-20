@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <future>
 #include <ostream>
+#include <random>
 #include <stdexcept>
 #include <utility>
 
@@ -13,9 +14,15 @@ using namespace halcheck;
 HALCHECK_TEST(Test, Random_Error) {
   using namespace lib::literals;
 
+  std::mt19937_64 seed(gen::sample("seed"_s));
+  auto _ = lib::effect::state().handle();
+
   EXPECT_THROW(
-      (test::config(test::set("MAX_SUCCESS", 0)) | test::random())([&] {
-        switch (gen::sample("a"_s) % 8) {
+      (test::config(test::set("SEED", seed), test::set("MAX_SUCCESS", 0)) |
+       test::random())([&] {
+        auto x = gen::sample("a"_s);
+        LOG(INFO) << "x: " << x;
+        switch (x % 8) {
         case 0:
           throw gen::discard_exception();
           return;
