@@ -32,6 +32,9 @@ jobs:
             compiler: clang++
           - os: ubuntu-latest
             compiler: cl
+          - os: windows-latest
+            compiler: cl
+            standard: 20
 
     steps:
     - uses: actions/checkout@v4
