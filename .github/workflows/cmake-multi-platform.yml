@@ -52,6 +52,7 @@ jobs:
         -DCMAKE_CXX_EXTENSIONS=OFF
         -DHALCHECK_LIBFUZZER=OFF
         -DHALCHECK_TYCHE=OFF
+        -DHALCHECK_FORMAT=OFF
         -S ${{ github.workspace }}
 
     # - name: Debug
