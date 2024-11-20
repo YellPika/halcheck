@@ -18,8 +18,8 @@ using iterator = lib::void_t<
     lib::destructible<I>,
     lib::swappable<I>,
     lib::enable_if_t<
-        (std::is_integral<lib::iter_difference_t<I>>() && std::is_signed<lib::iter_difference_t<I>>()) ||
-        std::is_void<lib::iter_difference_t<I>>()>,
+        (std::is_integral<lib::iter_difference_t<I>>{} && std::is_signed<lib::iter_difference_t<I>>{}) ||
+        std::is_void<lib::iter_difference_t<I>>{}>,
     decltype(*std::declval<I &>()),
     lib::same<decltype(++std::declval<I &>()), I &>>;
 

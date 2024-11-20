@@ -26,7 +26,7 @@ struct iota_diff<I, lib::enable_if_t<!std::is_integral<I>()>> {
 };
 
 template<typename I>
-struct iota_diff<I, lib::enable_if_t<(std::is_integral<I>() && sizeof(lib::iter_difference_t<I>()) > sizeof(I))>> {
+struct iota_diff<I, lib::enable_if_t<(std::is_integral<I>() && sizeof(lib::iter_difference_t<I>) > sizeof(I))>> {
   using type = lib::iter_difference_t<I>;
 };
 
