@@ -40,7 +40,7 @@ HALCHECK_TEST(Shrink, Example) {
 
   using T = uint8_t;
 
-  auto threshold = gen::range("threshold"_s, 0, std::numeric_limits<T>::max());
+  auto threshold = gen::range("threshold"_s, 0, (std::numeric_limits<T>::max)());
   auto size = gen::range("size"_s, 1UL, 10UL);
   auto index = gen::range("index"_s, 0UL, size);
 
@@ -70,7 +70,7 @@ HALCHECK_TEST(ForwardShrink, Example) {
 
   using T = uint8_t;
 
-  auto threshold = gen::range("threshold"_s, 0, std::numeric_limits<T>::max());
+  auto threshold = gen::range("threshold"_s, 0, (std::numeric_limits<T>::max)());
   LOG(INFO) << "threshold: " << threshold;
 
   auto size = gen::range("size"_s, 1UL, 10UL);

@@ -103,19 +103,19 @@ TEST(Effect, Example) {
       EXPECT_THROW(lib::effect::invoke<example<2>>(), std::runtime_error);
       return 1;
     }
-  } handler1;
+  };
 
-  handler1.handle([&] {
+  handler1().handle([&] {
     struct handler2 : lib::effect::handler<handler2, example<2>> {
       int operator()(example<2>) final {
         EXPECT_EQ(lib::effect::invoke<example<1>>(), 1);
         EXPECT_THROW(lib::effect::invoke<example<2>>(), std::runtime_error);
         throw std::logic_error("OH NO");
       }
-    } handler2;
+    };
     EXPECT_EQ(lib::effect::invoke<example<1>>(), 1);
     EXPECT_THROW(lib::effect::invoke<example<2>>(), std::runtime_error);
-    handler2.handle([&] {
+    handler2().handle([&] {
       EXPECT_EQ(lib::effect::invoke<example<1>>(), 1);
       EXPECT_THROW(lib::effect::invoke<example<2>>(), std::logic_error);
     });
