@@ -75,4 +75,4 @@ The system under test is usually given, so the main challenge of property-based 
 
 ---
 
-[1] Properties need not be explicit. Sometimes you just want to test that a piece of code does not crash.
+[1] Properties need not be explicitly asserted. Sometimes you just want to test that a piece of code does not crash.
