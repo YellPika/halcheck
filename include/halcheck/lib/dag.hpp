@@ -9,6 +9,7 @@
 
 #include <halcheck/lib/functional.hpp>
 #include <halcheck/lib/iterator.hpp>
+#include <halcheck/lib/optional.hpp>
 #include <halcheck/lib/scope.hpp>
 #include <halcheck/lib/type_traits.hpp>
 
@@ -16,6 +17,7 @@
 #include <cstddef>
 #include <future>
 #include <initializer_list>
+#include <stdexcept>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -466,6 +468,87 @@ bool linearize(const lib::dag<T> &dag, S &seed, F func) {
 
   std::vector<typename lib::dag<T>::const_iterator> queue(dag.roots().begin(), dag.roots().end());
   return detail::linearize(dag, seed, func, references, queue);
+}
+
+template<
+    typename T,
+    typename F,
+    typename G,
+    HALCHECK_REQUIRE(lib::is_movable<lib::invoke_result_t<F>>()),
+    HALCHECK_REQUIRE(lib::is_invocable_r<bool, G, const T &, lib::invoke_result_t<F> &>())>
+lib::optional<lib::invoke_result_t<F>> linearize(const lib::dag<T> &dag, F init, G func) {
+  struct state {
+  private:
+    std::reference_wrapper<F> init;
+    std::reference_wrapper<G> func;
+    std::vector<std::reference_wrapper<const T>> prefix;
+    lib::optional<lib::invoke_result_t<F>> value;
+
+  public:
+    explicit state(F &init, G &func) : init(init), func(func) {}
+
+    state(state &&other) noexcept(lib::is_nothrow_swappable<lib::optional<lib::invoke_result_t<F>>>())
+        : init(other.init), func(other.func), prefix(std::move(other.prefix)) {
+      using std::swap;
+      swap(value, other.value);
+    }
+
+    state &operator=(state &&other) noexcept(lib::is_nothrow_swappable<lib::optional<lib::invoke_result_t<F>>>()) {
+      if (this != &other) {
+        init = other.init;
+        func = other.func;
+        prefix = std::move(other.prefix);
+
+        using std::swap;
+        value.reset();
+        swap(value, other.value);
+      }
+
+      return *this;
+    }
+
+    state(const state &other) : init(other.init), func(other.func), prefix(other.prefix) {}
+
+    state &operator=(const state &other) {
+      if (this != &other) {
+        init = other.init;
+        func = other.func;
+        prefix = other.prefix;
+      }
+
+      return *this;
+    }
+
+    ~state() = default;
+
+    bool apply(const T &label) {
+      if (func(label, get())) {
+        prefix.push_back(label);
+        return true;
+      } else {
+        value.reset();
+        return false;
+      }
+    }
+
+    lib::invoke_result_t<F> &get() {
+      if (!value) {
+        value.emplace(lib::invoke(init));
+        for (auto &&label : prefix) {
+          if (!func(label, *value))
+            throw std::runtime_error("Failed to reproduce move-only value");
+        }
+      }
+
+      return *value;
+    }
+  };
+
+  state seed(init, func);
+  if (lib::linearize(dag, seed, [&](const T &label, state &current) { return current.apply(label); }))
+    return std::move(seed.get());
+  else
+    return lib::nullopt;
 }
 
 }} // namespace halcheck::lib

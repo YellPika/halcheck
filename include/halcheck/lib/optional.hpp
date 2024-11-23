@@ -123,7 +123,7 @@ struct optional_ops : private optional_base<T> {
   const T &&operator*() const && { return this->_value; }
   T &&operator*() && { return this->_value; }
 
-  void reset() {
+  void reset() noexcept {
     if (this->_has_value) {
       this->_value.~T();
       this->_has_value = false;
@@ -159,7 +159,7 @@ struct optional_ops<T &> : private optional_base<T &> {
   const T &operator*() const { return *this->_value; }
   T &operator*() { return *this->_value; }
 
-  void reset() { this->_value = nullptr; }
+  void reset() noexcept { this->_value = nullptr; }
 
   template<typename U = T, HALCHECK_REQUIRE(std::is_convertible<T *, U *>())>
   T &emplace(U &value) {

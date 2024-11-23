@@ -15,12 +15,12 @@ class counter {
 public:
   counter() = default;
   counter(counter &&other) noexcept : value(other.value.load()) {}
-  counter(const counter &other) : value(other.value.load()) {}
-  counter &operator=(const counter &other) {
-    if (this != &other)
-      value = other.value.load();
-    return *this;
-  }
+  // counter(const counter &other) : value(other.value.load()) {}
+  // counter &operator=(const counter &other) {
+  //   if (this != &other)
+  //     value = other.value.load();
+  //   return *this;
+  // }
   counter &operator=(counter &&other) noexcept {
     if (this != &other)
       value = other.value.load();
@@ -112,18 +112,20 @@ HALCHECK_TEST(Counter, Linearizability) {
         *it);
   });
 
-  counter model;
-  EXPECT_TRUE(lib::linearize(results, model, [](const result &result, counter &model) {
-    return lib::visit(
-        lib::make_overload(
-            [&](get_result get) -> bool {
-              auto actual = model.get();
-              return get.expected == actual;
-            },
-            [&](inc_result) -> bool {
-              model.inc();
-              return true;
-            }),
-        result);
-  }));
+  EXPECT_TRUE(lib::linearize(
+      results,
+      [] { return counter(); },
+      [](const result &result, counter &model) {
+        return lib::visit(
+            lib::make_overload(
+                [&](get_result get) -> bool {
+                  auto actual = model.get();
+                  return get.expected == actual;
+                },
+                [&](inc_result) -> bool {
+                  model.inc();
+                  return true;
+                }),
+            result);
+      }));
 }
