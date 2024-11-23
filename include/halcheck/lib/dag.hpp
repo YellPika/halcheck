@@ -410,16 +410,17 @@ lib::dag<lib::invoke_result_t<F, lib::iterator_t<const lib::dag<T>>>> async(cons
 }
 
 namespace detail {
-template<typename T, typename F>
+template<typename T, typename S, typename F>
 bool linearize(
-    const lib::dag<F> &dag,
-    T &seed,
+    const lib::dag<T> &dag,
+    S &seed,
+    F func,
     std::vector<std::size_t> &references,
-    std::vector<typename lib::dag<F>::const_iterator> &queue) {
+    std::vector<typename lib::dag<T>::const_iterator> &queue) {
   for (std::size_t i = 0; i < queue.size(); ++i) {
     auto next = seed;
     auto it = queue[i];
-    if (!lib::invoke(*it, next))
+    if (!lib::invoke(func, *it, next))
       continue;
 
     for (auto j : dag.children(it)) {
@@ -440,7 +441,7 @@ bool linearize(
       }
     });
 
-    if (linearize(dag, next, references, queue)) {
+    if (linearize(dag, next, func, references, queue)) {
       seed = std::move(next);
       return true;
     }
@@ -452,18 +453,19 @@ bool linearize(
 
 template<
     typename T,
+    typename S,
     typename F,
-    HALCHECK_REQUIRE(lib::is_copyable<T>()),
-    HALCHECK_REQUIRE(lib::is_invocable_r<bool, F, T &>())>
-bool linearize(const lib::dag<F> &dag, T &seed) {
+    HALCHECK_REQUIRE(lib::is_copyable<S>()),
+    HALCHECK_REQUIRE(lib::is_invocable_r<bool, F, const T &, S &>())>
+bool linearize(const lib::dag<T> &dag, S &seed, F func) {
   std::vector<std::size_t> references(dag.size(), 0);
   for (auto i = dag.begin(); i != dag.end(); ++i) {
     for (auto j : dag.children(i))
       ++references[j - dag.begin()];
   }
 
-  std::vector<typename lib::dag<F>::const_iterator> queue(dag.roots().begin(), dag.roots().end());
-  return detail::linearize(dag, seed, references, queue);
+  std::vector<typename lib::dag<T>::const_iterator> queue(dag.roots().begin(), dag.roots().end());
+  return detail::linearize(dag, seed, func, references, queue);
 }
 
 }} // namespace halcheck::lib

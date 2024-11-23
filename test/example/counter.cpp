@@ -89,26 +89,41 @@ HALCHECK_TEST(Counter, Linearizability) {
         });
   });
 
+  struct get_result {
+    int expected;
+  };
+  struct inc_result {};
+  using result = lib::variant<get_result, inc_result>;
+
   counter object;
   auto results = lib::async(dag, [&](lib::dag<command>::const_iterator it) {
     return lib::visit(
         lib::make_overload(
-            [&](get_command) -> lib::move_only_function<bool(counter &) const> {
+            [&](get_command) -> result {
               auto expected = object.get();
               LOG(INFO) << "[async] get(): " << expected;
-              return [=](counter &model) { return model.get() == expected; };
+              return get_result{expected};
             },
-            [&](inc_command) -> lib::move_only_function<bool(counter &) const> {
+            [&](inc_command) -> result {
               object.inc();
               LOG(INFO) << "[async] inc()";
-              return [](counter &model) {
-                model.inc();
-                return true;
-              };
+              return inc_result{};
             }),
         *it);
   });
 
   counter model;
-  EXPECT_TRUE(lib::linearize(results, model));
+  EXPECT_TRUE(lib::linearize(results, model, [](const result &result, counter &model) {
+    return lib::visit(
+        lib::make_overload(
+            [&](get_result get) -> bool {
+              auto actual = model.get();
+              return get.expected == actual;
+            },
+            [&](inc_result) -> bool {
+              model.inc();
+              return true;
+            }),
+        result);
+  }));
 }
