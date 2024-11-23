@@ -84,7 +84,7 @@ public:
 
       auto it = emplace({}, value);
       for (auto &&resource : resources)
-        state.emplace({std::move(resource), it});
+        state.emplace(std::move(resource), it);
     }
   }
 
