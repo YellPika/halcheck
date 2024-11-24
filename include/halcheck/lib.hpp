@@ -26,7 +26,6 @@
 #include <halcheck/lib/scope.hpp>       // IWYU pragma: export
 #include <halcheck/lib/span.hpp>        // IWYU pragma: export
 #include <halcheck/lib/string.hpp>      // IWYU pragma: export
-#include <halcheck/lib/thread.hpp>      // IWYU pragma: export
 #include <halcheck/lib/tree.hpp>        // IWYU pragma: export
 #include <halcheck/lib/trie.hpp>        // IWYU pragma: export
 #include <halcheck/lib/tuple.hpp>       // IWYU pragma: export
