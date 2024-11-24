@@ -97,69 +97,76 @@ HALCHECK_TEST(Stack, Linearizability) {
   if (!lib::getenv("HALCHECK_NOSKIP"))
     GTEST_SKIP();
 
-  stack object;          // The system under test
+  struct push_command {
+    int value;
+  };
+  struct pop_command {};
+  using command = lib::variant<push_command, pop_command>;
+
   std::vector<bool> set; // Indicates which threads have a value on the stack
+  auto dag = gen::schedule("dag"_s, [&](lib::atom id) {
+    return gen::one(
+        id,
+        [&](lib::atom id) -> std::pair<std::vector<std::size_t>, command> {
+          auto _ = gen::label(id);
+          auto threads = gen_threads("threads"_s);
+          threads.push_back(set.size() + max_threads);
+          set.push_back(true);
+          LOG(INFO) << "[gen] get @ " << testing::PrintToString(threads);
+          return std::make_pair(threads, push_command{gen::arbitrary<int>("value"_s)});
+        },
+        [&](lib::atom id) -> std::pair<std::vector<std::size_t>, command> {
+          auto _ = gen::label(id);
+          auto threads = gen_threads("threads"_s);
+          gen::retry("index"_s, [&](lib::atom id) {
+            auto index = gen::range(id, 0, set.size());
+            gen::guard(set[index]);
+            threads.push_back(index + max_threads);
+            set[index] = false;
+          });
+          LOG(INFO) << "[gen] inc @ " << testing::PrintToString(threads);
+          return std::make_pair(threads, pop_command());
+        });
+  });
 
-  // The serializability monitor is parameterized by two types:
-  // - std::size_t: The type of thread IDs.
-  // - std::vector<int>: The model being tested against.
-  lib::serializability_monitor<std::size_t, std::vector<int>> monitor;
-
-  // The push command
-  auto push = [&](lib::atom id) {
-    auto _ = gen::label(id);
-
-    // Chooses a random value to push
-    auto value = gen::arbitrary<int>("value"_s);
-
-    // Chooses random threads to run on
-    // Initially this will just be one thread
-    // During shrinking this may shrink to the set of "all threads",
-    // which effectively serializes this command
-    auto threads = gen_threads("threads"_s);
-
-    // We also use an extra thread corresponding to a new value
-    // This is used to ensure pop only runs on a non-empty stack
-    threads.push_back(set.size() + max_threads);
-    set.push_back(true);
-
-    // Finally, we submit the command to the monitor
-    monitor.invoke(threads, [=, &object] {
-      LOG(INFO) << "[system] push(" << value << ") on threads " << testing::PrintToString(threads);
-      object.push(value);
-
-      // System commands return the corresponding model command
-      // (In this case, a function which pushes the value into a vector.)
-      return [=](std::vector<int> &model) { model.push_back(value); };
-    });
+  struct push_result {
+    int value;
   };
-
-  auto pop = [&](lib::atom id) {
-    auto _ = gen::label(id);
-
-    auto threads = gen_threads("threads"_s);
-
-    gen::retry("index"_s, [&](lib::atom id) {
-      auto index = gen::range(id, 0, set.size());
-      gen::guard(set[index]);
-      threads.push_back(index + max_threads);
-      set[index] = false;
-    });
-
-    monitor.invoke(threads, [=, &object] {
-      LOG(INFO) << "[system] pop() on threads " << testing::PrintToString(threads);
-      auto actual = object.pop();
-      LOG(INFO) << " -> " << actual;
-      return [=](std::vector<int> &model) {
-        EXPECT_GT(model.size(), 0);
-        auto _ = lib::finally([&] { model.pop_back(); });
-        EXPECT_EQ(actual, model.back());
-      };
-    });
+  struct pop_result {
+    int value;
   };
+  using result = lib::variant<push_result, pop_result>;
 
-  for (auto _ : gen::repeat("commands"_s))
-    gen::retry("command"_s, [&](lib::atom id) { return gen::one(id, push, pop); });
+  stack object;
+  auto results = lib::async(dag, [&](lib::dag<command>::const_iterator it) {
+    return lib::visit(
+        lib::make_overload(
+            [&](push_command push) -> result {
+              object.push(push.value);
+              LOG(INFO) << "[async] push(" << push.value << ")";
+              return push_result{push.value};
+            },
+            [&](pop_command) -> result {
+              auto value = object.pop();
+              LOG(INFO) << "[async] pop(): " << value;
+              return pop_result{value};
+            }),
+        *it);
+  });
 
-  EXPECT_TRUE(monitor.check());
+  std::vector<int> model;
+  EXPECT_TRUE(lib::linearize(results, model, [](const result &result, std::vector<int> &model) -> bool {
+    return lib::visit(
+        lib::make_overload(
+            [&](push_result push) -> bool {
+              model.push_back(push.value);
+              return true;
+            },
+            [&](pop_result pop) -> bool {
+              auto value = model.back();
+              model.pop_back();
+              return value == pop.value;
+            }),
+        result);
+  }));
 }
