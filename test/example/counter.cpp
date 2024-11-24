@@ -14,13 +14,9 @@ using namespace halcheck::lib::literals;
 class counter {
 public:
   counter() = default;
+  counter(const counter &) = delete;
+  counter &operator=(const counter &) = delete;
   counter(counter &&other) noexcept : value(other.value.load()) {}
-  // counter(const counter &other) : value(other.value.load()) {}
-  // counter &operator=(const counter &other) {
-  //   if (this != &other)
-  //     value = other.value.load();
-  //   return *this;
-  // }
   counter &operator=(counter &&other) noexcept {
     if (this != &other)
       value = other.value.load();
