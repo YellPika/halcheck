@@ -14,28 +14,38 @@
 using namespace halcheck;
 
 test::strategy test::config(const std::initializer_list<test::set> &config) {
+  struct entry {
+    std::string value;
+    bool weak;
+  };
+
   struct strategy {
     struct handler : lib::effect::handler<handler, test::read_effect> {
-      explicit handler(std::unordered_map<std::string, std::string> config) : config(std::move(config)) {}
+      explicit handler(std::unordered_map<std::string, entry> config) : config(std::move(config)) {}
 
       lib::optional<std::string> operator()(test::read_effect args) final {
         auto it = config.find(args.key);
-        if (it != config.end())
-          return it->second;
-        else
+        if (it == config.end())
           return test::read(std::move(args.key));
+
+        if (it->second.weak) {
+          if (auto value = test::read(std::move(args.key)))
+            return value;
+        }
+
+        return it->second.value;
       }
 
-      std::unordered_map<std::string, std::string> config;
+      std::unordered_map<std::string, entry> config;
     };
 
     void operator()(lib::function_view<void()> func) const { handler(config).handle(func); }
 
-    std::unordered_map<std::string, std::string> config;
+    std::unordered_map<std::string, entry> config;
   };
 
-  std::unordered_map<std::string, std::string> map;
+  std::unordered_map<std::string, entry> map;
   for (auto &&pair : config)
-    map[pair.key] = pair.value;
+    map[pair.key] = entry{pair.value, pair.weak};
   return strategy{std::move(map)};
 }

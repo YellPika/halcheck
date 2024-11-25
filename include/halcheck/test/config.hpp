@@ -14,10 +14,12 @@ namespace halcheck { namespace test {
 
 struct set {
   template<typename T>
-  set(std::string key, const T &value) : key(std::move(key)), value(lib::to_string(value)) {}
+  set(std::string key, const T &value, bool weak = false)
+      : key(std::move(key)), value(lib::to_string(value)), weak(weak) {}
 
   std::string key;
   std::string value;
+  bool weak;
 };
 
 test::strategy config(const std::initializer_list<test::set> &);
