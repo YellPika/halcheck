@@ -4,6 +4,8 @@
 #include <halcheck/gtest/pp.hpp>
 #include <halcheck/test/strategy.hpp>
 
+#include <random>
+
 using namespace halcheck;
 
 int main(int argc, char *argv[]) {
@@ -16,11 +18,13 @@ int main(int argc, char *argv[]) {
       auto test = ::testing::UnitTest::GetInstance();
       auto info = test->current_test_info();
       auto name = info->test_suite_name() + std::string(".") + info->name();
-      return glog::filter(          // Only show output from the last failing test case
-          (test::deserialize(name)  // Run saved test cases first
-           & test::serialize(name)) // Then save new test cases
-          | test::random()          // Produce test cases randomly
-          | test::shrink());        // Shrink failing test cases
+      auto seed = std::mt19937_64(test->random_seed());
+      return test::config(test::set("SEED", seed, true)) | // Use GTest's seed by default
+             glog::filter(                                 // Only show output from the last failing test case
+                 (test::deserialize(name)                  // Run saved test cases first
+                  & test::serialize(name))                 // Then save new test cases
+                 | test::random()                          // Produce test cases randomly
+                 | test::shrink());                        // Shrink failing test cases
     }
   };
 
