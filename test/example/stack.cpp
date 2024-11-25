@@ -103,29 +103,30 @@ HALCHECK_TEST(Stack, Linearizability) {
   struct pop_command {};
   using command = lib::variant<push_command, pop_command>;
 
-  std::vector<bool> set; // Indicates which threads have a value on the stack
+  std::size_t counter = 0;
+  std::set<std::size_t> set;
   auto dag = gen::schedule("dag"_s, [&](lib::atom id) {
+    return gen::retry(id, [&](lib::atom id) {
     return gen::one(
         id,
         [&](lib::atom id) -> std::pair<std::vector<std::size_t>, command> {
           auto _ = gen::label(id);
           auto threads = gen_threads("threads"_s);
-          threads.push_back(set.size() + max_threads);
-          set.push_back(true);
-          LOG(INFO) << "[gen] get @ " << testing::PrintToString(threads);
+            threads.push_back(counter + max_threads);
+            set.insert(counter++);
+            LOG(INFO) << "[gen] push @ " << testing::PrintToString(threads);
           return std::make_pair(threads, push_command{gen::arbitrary<int>("value"_s)});
         },
         [&](lib::atom id) -> std::pair<std::vector<std::size_t>, command> {
           auto _ = gen::label(id);
+            gen::guard(!set.empty());
           auto threads = gen_threads("threads"_s);
-          gen::retry("index"_s, [&](lib::atom id) {
-            auto index = gen::range(id, 0, set.size());
-            gen::guard(set[index]);
+            auto index = gen::element_of("index"_s, set);
+            set.erase(index);
             threads.push_back(index + max_threads);
-            set[index] = false;
+            LOG(INFO) << "[gen] pop @ " << testing::PrintToString(threads);
+            return std::make_pair(threads, pop_command());
           });
-          LOG(INFO) << "[gen] inc @ " << testing::PrintToString(threads);
-          return std::make_pair(threads, pop_command());
         });
   });
 
