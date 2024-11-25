@@ -29,8 +29,10 @@ public:
   void push(int value) {
     auto top = new node{value, _top.load()};
     delay();
-    while (!_top.compare_exchange_strong(top->next, top))
+    while (!_top.compare_exchange_strong(top->next, top)) {
       delay();
+      top->next = _top.load();
+    }
   }
 
   int pop() {
@@ -146,27 +148,27 @@ HALCHECK_TEST(Stack, Linearizability) {
   std::set<std::size_t> set;
   auto dag = gen::schedule("dag"_s, [&](lib::atom id) {
     return gen::retry(id, [&](lib::atom id) {
-    return gen::one(
-        id,
-        [&](lib::atom id) -> std::pair<std::vector<std::size_t>, command> {
-          auto _ = gen::label(id);
-          auto threads = gen_threads("threads"_s);
+      return gen::one(
+          id,
+          [&](lib::atom id) -> std::pair<std::vector<std::size_t>, command> {
+            auto _ = gen::label(id);
+            auto threads = gen_threads("threads"_s);
             threads.push_back(counter + max_threads);
             set.insert(counter++);
             LOG(INFO) << "[gen] push @ " << testing::PrintToString(threads);
-          return std::make_pair(threads, push_command{gen::arbitrary<int>("value"_s)});
-        },
-        [&](lib::atom id) -> std::pair<std::vector<std::size_t>, command> {
-          auto _ = gen::label(id);
+            return std::make_pair(threads, push_command{gen::arbitrary<int>("value"_s)});
+          },
+          [&](lib::atom id) -> std::pair<std::vector<std::size_t>, command> {
+            auto _ = gen::label(id);
             gen::guard(!set.empty());
-          auto threads = gen_threads("threads"_s);
+            auto threads = gen_threads("threads"_s);
             auto index = gen::element_of("index"_s, set);
             set.erase(index);
             threads.push_back(index + max_threads);
             LOG(INFO) << "[gen] pop @ " << testing::PrintToString(threads);
             return std::make_pair(threads, pop_command());
           });
-        });
+    });
   });
 
   struct push_result {
