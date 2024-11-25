@@ -90,6 +90,45 @@ HALCHECK_TEST(Stack, Model) {
   }
 }
 
+HALCHECK_TEST(Stack, Consistency) {
+  if (!lib::getenv("HALCHECK_NOSKIP"))
+    GTEST_SKIP();
+
+  stack object;
+
+  auto modify = [&](lib::atom id) {
+    std::size_t size = 0;
+    for (auto _ : gen::repeat(id)) {
+      gen::retry("command"_s, [&](lib::atom id) {
+        gen::one(
+            id,
+            [&](lib::atom id) {
+              auto _ = gen::label(id);
+              ++size;
+              object.push(gen::arbitrary<int>("value"_s));
+            },
+            [&](lib::atom id) {
+              auto _ = gen::label(id);
+              gen::guard(size > 0);
+              --size;
+              object.pop();
+            });
+      });
+    }
+    return size;
+  };
+
+  modify("init"_s);
+
+  auto value = gen::arbitrary<int>("value"_s);
+  object.push(value);
+
+  for (auto i = modify("modify"_s); i > 0; --i)
+    object.pop();
+
+  EXPECT_EQ(object.pop(), value);
+}
+
 HALCHECK_TEST(Stack, Linearizability) {
   using namespace lib::literals;
 
