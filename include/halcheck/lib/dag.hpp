@@ -84,9 +84,14 @@ public:
         }
       }
 
-      auto it = emplace({}, value);
-      for (auto &&resource : resources)
-        state.emplace(std::move(resource), it);
+      auto it = emplace(std::move(parents), value);
+      for (auto &&resource : resources) {
+        auto i = state.find(resource);
+        if (i == state.end())
+          state.emplace(std::move(resource), it);
+        else
+          i->second = it;
+      }
     }
   }
 
