@@ -310,6 +310,18 @@ public:
   }
 };
 
+template<
+    typename R,
+    typename F,
+    HALCHECK_REQUIRE(lib::is_range<R>()),
+    HALCHECK_REQUIRE(lib::is_range<lib::invoke_result_t<F, lib::range_reference_t<R>>>()),
+    HALCHECK_REQUIRE(lib::is_hashable<lib::range_value_t<lib::invoke_result_t<F, lib::range_reference_t<R>>>>()),
+    HALCHECK_REQUIRE(
+        lib::is_equality_comparable<lib::range_value_t<lib::invoke_result_t<F, lib::range_reference_t<R>>>>())>
+lib::dag<lib::range_value_t<R>> make_dag(R &&range, F func) {
+  return lib::dag<lib::range_value_t<R>>(std::forward<R>(range), std::move(func));
+}
+
 /**
  * @brief Executes a function on each label in a given graph. Calls for unrelated node labels are executed in parallel.
  * @tparam F The type of function to execute.
