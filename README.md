@@ -2,6 +2,10 @@
 
 `halcheck` is a [Property-Based Testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) library for C/C++.
 
+## Disclaimer
+
+This library is in early stages of development.
+
 ## Installation
 
 `halcheck` uses [CMake](https://cmake.org/) and can be integrated using standard CMake methods (e.g. via [`add_subdirectory`](https://cmake.org/cmake/help/latest/command/add_subdirectory.html).)
