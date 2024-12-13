@@ -1,0 +1,16 @@
+#!/bin/bash
+
+BINARY_DIR=$(realpath $1)
+TEMP_DIR=$(mktemp -d)
+
+pushd "$TEMP_DIR"
+
+git clone https://github.com/YellPika/halcheck --branch docs
+cd halcheck
+rm -rf html
+cp -r "$BINARY_DIR/html" .
+git commit -am "Update docs"
+git push
+
+popd
+rm -rf "$TEMP_DIR"

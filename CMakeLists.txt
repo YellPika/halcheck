@@ -95,14 +95,6 @@ endif()
 if(HALCHECK_DEVELOPMENT)
   find_package(Doxygen)
   if(DOXYGEN_FOUND)
-    include(FetchContent)
-    FetchContent_Declare(
-        doxygen-awesome-css
-        URL https://github.com/jothepro/doxygen-awesome-css/archive/refs/heads/main.zip
-    )
-    FetchContent_MakeAvailable(doxygen-awesome-css)
-    FetchContent_GetProperties(doxygen-awesome-css SOURCE_DIR AWESOME_CSS_DIR)
-
     set(DOXYGEN_TAGFILES "${CMAKE_CURRENT_SOURCE_DIR}/doc/cppreference-doxygen-web.tag.xml=http://en.cppreference.com/w/")
     set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
@@ -115,7 +107,6 @@ if(HALCHECK_DEVELOPMENT)
     set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
     set(DOXYGEN_HIDE_UNDOC_CLASSES YES)
     set(DOXYGEN_HIDE_UNDOC_MEMBERS NO)
-    # set(DOXYGEN_HIDE_FRIEND_COMPOUNDS YES)
     set(DOXYGEN_EXTRACT_STATIC YES)
     set(DOXYGEN_EXCLUDE_SYMBOLS "detail::*" "*::detail::*")
 
@@ -124,14 +115,6 @@ if(HALCHECK_DEVELOPMENT)
     set(DOXYGEN_SHOW_FILES NO)
     set(DOXYGEN_SEPARATE_MEMBER_PAGES YES)
     set(DOXYGEN_INLINE_INHERITED_MEMB YES)
-    # set(DOXYGEN_HTML_EXTRA_STYLESHEET ${AWESOME_CSS_DIR}/doxygen-awesome.css)
-    # set(DOXYGEN_GENERATE_TREEVIEW YES)
-    # set(DOXYGEN_DISABLE_INDEX NO)
-    # set(DOXYGEN_FULL_SIDEBAR NO)
-    # set(DOXYGEN_COLORSTYLE LIGHT)
-
-    # set(DOXYGEN_CLANG_ASSISTED_PARSING YES)
-    # set(DOXYGEN_CLANG_DATABASE_PATH ${CMAKE_CURRENT_BINARY_DIR})
 
     set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
 
@@ -139,5 +122,10 @@ if(HALCHECK_DEVELOPMENT)
       ${CMAKE_CURRENT_SOURCE_DIR}/README.md
       ${CMAKE_CURRENT_SOURCE_DIR}/doc/intro.md
       ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+    add_custom_target(
+      upload-doxygen
+      COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/doc/upload ${CMAKE_CURRENT_BINARY_DIR}
+      DEPENDS doxygen)
   endif()
 endif()
