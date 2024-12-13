@@ -95,12 +95,14 @@ $(function(){ initResizable(false); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="md_doc_2intro"></a></p>
-<p><em>Property-Based Testing</em> checks whether a specification holds over a wide range of inputs. Property-based testing provides the following benefits over standard testing techniques:</p>
+<p><em>Property-Based Testing</em> checks whether a system behaves correctly for wide range of automatically generated inputs. Property-based testing provides the following benefits over standard testing techniques:</p>
 <ol type="1">
 <li><em>Better coverage:</em> standard example-based tests check scenarios that we think of; property-based testing allows us to check scenarios that we forgot to think about.</li>
 <li><em>Better scalability:</em> a single property-based test can replace a large number of example-based tests.</li>
 </ol>
-<p>For example, consider an implementation of binary search:</p>
+<h1><a class="anchor" id="autotoc_md4"></a>
+A Simple Example</h1>
+<p>To illustrate the advantages of property-based testing, consider this implementation of binary search:</p>
 <div class="fragment"><div class="line"><span class="keywordtype">bool</span> binary_search(<span class="keyword">const</span> <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;int&gt;</a> &amp;xs, <span class="keywordtype">int</span> key) {</div>
 <div class="line">  <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a> max = xs.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/container/vector/size.html">size</a>(), min = 0;</div>
 <div class="line">  <span class="keywordflow">while</span> (min &lt; max) {</div>
@@ -125,7 +127,7 @@ $(function(){ initResizable(false); });
 <div class="line">  EXPECT_TRUE(<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/algorithm/binary_search.html">binary_search</a>({0, 1, 2, 3, 4, 5}, 2));</div>
 <div class="line">}</div>
 <div class="ttc" id="abinary_search_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/algorithm/binary_search.html">std::binary_search</a></div><div class="ttdeci">T binary_search(T... args)</div></div>
-</div><!-- fragment --><p>Code coverage tools will confirm that the above test executes every line of code in <code>binary_search</code>. Nonetheless, <code>binary_search</code> <em>does</em> have a bug, which is revealed with a simple property-based test:</p>
+</div><!-- fragment --><p>Code coverage tools will confirm that the above test executes every line of code in <code>binary_search</code>. Nonetheless, <code>binary_search</code> <em>does</em> have a bug. This bug is revealed by running by a simple property-based test:</p>
 <div class="fragment"><div class="line">HALCHECK_TEST(BinarySearch, Membership) {</div>
 <div class="line">  <span class="comment">// Generate a random (&quot;arbitrary&quot;) sorted vector.</span></div>
 <div class="line">  <span class="keyword">auto</span> xs = gen::arbitrary&lt;std::vector&lt;int&gt;&gt;(<span class="stringliteral">&quot;xs&quot;</span>_s); <span class="comment">// (a)</span></div>
@@ -147,16 +149,18 @@ $(function(){ initResizable(false); });
 <div class="ttc" id="aend_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector/end.html">std::vector::end</a></div><div class="ttdeci">T end(T... args)</div></div>
 <div class="ttc" id="asort_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/algorithm/sort.html">std::sort</a></div><div class="ttdeci">T sort(T... args)</div></div>
 </div><!-- fragment --><p>The above test reveals that <code>binary_search({0, 1}, 0)</code> returns <code>false</code> instead of <code>true</code>. Fixing this bug is left as an exercise to the reader.</p>
-<h1><a class="anchor" id="autotoc_md3"></a>
-Elements of Property-Based Test</h1>
+<h1><a class="anchor" id="autotoc_md5"></a>
+Elements of a Property-Based Test</h1>
 <p>Property-based tests require three things:</p>
 <ol type="1">
 <li>a <em>system under test</em> whose correctness we would like to test,</li>
 <li>a set of <em>generators</em> which produce inputs for the system under test, and</li>
-<li>an <em>oracle</em> which determines if the system under test behaves correctly.</li>
+<li>a <em>property</em> which determines if the system under test behaves correctly.</li>
 </ol>
-<p>In the above example, the system under test is the function <code>binary_search</code>. There are two generators, marked by <code>(a)</code> and <code>(b)</code>. Finally, the oracle is marked by <code>(c)</code><a href="." title="Oracles need not be explicit. Sometimes you just want to test that a piece of code does not crash.">note</a>.</p>
-<p>The system under test is usually given, so the main challenge of property-based testing lies in coming up with generators and oracles. </p>
+<p>In the above example, the system under test is the function <code>binary_search</code>. There are two generators, marked by <code>(a)</code> and <code>(b)</code>. Finally, the oracle is marked by <code>(c)</code> <sup>[1]</sup>.</p>
+<p>The system under test is usually given, so the main challenge of property-based testing lies in devising generators and properties. Property-based testing frameworks (such as <code>halcheck</code>) primarily support test execution and writing generators (see the <a class="el" href="group__gen.html">generator reference</a>.)</p>
+<hr  />
+<p>[1] Properties need not be explicitly asserted. Sometimes you just want to test that a piece of code does not crash. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->

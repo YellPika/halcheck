@@ -63,7 +63,7 @@ var searchData=
   ['probabilities_60',['probabilities',['http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution/probabilities.html',1,'std::discrete_distribution']]],
   ['promise_61',['promise',['http://en.cppreference.com/w/cpp/thread/promise.html',1,'std::promise'],['http://en.cppreference.com/w/cpp/thread/promise/promise.html',1,'std::promise::promise()']]],
   ['propagate_5fconst_62',['propagate_const',['http://en.cppreference.com/w/cpp/experimental/propagate_const.html',1,'std::experimental']]],
-  ['property_20based_20test_63',['Elements of Property-Based Test',['../intro.html#autotoc_md3',1,'']]],
+  ['property_20based_20test_63',['Elements of a Property-Based Test',['../intro.html#autotoc_md5',1,'']]],
   ['property_20based_20testing_20library_20for_20c_20c_64',['A Property-Based Testing Library for C/C++',['../index.html',1,'']]],
   ['proximate_65',['proximate',['http://en.cppreference.com/w/cpp/filesystem/relative.html',1,'std::filesystem']]],
   ['ptrdiff_5ft_66',['ptrdiff_t',['http://en.cppreference.com/w/cpp/types/ptrdiff_t.html',1,'std']]],

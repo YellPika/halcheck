@@ -38,14 +38,13 @@ var searchData=
   ['unordered_5fmap_3c_20k_2c_20halcheck_3a_3alib_3a_3atrie_20_3e_35',['unordered_map&lt; K, halcheck::lib::trie &gt;',['http://en.cppreference.com/w/cpp/container/unordered_map.html',1,'std']]],
   ['unordered_5fmap_3c_20k_2c_20halcheck_3a_3alib_3a_3atrie_2c_20hash_20_3e_36',['unordered_map&lt; K, halcheck::lib::trie, Hash &gt;',['http://en.cppreference.com/w/cpp/container/unordered_map.html',1,'std']]],
   ['unordered_5fmap_3c_20lib_3a_3aatom_2c_20halcheck_3a_3alib_3a_3atrie_20_3e_37',['unordered_map&lt; lib::atom, halcheck::lib::trie &gt;',['http://en.cppreference.com/w/cpp/container/unordered_map.html',1,'std']]],
-  ['unordered_5fmap_3c_20threadid_2c_20iterator_20_3e_38',['unordered_map&lt; ThreadID, iterator &gt;',['http://en.cppreference.com/w/cpp/container/unordered_map.html',1,'std']]],
-  ['unordered_5fmultimap_39',['unordered_multimap',['http://en.cppreference.com/w/cpp/container/unordered_multimap.html',1,'std::pmr::unordered_multimap'],['http://en.cppreference.com/w/cpp/container/unordered_multimap.html',1,'std::unordered_multimap&lt; K, T &gt;']]],
-  ['unordered_5fmultiset_40',['unordered_multiset',['http://en.cppreference.com/w/cpp/container/unordered_multiset.html',1,'std::pmr::unordered_multiset'],['http://en.cppreference.com/w/cpp/container/unordered_multiset.html',1,'std::unordered_multiset&lt; K &gt;']]],
-  ['unordered_5fset_41',['unordered_set',['http://en.cppreference.com/w/cpp/container/unordered_set.html',1,'std::pmr::unordered_set'],['http://en.cppreference.com/w/cpp/container/unordered_set.html',1,'std::unordered_set&lt; K &gt;']]],
-  ['unsequenced_5fpolicy_42',['unsequenced_policy',['http://en.cppreference.com/w/cpp/algorithm/execution_policy_tag_t.html',1,'std::execution']]],
-  ['unsynchronized_5fpool_5fresource_43',['unsynchronized_pool_resource',['http://en.cppreference.com/w/cpp/experimental/unsynchronized_pool_resource.html',1,'std::experimental::pmr::unsynchronized_pool_resource'],['http://en.cppreference.com/w/cpp/memory/unsynchronized_pool_resource.html',1,'std::pmr::unsynchronized_pool_resource']]],
-  ['unwrap_5fref_5fdecay_44',['unwrap_ref_decay',['http://en.cppreference.com/w/cpp/utility/functional/unwrap_reference.html',1,'std']]],
-  ['unwrap_5fref_5fdecay_5ft_45',['unwrap_ref_decay_t',['http://en.cppreference.com/w/cpp/utility/functional/unwrap_reference.html',1,'std']]],
-  ['unwrap_5freference_46',['unwrap_reference',['http://en.cppreference.com/w/cpp/utility/functional/unwrap_reference.html',1,'std']]],
-  ['uses_5fallocator_47',['uses_allocator',['http://en.cppreference.com/w/cpp/memory/uses_allocator.html',1,'std']]]
+  ['unordered_5fmultimap_38',['unordered_multimap',['http://en.cppreference.com/w/cpp/container/unordered_multimap.html',1,'std::pmr::unordered_multimap'],['http://en.cppreference.com/w/cpp/container/unordered_multimap.html',1,'std::unordered_multimap&lt; K, T &gt;']]],
+  ['unordered_5fmultiset_39',['unordered_multiset',['http://en.cppreference.com/w/cpp/container/unordered_multiset.html',1,'std::pmr::unordered_multiset'],['http://en.cppreference.com/w/cpp/container/unordered_multiset.html',1,'std::unordered_multiset&lt; K &gt;']]],
+  ['unordered_5fset_40',['unordered_set',['http://en.cppreference.com/w/cpp/container/unordered_set.html',1,'std::pmr::unordered_set'],['http://en.cppreference.com/w/cpp/container/unordered_set.html',1,'std::unordered_set&lt; K &gt;']]],
+  ['unsequenced_5fpolicy_41',['unsequenced_policy',['http://en.cppreference.com/w/cpp/algorithm/execution_policy_tag_t.html',1,'std::execution']]],
+  ['unsynchronized_5fpool_5fresource_42',['unsynchronized_pool_resource',['http://en.cppreference.com/w/cpp/experimental/unsynchronized_pool_resource.html',1,'std::experimental::pmr::unsynchronized_pool_resource'],['http://en.cppreference.com/w/cpp/memory/unsynchronized_pool_resource.html',1,'std::pmr::unsynchronized_pool_resource']]],
+  ['unwrap_5fref_5fdecay_43',['unwrap_ref_decay',['http://en.cppreference.com/w/cpp/utility/functional/unwrap_reference.html',1,'std']]],
+  ['unwrap_5fref_5fdecay_5ft_44',['unwrap_ref_decay_t',['http://en.cppreference.com/w/cpp/utility/functional/unwrap_reference.html',1,'std']]],
+  ['unwrap_5freference_45',['unwrap_reference',['http://en.cppreference.com/w/cpp/utility/functional/unwrap_reference.html',1,'std']]],
+  ['uses_5fallocator_46',['uses_allocator',['http://en.cppreference.com/w/cpp/memory/uses_allocator.html',1,'std']]]
 ];

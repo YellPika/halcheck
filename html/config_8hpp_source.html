@@ -114,22 +114,24 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">struct </span>set {</div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>  <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>  set(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> key, <span class="keyword">const</span> T &amp;value) : key(<a class="code hl_namespace" href="namespacestd.html">std</a>::move(key)), value(lib::<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/string/basic_string/to_string.html">to_string</a>(value)) {}</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>  <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> key;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>  <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> value;</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>};</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>test::strategy config(<span class="keyword">const</span> <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/utility/initializer_list.html">std::initializer_list&lt;test::set&gt;</a> &amp;);</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>  set(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> key, <span class="keyword">const</span> T &amp;value, <span class="keywordtype">bool</span> weak = <span class="keyword">false</span>)</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>      : key(<a class="code hl_namespace" href="namespacestd.html">std</a>::move(key)), value(lib::<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/string/basic_string/to_string.html">to_string</a>(value)), weak(weak) {}</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>  <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> key;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>  <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> value;</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>  <span class="keywordtype">bool</span> weak;</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>};</div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args, <a class="code hl_define" href="group__lib-type__traits.html#ga3e55ef15c080dbc8daf4fe3de73f87d1">HALCHECK_REQUIRE</a>(lib::conjunction&lt;<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/is_convertible.html">std::is_convertible&lt;Args, test::set&gt;</a>...&gt;())&gt;</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>test::strategy config(Args &amp;&amp;...args) {</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>  <span class="keywordflow">return</span> test::config({test::set(<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/utility/forward.html">std::forward&lt;Args&gt;</a>(args))...});</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>}</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>}} <span class="comment">// namespace halcheck::test</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>test::strategy config(<span class="keyword">const</span> <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/utility/initializer_list.html">std::initializer_list&lt;test::set&gt;</a> &amp;);</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args, <a class="code hl_define" href="group__lib-type__traits.html#ga3e55ef15c080dbc8daf4fe3de73f87d1">HALCHECK_REQUIRE</a>(lib::conjunction&lt;<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/is_convertible.html">std::is_convertible&lt;Args, test::set&gt;</a>...&gt;())&gt;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>test::strategy config(Args &amp;&amp;...args) {</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>  <span class="keywordflow">return</span> test::config({test::set(<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/utility/forward.html">std::forward&lt;Args&gt;</a>(args))...});</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>}</div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>}} <span class="comment">// namespace halcheck::test</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
 <div class="ttc" id="aforward_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/forward.html">std::forward</a></div><div class="ttdeci">T forward(T... args)</div></div>
 <div class="ttc" id="agroup__lib-type__traits_html_ga3e55ef15c080dbc8daf4fe3de73f87d1"><div class="ttname"><a href="group__lib-type__traits.html#ga3e55ef15c080dbc8daf4fe3de73f87d1">HALCHECK_REQUIRE</a></div><div class="ttdeci">#define HALCHECK_REQUIRE(...)</div><div class="ttdoc">Expands to a template argument that is only valid if the given argument evaluates to true.</div><div class="ttdef"><b>Definition</b> type_traits.hpp:24</div></div>

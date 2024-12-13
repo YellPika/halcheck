@@ -105,78 +105,80 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;halcheck/lib/iterator/interface.hpp&gt;</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;halcheck/lib/iterator/range.hpp&gt;</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;halcheck/lib/type_traits.hpp&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="keyword">namespace </span>halcheck { <span class="keyword">namespace </span>lib {</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="comment">// See https://en.cppreference.com/w/cpp/ranges/ref_view</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> R&gt;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">class </span>ref_view : <span class="keyword">public</span> lib::view_interface&lt;ref_view&lt;R&gt;&gt; {</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>  <span class="keyword">static_assert</span>(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/is_object.html">std::is_object&lt;R&gt;</a>(), <span class="stringliteral">&quot;R must be an object type&quot;</span>);</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>  <span class="keyword">static_assert</span>(lib::is_range&lt;R&gt;(), <span class="stringliteral">&quot;R must be a range type&quot;</span>);</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>  <span class="keyword">template</span>&lt;<span class="keyword">typename</span>&gt;</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>  <span class="keyword">friend</span> <span class="keyword">class </span>ref_view;</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>  <span class="keyword">static</span> <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a> FUN(R &amp;);</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>  <span class="keyword">static</span> <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a> FUN(R &amp;&amp;);</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>  <span class="keyword">template</span>&lt;</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>      <span class="keyword">typename</span> T,</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>      <a class="code hl_define" href="group__lib-type__traits.html#ga3e55ef15c080dbc8daf4fe3de73f87d1">HALCHECK_REQUIRE</a>(!<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a>&lt;<a class="code hl_typedef" href="group__lib-type__traits_ga3629bdcfd44ea24386af6a1c08f9a080.html#ga3629bdcfd44ea24386af6a1c08f9a080">lib::remove_cvref_t&lt;T&gt;</a>, ref_view&gt;()),</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>      <a class="code hl_define" href="group__lib-type__traits.html#ga3e55ef15c080dbc8daf4fe3de73f87d1">HALCHECK_REQUIRE</a>(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/is_convertible.html">std::is_convertible&lt;T, R &amp;&gt;</a>()),</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>      <a class="code hl_define" href="group__lib-type__traits.html#ga3e55ef15c080dbc8daf4fe3de73f87d1">HALCHECK_REQUIRE</a>(<span class="keyword">decltype</span>(FUN(<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/utility/declval.html">std::declval&lt;T&gt;</a>()))())&gt;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>  <span class="keyword">constexpr</span> ref_view(T &amp;&amp;base) <span class="comment">// NOLINT</span></div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>      : _base(<a class="code hl_namespace" href="namespacestd.html">std</a>::<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/memory/addressof.html">addressof</a>(static_cast&lt;R &amp;&gt;(<a class="code hl_namespace" href="namespacestd.html">std</a>::<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/utility/forward.html">forward</a>&lt;T&gt;(base)))) {}</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  template&lt;typename T, HALCHECK_REQUIRE(std::is_convertible&lt;T *, R *&gt;())&gt;</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  <span class="keyword">constexpr</span> ref_view(<span class="keyword">const</span> ref_view&lt;T&gt; &amp;other) <span class="comment">// NOLINT</span></div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>      : _base(other._base) {}</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  <span class="keyword">constexpr</span> R &amp;base()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> *_base; }</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  <span class="keyword">constexpr</span> <a class="code hl_typedef" href="group__lib-iterator_ga2fec707f2901caca1699e2a676114afb.html#ga2fec707f2901caca1699e2a676114afb">lib::iterator_t&lt;R&gt;</a> begin()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> lib::begin(*_base); }</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  <span class="keyword">constexpr</span> <a class="code hl_typedef" href="group__lib-iterator_ga2fec707f2901caca1699e2a676114afb.html#ga2fec707f2901caca1699e2a676114afb">lib::iterator_t&lt;R&gt;</a> end()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> lib::end(*_base); }</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  template&lt;typename T = R, typename = decltype(lib::empty(std::declval&lt;const T &amp;&gt;()))&gt;</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  <span class="keyword">constexpr</span> <span class="keywordtype">bool</span> empty()<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="group__lib-iterator_gad872b9fc4863a3547b6853d50aa70e66.html#gad872b9fc4863a3547b6853d50aa70e66">lib::empty</a>(*_base);</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  }</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  template&lt;typename T = R, HALCHECK_REQUIRE(lib::is_sized_range&lt;T&gt;())&gt;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  <span class="keyword">constexpr</span> <span class="keywordtype">bool</span> size() <span class="keyword">const</span> {</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="group__lib-iterator_gac53be4bb68067f1e55dea9474011724a.html#gac53be4bb68067f1e55dea9474011724a">lib::size</a>(*_base);</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  }</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  R *_base;</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>};</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> R&gt;</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="keyword">struct </span>enable_borrowed_range&lt;lib::ref_view&lt;R&gt;&gt; : <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a> {};</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">struct </span>{</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  <span class="keyword">template</span>&lt;<span class="keyword">typename</span> R&gt;</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  <span class="keyword">constexpr</span> lib::ref_view&lt;R&gt; operator()(R &amp;range)<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="keywordflow">return</span> lib::ref_view&lt;R&gt;(range);</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  }</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>} ref;</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>}} <span class="comment">// namespace halcheck::lib</span></div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;halcheck/lib/pp.hpp&gt;</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;halcheck/lib/type_traits.hpp&gt;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="keyword">namespace </span>halcheck { <span class="keyword">namespace </span>lib {</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="comment">// See https://en.cppreference.com/w/cpp/ranges/ref_view</span></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span> </div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> R&gt;</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="keyword">class </span>ref_view : <span class="keyword">public</span> lib::view_interface&lt;ref_view&lt;R&gt;&gt; {</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>  <span class="keyword">static_assert</span>(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/is_object.html">std::is_object&lt;R&gt;</a>(), <span class="stringliteral">&quot;R must be an object type&quot;</span>);</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>  <span class="keyword">static_assert</span>(lib::is_range&lt;R&gt;(), <span class="stringliteral">&quot;R must be a range type&quot;</span>);</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>  <span class="keyword">template</span>&lt;<span class="keyword">typename</span>&gt;</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>  <span class="keyword">friend</span> <span class="keyword">class </span>ref_view;</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>  <span class="keyword">static</span> <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a> FUN(R &amp;);</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>  <span class="keyword">static</span> <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a> FUN(R &amp;&amp;);</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>  <span class="keyword">template</span>&lt;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>      <span class="keyword">typename</span> T,</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>      <a class="code hl_define" href="group__lib-type__traits.html#ga3e55ef15c080dbc8daf4fe3de73f87d1">HALCHECK_REQUIRE</a>(!<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a>&lt;<a class="code hl_typedef" href="group__lib-type__traits_ga3629bdcfd44ea24386af6a1c08f9a080.html#ga3629bdcfd44ea24386af6a1c08f9a080">lib::remove_cvref_t&lt;T&gt;</a>, ref_view&gt;()),</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>      <a class="code hl_define" href="group__lib-type__traits.html#ga3e55ef15c080dbc8daf4fe3de73f87d1">HALCHECK_REQUIRE</a>(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/is_convertible.html">std::is_convertible&lt;T, R &amp;&gt;</a>()),</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>      <a class="code hl_define" href="group__lib-type__traits.html#ga3e55ef15c080dbc8daf4fe3de73f87d1">HALCHECK_REQUIRE</a>(<span class="keyword">decltype</span>(FUN(<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/utility/declval.html">std::declval&lt;T&gt;</a>()))())&gt;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>  <span class="keyword">constexpr</span> ref_view(T &amp;&amp;base) <span class="comment">// NOLINT</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>      : _base(<a class="code hl_namespace" href="namespacestd.html">std</a>::<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/memory/addressof.html">addressof</a>(static_cast&lt;R &amp;&gt;(<a class="code hl_namespace" href="namespacestd.html">std</a>::<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/utility/forward.html">forward</a>&lt;T&gt;(base)))) {}</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  template&lt;typename T, HALCHECK_REQUIRE(std::is_convertible&lt;T *, R *&gt;())&gt;</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  <span class="keyword">constexpr</span> ref_view(<span class="keyword">const</span> ref_view&lt;T&gt; &amp;other) <span class="comment">// NOLINT</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>      : _base(other._base) {}</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  <span class="keyword">constexpr</span> R &amp;base()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> *_base; }</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  <span class="keyword">constexpr</span> <a class="code hl_typedef" href="group__lib-iterator_ga2fec707f2901caca1699e2a676114afb.html#ga2fec707f2901caca1699e2a676114afb">lib::iterator_t&lt;R&gt;</a> begin()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> lib::begin(*_base); }</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <span class="keyword">constexpr</span> <a class="code hl_typedef" href="group__lib-iterator_ga2fec707f2901caca1699e2a676114afb.html#ga2fec707f2901caca1699e2a676114afb">lib::iterator_t&lt;R&gt;</a> end()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> lib::end(*_base); }</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  template&lt;typename T = R, typename = decltype(lib::empty(std::declval&lt;const T &amp;&gt;()))&gt;</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  <span class="keyword">constexpr</span> <span class="keywordtype">bool</span> empty()<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="group__lib-iterator_ga626e9f4e8bb908d59c33a6ffe442b624.html#ga626e9f4e8bb908d59c33a6ffe442b624">lib::empty</a>(*_base);</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  }</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  template&lt;typename T = R, HALCHECK_REQUIRE(lib::is_sized_range&lt;T&gt;())&gt;</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  <span class="keyword">constexpr</span> <span class="keywordtype">bool</span> size() <span class="keyword">const</span> {</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="group__lib-iterator_gaae81b1256769ce2eca55d8430b50b127.html#gaae81b1256769ce2eca55d8430b50b127">lib::size</a>(*_base);</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  }</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  R *_base;</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>};</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> R&gt;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="keyword">struct </span>enable_borrowed_range&lt;lib::ref_view&lt;R&gt;&gt; : <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a> {};</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><a class="code hl_define" href="group__lib-pp.html#ga453a683d26d37353388add6adc3f0d12">HALCHECK_INLINE_CONSTEXPR</a> <span class="keyword">struct </span>{</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  <span class="keyword">template</span>&lt;<span class="keyword">typename</span> R&gt;</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  <span class="keyword">constexpr</span> lib::ref_view&lt;R&gt; operator()(R &amp;range)<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    <span class="keywordflow">return</span> lib::ref_view&lt;R&gt;(range);</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  }</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>} ref;</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>}} <span class="comment">// namespace halcheck::lib</span></div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aaddressof_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/addressof.html">std::addressof</a></div><div class="ttdeci">T addressof(T... args)</div></div>
 <div class="ttc" id="adeclval_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/declval.html">std::declval</a></div><div class="ttdeci">T declval(T... args)</div></div>
 <div class="ttc" id="aforward_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/forward.html">std::forward</a></div><div class="ttdeci">T forward(T... args)</div></div>
-<div class="ttc" id="agroup__lib-iterator_ga2fec707f2901caca1699e2a676114afb_html_ga2fec707f2901caca1699e2a676114afb"><div class="ttname"><a href="group__lib-iterator_ga2fec707f2901caca1699e2a676114afb.html#ga2fec707f2901caca1699e2a676114afb">halcheck::lib::iterator_t</a></div><div class="ttdeci">decltype(lib::begin(std::declval&lt; T &amp; &gt;())) iterator_t</div><div class="ttdoc">Obtains the iterator type of a range type.</div><div class="ttdef"><b>Definition</b> range.hpp:91</div></div>
-<div class="ttc" id="agroup__lib-iterator_gac53be4bb68067f1e55dea9474011724a_html_gac53be4bb68067f1e55dea9474011724a"><div class="ttname"><a href="group__lib-iterator_gac53be4bb68067f1e55dea9474011724a.html#gac53be4bb68067f1e55dea9474011724a">halcheck::lib::size</a></div><div class="ttdeci">static const struct halcheck::lib::@25 size</div><div class="ttdoc">Obtains the size of a range.</div></div>
-<div class="ttc" id="agroup__lib-iterator_gad872b9fc4863a3547b6853d50aa70e66_html_gad872b9fc4863a3547b6853d50aa70e66"><div class="ttname"><a href="group__lib-iterator_gad872b9fc4863a3547b6853d50aa70e66.html#gad872b9fc4863a3547b6853d50aa70e66">halcheck::lib::empty</a></div><div class="ttdeci">static const struct halcheck::lib::@26 empty</div><div class="ttdoc">Determines if a range is empty.</div></div>
+<div class="ttc" id="agroup__lib-iterator_ga2fec707f2901caca1699e2a676114afb_html_ga2fec707f2901caca1699e2a676114afb"><div class="ttname"><a href="group__lib-iterator_ga2fec707f2901caca1699e2a676114afb.html#ga2fec707f2901caca1699e2a676114afb">halcheck::lib::iterator_t</a></div><div class="ttdeci">decltype(lib::begin(std::declval&lt; T &amp; &gt;())) iterator_t</div><div class="ttdoc">Obtains the iterator type of a range type.</div><div class="ttdef"><b>Definition</b> range.hpp:92</div></div>
+<div class="ttc" id="agroup__lib-iterator_ga626e9f4e8bb908d59c33a6ffe442b624_html_ga626e9f4e8bb908d59c33a6ffe442b624"><div class="ttname"><a href="group__lib-iterator_ga626e9f4e8bb908d59c33a6ffe442b624.html#ga626e9f4e8bb908d59c33a6ffe442b624">halcheck::lib::empty</a></div><div class="ttdeci">HALCHECK_INLINE_CONSTEXPR struct halcheck::lib::@26 empty</div><div class="ttdoc">Determines if a range is empty.</div></div>
+<div class="ttc" id="agroup__lib-iterator_gaae81b1256769ce2eca55d8430b50b127_html_gaae81b1256769ce2eca55d8430b50b127"><div class="ttname"><a href="group__lib-iterator_gaae81b1256769ce2eca55d8430b50b127.html#gaae81b1256769ce2eca55d8430b50b127">halcheck::lib::size</a></div><div class="ttdeci">HALCHECK_INLINE_CONSTEXPR struct halcheck::lib::@25 size</div><div class="ttdoc">Obtains the size of a range.</div></div>
+<div class="ttc" id="agroup__lib-pp_html_ga453a683d26d37353388add6adc3f0d12"><div class="ttname"><a href="group__lib-pp.html#ga453a683d26d37353388add6adc3f0d12">HALCHECK_INLINE_CONSTEXPR</a></div><div class="ttdeci">#define HALCHECK_INLINE_CONSTEXPR</div><div class="ttdoc">A backwards-compatible substitute for inline constexpr.</div><div class="ttdef"><b>Definition</b> pp.hpp:70</div></div>
 <div class="ttc" id="agroup__lib-type__traits_ga3629bdcfd44ea24386af6a1c08f9a080_html_ga3629bdcfd44ea24386af6a1c08f9a080"><div class="ttname"><a href="group__lib-type__traits_ga3629bdcfd44ea24386af6a1c08f9a080.html#ga3629bdcfd44ea24386af6a1c08f9a080">halcheck::lib::remove_cvref_t</a></div><div class="ttdeci">typename std::remove_cv&lt; typename std::remove_reference&lt; T &gt;::type &gt;::type remove_cvref_t</div><div class="ttdoc">An implementation of std::remove_cvref_t.</div><div class="ttdef"><b>Definition</b> type_traits.hpp:141</div></div>
 <div class="ttc" id="agroup__lib-type__traits_html_ga3e55ef15c080dbc8daf4fe3de73f87d1"><div class="ttname"><a href="group__lib-type__traits.html#ga3e55ef15c080dbc8daf4fe3de73f87d1">HALCHECK_REQUIRE</a></div><div class="ttdeci">#define HALCHECK_REQUIRE(...)</div><div class="ttdoc">Expands to a template argument that is only valid if the given argument evaluates to true.</div><div class="ttdef"><b>Definition</b> type_traits.hpp:24</div></div>
 <div class="ttc" id="aintegral_constant_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a></div></div>
