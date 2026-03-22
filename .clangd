@@ -1,5 +1,5 @@
 CompileFlags:
-  CompilationDatabase: "build/clang-release"
+  CompilationDatabase: "build/release"
 InlayHints:
   Enabled: false
 Diagnostics:
