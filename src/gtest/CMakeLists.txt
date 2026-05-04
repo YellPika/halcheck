@@ -1,4 +1,4 @@
-CPMAddPackage("gh:google/googletest#v1.17.0")
+CPMAddPackage("gh:google/googletest#release-1.12.1")
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS *.cpp)
 add_library(${PROJECT_NAME}-gtest ${SOURCES})
